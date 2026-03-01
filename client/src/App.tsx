@@ -4,9 +4,11 @@ import BookingForm from './components/BookingForm'
 import MapContainer from './components/MapContainer'
 import ChatWindow from './components/ChatWindow'
 import NotificationSystem from './components/NotificationSystem'
+import LanguageSelector from './components/LanguageSelector'
+import { LanguageProvider } from './contexts/LanguageContext'
 import { Trip } from '@shared/schema'
 
-function App() {
+function AppContent() {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null)
   const [showChat, setShowChat] = useState(false)
@@ -50,46 +52,45 @@ function App() {
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
+      {/* Language Selector */}
+      <LanguageSelector />
+      
       {/* Mapa de Fundo */}
       <MapContainer />
       
-      {/* Sistema de Notificações */}
-      <NotificationSystem notifications={notifications} />
-      
       {/* Conteúdo Principal */}
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {!currentTrip ? (
-            <BookingForm onBookingComplete={handleBookingComplete} socket={socket} />
-          ) : (
-            <div className="glass-card text-center">
-              <h2 className="text-2xl font-bold text-taxi-green mb-4">
-                Reserva Confirmada
-              </h2>
-              <div className="space-y-2 text-white mb-6">
-                <p>Estado: <span className="text-taxi-green">{currentTrip.status}</span></p>
-                <p>Preço: <span className="text-taxi-green">€{currentTrip.price}</span></p>
-              </div>
-              <button
-                onClick={() => setShowChat(!showChat)}
-                className="glass-button w-full"
-              >
-                {showChat ? 'Ocultar Chat' : 'Abrir Chat'}
-              </button>
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-lg">
+          {/* Formulário de Reserva */}
+          <BookingForm 
+            onBookingComplete={handleBookingComplete}
+            socket={socket}
+          />
+          
+          {/* Janela de Chat */}
+          {showChat && currentTrip && (
+            <div className="mt-6">
+              <ChatWindow 
+                tripId={currentTrip.id}
+                onClose={() => setShowChat(false)}
+                socket={socket}
+              />
             </div>
           )}
         </div>
       </div>
 
-      {/* Janela de Chat */}
-      {showChat && currentTrip && (
-        <ChatWindow 
-          tripId={currentTrip.id} 
-          socket={socket}
-          onClose={() => setShowChat(false)}
-        />
-      )}
+      {/* Sistema de Notificações */}
+      <NotificationSystem notifications={notifications} />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   )
 }
 
