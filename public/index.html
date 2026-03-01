@@ -1983,12 +1983,11 @@
         function initSocket() {
             socket = io();
             
-            // Registrar clientId no servidor
-            socket.emit('register_client', { clientId: clientId });
-            
             socket.on('connect', () => {
                 updateStatus('Conectado');
                 showNotification('🟢 Conectado ao servidor 691 Lisboa!');
+                // Registrar APÓS ligação estabelecida
+                socket.emit('register_client', { clientId: clientId });
             });
 
             socket.on('disconnect', () => {
@@ -2064,6 +2063,7 @@
 
         // Update language
         function updateLanguage(lang) {
+            if (!lang) lang = 'pt';
             currentLang = lang;
             const t = translations[lang];
             
@@ -2074,18 +2074,13 @@
             document.getElementById('date-label').textContent = t.dateLabel;
             document.getElementById('time-label').textContent = t.timeLabel;
             document.getElementById('pickup-label').textContent = t.pickupLabel;
-            document.getElementById('dest-label').textContent = t.destLabel;
-            document.getElementById('submit-btn').textContent = t.submitBtn;
+            document.getElementById('dest-label').textContent = t.destinationLabel;
+            document.getElementById('submit-btn').textContent = t.submitButton;
             document.getElementById('chat-title').textContent = t.chatTitle;
             document.getElementById('chat-placeholder').textContent = t.chatPlaceholder;
-            document.getElementById('chat-message').placeholder = t.chatMessagePlaceholder;
+            document.getElementById('chat-message').placeholder = t.messagePlaceholder;
             document.getElementById('booking-title').textContent = t.bookingTitle;
             document.getElementById('no-bookings-text').textContent = t.noBookings;
-            document.getElementById('status-text').textContent = t.statusText;
-
-            // Update button states
-            document.getElementById('pt-btn').classList.toggle('active', lang === 'pt');
-            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
         }
 
         // Display booking info
@@ -2412,23 +2407,12 @@
             }
         });
 
-        // Language toggle handlers
-        document.getElementById('pt-btn').addEventListener('click', () => {
-            updateLanguage('pt');
-        });
-
-        document.getElementById('en-btn').addEventListener('click', () => {
-            updateLanguage('en');
-        });
-
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             setDefaultDateTime();
             initSocket();
-            setupAutocomplete('recolha', 'recolha-list');
-            setupAutocomplete('destino', 'destino-list');
             setupAddressAutocomplete();
-            updateLanguage();
+            updateLanguage('pt');
         });
     </script>
 </body>
