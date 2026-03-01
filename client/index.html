@@ -151,27 +151,27 @@
           const splash = document.getElementById('splash');
           if (splash) {
             splash.style.opacity = '0';
-            splash.style.transition = 'opacity 0.5s ease-out';
-            setTimeout(() => {
-              splash.style.display = 'none';
-            }, 500);
-          }
-        }, 500); // Reduzir de 1000ms para 500ms
-      });
-      
-      // Fallback: esconder splash quando React carregar
-      window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-          const splash = document.getElementById('splash');
-          if (splash && splash.style.display !== 'none') {
-            splash.style.opacity = '0';
             splash.style.transition = 'opacity 0.3s ease-out';
             setTimeout(() => {
               splash.style.display = 'none';
             }, 300);
           }
-        }, 2000);
+        }, 200); // Reduzir para 200ms
       });
+      
+      // Fallback imediato
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash && splash.style.display !== 'none') {
+          splash.style.opacity = '0';
+          splash.style.transition = 'opacity 0.2s ease-out';
+          setTimeout(() => {
+            if (splash) {
+              splash.style.display = 'none';
+            }
+          }, 200);
+        }
+      }, 1000);
       
       // Detectar standalone mode (PWA)
       window.addEventListener('DOMContentLoaded', () => {
