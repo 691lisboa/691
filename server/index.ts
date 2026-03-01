@@ -122,7 +122,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         if (clientId) {
           io.to(clientId).emit('booking_accepted', {
             bookingId: bookingId,
-            message: '✅ Reserva aceita!',
+            message: '✅ Reserva aceite!',
             timestamp: new Date().toISOString()
           })
         }
