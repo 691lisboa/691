@@ -166,6 +166,13 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
 io.on('connection', (socket) => {
   console.log(`Cliente conectado: ${socket.id}`)
   connectedClients.add(socket.id)
+  
+  // Associar clientId ao socket para roteamento correto
+  socket.on('register_client', (data) => {
+    const { clientId } = data
+    console.log(`Cliente ${socket.id} registrado com clientId: ${clientId}`)
+    socket.join(clientId)
+  })
 
   socket.on('disconnect', () => {
     console.log(`Cliente desconectado: ${socket.id}`)
