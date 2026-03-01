@@ -14,140 +14,156 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #000000 0%, #0a1a0a 100%);
             color: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow-x: hidden;
+            padding: 10px;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
-            padding: 20px;
+            max-width: 420px;
+            padding: 15px;
         }
 
         .form-card {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #004d00;
-            border-radius: 20px;
-            padding: 40px 30px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 0 40px rgba(0, 77, 0, 0.3),
-                        inset 0 0 20px rgba(0, 77, 0, 0.1);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 25px;
+            padding: 35px 25px;
+            backdrop-filter: blur(25px);
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2),
+                        inset 0 0 30px rgba(0, 255, 0, 0.05);
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .logo h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #004d00;
-            margin-bottom: 5px;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #00ff00;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            letter-spacing: -1px;
         }
 
         .logo p {
-            color: #004d00;
-            opacity: 0.7;
-            font-size: 0.9rem;
+            color: #00ff00;
+            opacity: 0.8;
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            position: relative;
         }
 
         .form-group label {
             display: block;
-            color: #004d00;
-            font-size: 0.9rem;
+            color: #00ff00;
+            font-size: 0.95rem;
             margin-bottom: 8px;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #004d00;
-            border-radius: 10px;
+            padding: 18px 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
             color: #ffffff;
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            background: rgba(0, 0, 0, 0.8);
+            transform: translateY(-2px);
         }
 
         .form-group input::placeholder {
-            color: #004d00;
-            opacity: 0.5;
+            color: #00ff00;
+            opacity: 0.4;
+            font-weight: 400;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 18px;
-            background: #004d00;
-            color: #ffffff;
+            padding: 20px;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 25px rgba(0, 255, 0, 0.3);
         }
 
         .submit-btn:hover {
-            background: #006600;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 77, 0, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(0, 255, 0, 0.5);
         }
 
         .submit-btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .cancel-btn {
             width: 100%;
-            padding: 15px;
-            background: rgba(255, 0, 0, 0.2);
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2) 0%, rgba(255, 0, 0, 0.3) 100%);
             color: #ff4444;
-            border: 1px solid #ff4444;
-            border-radius: 10px;
+            border: 2px solid #ff4444;
+            border-radius: 12px;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .cancel-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.3) 0%, rgba(255, 0, 0, 0.4) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 68, 68, 0.3);
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #004d00;
-            color: #ffffff;
-            padding: 15px 20px;
-            border-radius: 10px;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
+            padding: 18px 22px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 1000;
-            max-width: 300px;
+            max-width: 320px;
+            font-weight: 600;
         }
 
         .notification.show {
@@ -158,61 +174,71 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #004d00;
-            border-radius: 20px;
-            padding: 5px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 25px;
+            padding: 6px;
             display: flex;
-            gap: 5px;
+            gap: 6px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
         }
 
         .language-toggle button {
-            padding: 8px 15px;
+            padding: 10px 18px;
             background: transparent;
-            color: #004d00;
+            color: #00ff00;
             border: none;
-            border-radius: 15px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 600;
         }
 
         .language-toggle button.active {
-            background: #004d00;
-            color: #ffffff;
+            background: #00ff00;
+            color: #000000;
+            font-weight: 700;
         }
 
         .status-indicator {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
+            bottom: 25px;
+            left: 25px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: #004d00;
-            font-size: 0.8rem;
+            gap: 10px;
+            color: #00ff00;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #00ff00;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: #00ff00;
             border-radius: 50%;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
         }
 
         .success-message {
             text-align: center;
             color: #00ff00;
-            margin-top: 15px;
-            font-size: 0.9rem;
+            margin-top: 18px;
+            font-size: 1rem;
             opacity: 0;
             transition: opacity 0.3s ease;
+            font-weight: 600;
         }
 
         .success-message.show {
@@ -220,48 +246,96 @@
         }
 
         .booking-info {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            border-radius: 10px;
-            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 0, 0.05) 100%);
+            border: 2px solid #00ff00;
+            border-radius: 18px;
+            padding: 20px;
             margin-bottom: 20px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.1);
         }
 
         .booking-info h3 {
             color: #00ff00;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
         .booking-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 18px;
         }
 
         .chat-btn {
             flex: 1;
-            padding: 12px;
-            background: #004d00;
-            color: #ffffff;
+            padding: 14px;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
             border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: bold;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .chat-btn:hover {
-            background: #006600;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
         }
 
         .no-bookings {
             text-align: center;
-            color: #004d00;
-            font-size: 0.9rem;
+            color: #00ff00;
+            font-size: 1rem;
             margin-bottom: 20px;
             font-style: italic;
+            opacity: 0.7;
+        }
+
+        /* Autocomplete */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff00;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 15px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+        }
+
+        .autocomplete-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
         }
 
         /* Chat Popup */
@@ -271,11 +345,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            padding: 15px;
         }
 
         .chat-popup.show {
@@ -283,21 +358,22 @@
         }
 
         .chat-container {
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #004d00;
-            border-radius: 20px;
-            width: 90%;
+            background: rgba(0, 0, 0, 0.98);
+            border: 2px solid #00ff00;
+            border-radius: 25px;
+            width: 100%;
             max-width: 500px;
-            height: 80%;
-            max-height: 600px;
+            height: 85%;
+            max-height: 700px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.3);
         }
 
         .chat-header {
-            background: #004d00;
-            color: #ffffff;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
             padding: 20px;
             display: flex;
             justify-content: space-between;
@@ -306,53 +382,63 @@
 
         .chat-header h3 {
             margin: 0;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 800;
         }
 
         .close-chat {
             background: transparent;
             border: none;
-            color: #ffffff;
-            font-size: 1.5rem;
+            color: #000000;
+            font-size: 1.8rem;
             cursor: pointer;
             padding: 5px;
-            border-radius: 5px;
+            border-radius: 8px;
             transition: background 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-chat:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
         }
 
         .chat-message {
             margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 15px;
+            border-radius: 18px;
             max-width: 80%;
+            word-wrap: break-word;
         }
 
         .chat-message.client {
-            background: rgba(0, 77, 0, 0.3);
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.1) 100%);
             align-self: flex-end;
             margin-left: auto;
+            border: 1px solid rgba(0, 255, 0, 0.3);
         }
 
         .chat-message.driver {
-            background: rgba(0, 100, 0, 0.3);
+            background: linear-gradient(135deg, rgba(0, 200, 0, 0.2) 0%, rgba(0, 200, 0, 0.1) 100%);
             align-self: flex-start;
+            border: 1px solid rgba(0, 200, 0, 0.3);
         }
 
         .chat-message strong {
             display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            font-weight: 700;
         }
 
         .chat-message.client strong {
@@ -360,80 +446,128 @@
         }
 
         .chat-message.driver strong {
-            color: #00ff00;
+            color: #00cc00;
         }
 
         .chat-message .time {
             font-size: 0.8rem;
-            color: #004d00;
-            margin-top: 5px;
+            color: #00ff00;
+            margin-top: 6px;
+            opacity: 0.7;
         }
 
         .chat-input {
             padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-top: 1px solid #004d00;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #00ff00;
         }
 
         .chat-input form {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .chat-input input {
             flex: 1;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #004d00;
-            border-radius: 8px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff00;
+            border-radius: 12px;
             color: #ffffff;
             font-size: 1rem;
+            font-weight: 500;
         }
 
         .chat-input input:focus {
             outline: none;
             border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
         }
 
         .chat-input button {
-            padding: 12px 20px;
-            background: #004d00;
-            color: #ffffff;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+            color: #000000;
             border: none;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .chat-input button:hover {
-            background: #006600;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
         }
 
         .booking-status {
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 12px;
             margin-bottom: 15px;
             text-align: center;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .booking-status.pending {
-            background: rgba(255, 165, 0, 0.2);
-            border: 1px solid #ffa500;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2) 0%, rgba(255, 165, 0, 0.1) 100%);
+            border: 2px solid #ffa500;
             color: #ffa500;
         }
 
         .booking-status.accepted {
-            background: rgba(0, 255, 0, 0.2);
-            border: 1px solid #00ff00;
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.1) 100%);
+            border: 2px solid #00ff00;
             color: #00ff00;
         }
 
         .booking-status.rejected {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff4444;
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2) 0%, rgba(255, 0, 0, 0.1) 100%);
+            border: 2px solid #ff4444;
             color: #ff4444;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-card {
+                padding: 25px 20px;
+                border-radius: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 2.4rem;
+            }
+            
+            .form-group input {
+                padding: 16px 12px;
+                font-size: 1rem;
+            }
+            
+            .submit-btn {
+                padding: 18px;
+                font-size: 1.1rem;
+            }
+            
+            .chat-container {
+                height: 90%;
+                border-radius: 20px;
+            }
+            
+            .booking-actions {
+                flex-direction: column;
+            }
+            
+            .chat-btn {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -491,14 +625,16 @@
                     <input type="tel" id="telefone" name="telefone" placeholder="Seu telefone" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group autocomplete-container">
                     <label id="pickup-label" for="recolha">Local de Recolha</label>
-                    <input type="text" id="recolha" name="recolha" placeholder="Endereço de recolha" required>
+                    <input type="text" id="recolha" name="recolha" placeholder="Endereço de recolha" autocomplete="off" required>
+                    <div id="recolha-autocomplete" class="autocomplete-list"></div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group autocomplete-container">
                     <label id="dest-label" for="destino">Destino</label>
-                    <input type="text" id="destino" name="destino" placeholder="Endereço de destino" required>
+                    <input type="text" id="destino" name="destino" placeholder="Endereço de destino" autocomplete="off" required>
+                    <div id="destino-autocomplete" class="autocomplete-list"></div>
                 </div>
 
                 <button type="submit" id="submit-btn" class="submit-btn">Reservar Taxi</button>
@@ -518,7 +654,7 @@
                 <button id="close-chat" class="close-chat">×</button>
             </div>
             <div id="chat-messages" class="chat-messages">
-                <div style="text-align: center; color: #004d00; font-style: italic; padding: 20px;">
+                <div style="text-align: center; color: #00ff00; font-style: italic; padding: 20px;">
                     <span id="chat-placeholder">Nenhuma mensagem ainda</span>
                 </div>
             </div>
@@ -532,6 +668,122 @@
     </div>
 
     <script>
+        // Autocomplete de moradas portuguesas
+        const portugueseAddresses = [
+            "Avenida da Liberdade, Lisboa",
+            "Rua Augusta, Lisboa", 
+            "Praça do Comércio, Lisboa",
+            "Rua de Santa Catarina, Porto",
+            "Avenida dos Aliados, Porto",
+            "Rua Miguel Bombarda, Porto",
+            "Praça da República, Lisboa",
+            "Avenida de Roma, Lisboa",
+            "Rua de O Século, Lisboa",
+            "Campo de Ourique, Lisboa",
+            "Alfama, Lisboa",
+            "Baixa Chiado, Lisboa",
+            "Bairro Alto, Lisboa",
+            "Belém, Lisboa",
+            "Parque das Nações, Lisboa",
+            "Cascais, Cascais",
+            "Estoril, Cascais",
+            "Sintra, Sintra",
+            "Funchal, Madeira",
+            "Albufeira, Algarve",
+            "Vilamoura, Algarve",
+            "Portimão, Algarve",
+            "Faro, Algarve",
+            "Coimbra, Coimbra",
+            "Universidade de Coimbra, Coimbra",
+            "Braga, Braga",
+            "Guimarães, Guimarães",
+            "Aveiro, Aveiro",
+            "Évora, Évora",
+            "Viseu, Viseu",
+            "Vila Real, Vila Real",
+            "Leiria, Leiria",
+            "Santarém, Santarém",
+            "Fátima, Fátima",
+            "Nazaré, Nazaré",
+            "Óbidos, Óbidos",
+            "Tomar, Tomar",
+            "Aveiro, Aveiro",
+            "Costa Nova, Aveiro",
+            "Barra, Aveiro",
+            "Vila Nova de Gaia, Porto",
+            "Matosinhos, Porto",
+            "Maia, Porto",
+            "Gondomar, Porto",
+            "Rio Tinto, Porto",
+            "Valongo, Porto",
+            "Póvoa de Varzim, Porto",
+            "Vila do Conde, Porto",
+            "Esposende, Braga",
+            "Viana do Castelo, Viana do Castelo",
+            "Chaves, Vila Real",
+            "Vila Pouca de Aguiar, Vila Real",
+            "Lamego, Viseu",
+            "Viseu, Viseu",
+            "Guarda, Guarda",
+            "Covilhã, Castelo Branco",
+            "Castelo Branco, Castelo Branco",
+            "Portalegre, Portalegre",
+            "Santarém, Santarém",
+            "Torres Vedras, Lisboa",
+            "Mafra, Lisboa",
+            "Sintra, Lisboa",
+            "Cascais, Lisboa",
+            "Estoril, Lisboa",
+            "Oeiras, Lisboa",
+            "Amadora, Lisboa",
+            "Odivelas, Lisboa",
+            "Loures, Lisboa",
+            "Vila Franca de Xira, Lisboa",
+            "Alcochete, Setúbal",
+            "Almada, Setúbal",
+            "Barreiro, Setúbal",
+            "Moita, Setúbal",
+            "Montijo, Setúbal",
+            "Palmela, Setúbal",
+            "Seixal, Setúbal",
+            "Sesimbra, Setúbal",
+            "Setúbal, Setúbal",
+            "Sines, Setúbal",
+            "Grândola, Setúbal",
+            "Alcácer do Sal, Setúbal",
+            "Santiago do Cacém, Setúbal",
+            "Beja, Beja",
+            "Mértola, Beja",
+            "Serpa, Beja",
+            "Odemira, Beja",
+            "Ourique, Beja",
+            "Castro Verde, Beja",
+            "Aljustrel, Beja",
+            "Vila Nova de Milfontes, Beja",
+            "Zambujeira do Mar, Beja",
+            "Odeceixe, Beja",
+            "Lagos, Algarve",
+            "Loulé, Algarve",
+            "São Brás de Alportel, Algarve",
+            "Tavira, Algarve",
+            "Olhão, Algarve",
+            "Silves, Algarve",
+            "Alcoutim, Algarve",
+            "Aljezur, Algarve",
+            "Monchique, Algarve",
+            "Vila do Bispo, Algarve",
+            "Sagres, Algarve",
+            "Budens, Algarve",
+            "Ribeira Grande, Açores",
+            "Ponta Delgada, Açores",
+            "Angra do Heroísmo, Açores",
+            "Horta, Açores",
+            "Madalena, Açores",
+            "Velas, Açores",
+            "Santa Cruz das Flores, Açores",
+            "Vila do Porto, Açores"
+        ];
+
         // Translations
         const translations = {
             pt: {
@@ -587,6 +839,83 @@
         let currentLang = 'pt';
         let socket = null;
         let currentBooking = null;
+
+        // Autocomplete functionality
+        function setupAutocomplete(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            let currentFocus = -1;
+
+            input.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                closeAllLists();
+                
+                if (!value) return;
+                
+                const matches = portugueseAddresses.filter(addr => 
+                    addr.toLowerCase().includes(value)
+                ).slice(0, 8);
+                
+                if (matches.length === 0) return;
+                
+                list.classList.add('show');
+                
+                matches.forEach((match, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = match;
+                    item.addEventListener('click', function() {
+                        input.value = match;
+                        closeAllLists();
+                    });
+                    list.appendChild(item);
+                });
+            });
+
+            input.addEventListener('keydown', function(e) {
+                const items = list.getElementsByClassName('autocomplete-item');
+                if (items.length === 0) return;
+                
+                if (e.keyCode === 40) { // Down
+                    currentFocus++;
+                    addActive(items);
+                } else if (e.keyCode === 38) { // Up
+                    currentFocus--;
+                    addActive(items);
+                } else if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        items[currentFocus].click();
+                    }
+                }
+            });
+
+            function addActive(items) {
+                if (!items) return false;
+                removeActive(items);
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                items[currentFocus].classList.add('active');
+            }
+
+            function removeActive(items) {
+                for (let item of items) {
+                    item.classList.remove('active');
+                }
+            }
+
+            function closeAllLists() {
+                list.classList.remove('show');
+                list.innerHTML = '';
+                currentFocus = -1;
+            }
+
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    closeAllLists();
+                }
+            });
+        }
 
         // Initialize Socket.io
         function initSocket() {
@@ -905,6 +1234,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             initSocket();
             updateLanguage('pt');
+            setupAutocomplete('recolha', 'recolha-autocomplete');
+            setupAutocomplete('destino', 'destino-autocomplete');
         });
     </script>
 </body>
