@@ -69,7 +69,7 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input {
             width: 100%;
             padding: 15px;
             background: rgba(0, 0, 0, 0.5);
@@ -78,21 +78,15 @@
             color: #ffffff;
             font-size: 1rem;
             transition: all 0.3s ease;
-            font-family: inherit;
         }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #00ff00;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
         }
 
-        .form-group input::placeholder, .form-group textarea::placeholder {
+        .form-group input::placeholder {
             color: #004d00;
             opacity: 0.5;
         }
@@ -119,6 +113,25 @@
 
         .submit-btn:active {
             transform: translateY(0);
+        }
+
+        .cancel-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .cancel-btn:hover {
+            background: rgba(255, 0, 0, 0.3);
+            transform: translateY(-1px);
         }
 
         .notification {
@@ -206,42 +219,6 @@
             opacity: 1;
         }
 
-        .chat-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #004d00;
-        }
-
-        .chat-messages {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 1px solid #004d00;
-        }
-
-        .chat-message {
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(0, 77, 0, 0.1);
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .chat-message strong {
-            color: #00ff00;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .chat-message .time {
-            color: #004d00;
-            font-size: 0.8rem;
-            margin-left: 8px;
-        }
-
         .booking-info {
             background: rgba(0, 255, 0, 0.1);
             border: 1px solid #00ff00;
@@ -256,12 +233,207 @@
             margin-bottom: 10px;
         }
 
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-btn {
+            flex: 1;
+            padding: 12px;
+            background: #004d00;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-btn:hover {
+            background: #006600;
+        }
+
         .no-bookings {
             text-align: center;
             color: #004d00;
             font-size: 0.9rem;
             margin-bottom: 20px;
             font-style: italic;
+        }
+
+        /* Chat Popup */
+        .chat-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .chat-popup.show {
+            display: flex;
+        }
+
+        .chat-container {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #004d00;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            height: 80%;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #004d00;
+            color: #ffffff;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .close-chat {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .close-chat:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .chat-message.client {
+            background: rgba(0, 77, 0, 0.3);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .chat-message.driver {
+            background: rgba(0, 100, 0, 0.3);
+            align-self: flex-start;
+        }
+
+        .chat-message strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .chat-message.client strong {
+            color: #00ff00;
+        }
+
+        .chat-message.driver strong {
+            color: #00ff00;
+        }
+
+        .chat-message .time {
+            font-size: 0.8rem;
+            color: #004d00;
+            margin-top: 5px;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid #004d00;
+        }
+
+        .chat-input form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #004d00;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: #00ff00;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background: #004d00;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background: #006600;
+        }
+
+        .booking-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .booking-status.pending {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1px solid #ffa500;
+            color: #ffa500;
+        }
+
+        .booking-status.accepted {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .booking-status.rejected {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
         }
     </style>
 </head>
@@ -295,6 +467,13 @@
             <div id="booking-info" class="booking-info" style="display: none;">
                 <h3 id="booking-title">🚕 Reserva Ativa</h3>
                 <div id="booking-details"></div>
+                <div id="booking-status" class="booking-status pending">
+                    ⏳ Aguardando confirmação...
+                </div>
+                <div class="booking-actions">
+                    <button id="chat-btn" class="chat-btn">💬 Chat</button>
+                    <button id="cancel-btn" class="cancel-btn">❌ Cancelar</button>
+                </div>
             </div>
 
             <div id="no-bookings" class="no-bookings">
@@ -328,20 +507,25 @@
             <div id="success-message" class="success-message">
                 ✅ Reserva enviada com sucesso!
             </div>
+        </div>
+    </div>
 
-            <!-- Chat Section -->
-            <div class="chat-section">
-                <h3 id="chat-title" style="color: #004d00; margin-bottom: 15px;">💬 Chat com Motorista</h3>
-                <div id="chat-messages" class="chat-messages">
-                    <div style="text-align: center; color: #004d00; font-size: 0.9rem; font-style: italic;">
-                        <span id="chat-placeholder">Nenhuma mensagem ainda</span>
-                    </div>
+    <!-- Chat Popup -->
+    <div id="chat-popup" class="chat-popup">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3 id="chat-title">💬 Chat com Motorista</h3>
+                <button id="close-chat" class="close-chat">×</button>
+            </div>
+            <div id="chat-messages" class="chat-messages">
+                <div style="text-align: center; color: #004d00; font-style: italic; padding: 20px;">
+                    <span id="chat-placeholder">Nenhuma mensagem ainda</span>
                 </div>
+            </div>
+            <div class="chat-input">
                 <form id="chat-form">
-                    <div class="form-group">
-                        <textarea id="chat-message" placeholder="Digite sua mensagem para o motorista..." required></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Enviar Mensagem</button>
+                    <input type="text" id="chat-message" placeholder="Digite sua mensagem..." required>
+                    <button type="submit">Enviar</button>
                 </form>
             </div>
         </div>
@@ -358,19 +542,21 @@
                 pickupLabel: 'Local de Recolha',
                 destLabel: 'Destino',
                 submitBtn: 'Reservar Taxi',
-                sendBtn: 'Enviar Mensagem',
                 statusText: 'Conectado',
                 notification: '📍 O motorista chegou! Por favor, aguarde.',
                 successMessage: '✅ Reserva enviada com sucesso!',
                 chatTitle: '💬 Chat com Motorista',
                 chatPlaceholder: 'Nenhuma mensagem ainda',
-                chatMessagePlaceholder: 'Digite sua mensagem para o motorista...',
+                chatMessagePlaceholder: 'Digite sua mensagem...',
                 bookingTitle: '🚕 Reserva Ativa',
                 noBookings: 'Sem reservas ativas',
+                bookingPending: '⏳ Aguardando confirmação...',
+                bookingAccepted: '✅ Reserva aceita! Motorista a caminho.',
+                bookingRejected: '❌ Reserva recusada. Tente novamente.',
+                bookingCancelled: '❌ Reserva cancelada.',
                 driverArrived: '📍 O motorista chegou! Por favor, aguarde.',
                 newBooking: '🚕 Nova reserva recebida!',
-                customNotification: '🔔 Nova mensagem do 691 Taxi!',
-                userConnected: '👥 Novo cliente conectado'
+                messageFromDriver: '💬 Mensagem do motorista:'
             },
             en: {
                 title: '691 Taxi',
@@ -380,19 +566,21 @@
                 pickupLabel: 'Pickup Location',
                 destLabel: 'Destination',
                 submitBtn: 'Book Taxi',
-                sendBtn: 'Send Message',
                 statusText: 'Connected',
                 notification: '📍 The driver has arrived! Please wait.',
                 successMessage: '✅ Booking sent successfully!',
                 chatTitle: '💬 Chat with Driver',
                 chatPlaceholder: 'No messages yet',
-                chatMessagePlaceholder: 'Type your message to the driver...',
+                chatMessagePlaceholder: 'Type your message...',
                 bookingTitle: '🚕 Active Booking',
                 noBookings: 'No active bookings',
+                bookingPending: '⏳ Awaiting confirmation...',
+                bookingAccepted: '✅ Booking accepted! Driver on the way.',
+                bookingRejected: '❌ Booking rejected. Please try again.',
+                bookingCancelled: '❌ Booking cancelled.',
                 driverArrived: '📍 The driver has arrived! Please wait.',
                 newBooking: '🚕 New booking received!',
-                customNotification: '🔔 New message from 691 Taxi!',
-                userConnected: '👥 New client connected'
+                messageFromDriver: '💬 Message from driver:'
             }
         };
 
@@ -423,22 +611,47 @@
 
             socket.on('new_booking', (data) => {
                 showNotification(data.message || translations[currentLang].newBooking);
-                displayBooking(data.booking);
+                displayBooking(data);
                 playSound();
             });
 
-            socket.on('custom_notification', (data) => {
-                showNotification(data.message || translations[currentLang].customNotification);
-                playSound();
+            socket.on('booking_accepted', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    updateBookingStatus('accepted');
+                    showNotification(data.message);
+                    playSound();
+                }
             });
 
-            socket.on('user_connected', (data) => {
-                console.log('User connected:', data.message);
+            socket.on('booking_rejected', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    updateBookingStatus('rejected');
+                    showNotification(data.message);
+                    playSound();
+                    setTimeout(() => {
+                        hideBooking();
+                    }, 3000);
+                }
             });
 
-            socket.on('chat_message', (data) => {
-                displayChatMessage(data);
-                playSound();
+            socket.on('booking_cancelled', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    showNotification(data.message);
+                    hideBooking();
+                    playSound();
+                }
+            });
+
+            socket.on('message_from_driver', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    displayChatMessage({
+                        name: data.driverName,
+                        message: data.message,
+                        type: 'driver'
+                    });
+                    showNotification(translations[currentLang].messageFromDriver + ' ' + data.message);
+                    playSound();
+                }
             });
         }
 
@@ -474,6 +687,7 @@
             const bookingDetails = document.getElementById('booking-details');
             
             bookingDetails.innerHTML = `
+                <strong>🆔 ID: ${booking.bookingId}</strong><br>
                 <strong>👤 ${booking.nome}</strong><br>
                 📞 ${booking.telefone}<br>
                 📍 ${booking.recolha}<br>
@@ -482,6 +696,40 @@
             
             bookingInfo.style.display = 'block';
             noBookings.style.display = 'none';
+            updateBookingStatus('pending');
+        }
+
+        // Update booking status
+        function updateBookingStatus(status) {
+            const statusElement = document.getElementById('booking-status');
+            const t = translations[currentLang];
+            
+            statusElement.className = 'booking-status ' + status;
+            
+            switch(status) {
+                case 'pending':
+                    statusElement.textContent = t.bookingPending;
+                    break;
+                case 'accepted':
+                    statusElement.textContent = t.bookingAccepted;
+                    break;
+                case 'rejected':
+                    statusElement.textContent = t.bookingRejected;
+                    break;
+                case 'cancelled':
+                    statusElement.textContent = t.bookingCancelled;
+                    break;
+            }
+        }
+
+        // Hide booking
+        function hideBooking() {
+            const bookingInfo = document.getElementById('booking-info');
+            const noBookings = document.getElementById('no-bookings');
+            
+            bookingInfo.style.display = 'none';
+            noBookings.style.display = 'block';
+            currentBooking = null;
         }
 
         // Display chat message
@@ -495,11 +743,11 @@
             }
             
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message';
+            messageDiv.className = `chat-message ${data.type || 'client'}`;
             messageDiv.innerHTML = `
-                <strong>${data.name}${data.phone ? ' - ' + data.phone : ''}</strong>
-                <span class="time">${new Date().toLocaleTimeString()}</span>
+                <strong>${data.name}</strong>
                 <div>${data.message}</div>
+                <div class="time">${new Date().toLocaleTimeString()}</div>
             `;
             
             chatMessages.appendChild(messageDiv);
@@ -519,7 +767,6 @@
 
         // Play sound
         function playSound() {
-            // Create a simple beep sound
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -571,8 +818,11 @@
                     const successMsg = document.getElementById('success-message');
                     successMsg.classList.add('show');
                     
-                    // Display booking
-                    displayBooking(data);
+                    // Display booking with ID from server
+                    displayBooking({
+                        ...data,
+                        bookingId: result.bookingId
+                    });
                     
                     // Reset form
                     e.target.reset();
@@ -598,39 +848,47 @@
             const message = document.getElementById('chat-message').value.trim();
             if (!message || !currentBooking) return;
             
-            const data = {
+            // Send via Socket.io
+            socket.emit('message_to_driver', {
                 name: currentBooking.nome,
                 phone: currentBooking.telefone,
+                bookingId: currentBooking.bookingId,
                 message: message
-            };
+            });
+            
+            // Display as own message
+            displayChatMessage({
+                name: 'Você',
+                message: message,
+                type: 'client'
+            });
+            
+            // Clear form
+            document.getElementById('chat-message').value = '';
+        });
 
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
+        // Chat popup controls
+        document.getElementById('chat-btn').addEventListener('click', () => {
+            document.getElementById('chat-popup').classList.add('show');
+        });
+
+        document.getElementById('close-chat').addEventListener('click', () => {
+            document.getElementById('chat-popup').classList.remove('show');
+        });
+
+        // Cancel booking
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            if (currentBooking) {
+                socket.emit('cancel_booking', {
+                    bookingId: currentBooking.bookingId,
+                    name: currentBooking.nome,
+                    phone: currentBooking.telefone
                 });
-
-                if (response.ok) {
-                    console.log('Mensagem enviada:', data);
-                    
-                    // Clear form
-                    document.getElementById('chat-message').value = '';
-                    
-                    // Show as own message
-                    displayChatMessage({
-                        ...data,
-                        message: `📤 ${data.message}`
-                    });
-                } else {
-                    console.error('Erro ao enviar mensagem');
-                    showNotification('❌ Erro ao enviar mensagem');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                showNotification('❌ Erro de conexão');
+                
+                updateBookingStatus('cancelled');
+                setTimeout(() => {
+                    hideBooking();
+                }, 2000);
             }
         });
 
