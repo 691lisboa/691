@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>691 Taxi - Serviço Premium</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #004d00;
+            border-radius: 20px;
+            padding: 40px 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 40px rgba(0, 77, 0, 0.3),
+                        inset 0 0 20px rgba(0, 77, 0, 0.1);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #004d00;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #004d00;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #004d00;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #004d00;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #004d00;
+            opacity: 0.5;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: #004d00;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #006600;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 77, 0, 0.5);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #004d00;
+            color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #004d00;
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .language-toggle button {
+            padding: 8px 15px;
+            background: transparent;
+            color: #004d00;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .language-toggle button.active {
+            background: #004d00;
+            color: #ffffff;
+        }
+
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #004d00;
+            font-size: 0.8rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .success-message {
+            text-align: center;
+            color: #00ff00;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <button id="pt-btn" class="active">PT</button>
+        <button id="en-btn">EN</button>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span id="status-text">Conectado</span>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div id="notification-text">📍 O motorista chegou! Por favor, aguarde.</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="form-card">
+            <div class="logo">
+                <h1 id="title">691 Taxi</h1>
+                <p id="subtitle">Serviço Premium</p>
+            </div>
+
+            <form id="taxi-form">
+                <div class="form-group">
+                    <label id="name-label" for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="phone-label" for="telefone">Telefone</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="Seu telefone" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="pickup-label" for="recolha">Local de Recolha</label>
+                    <input type="text" id="recolha" name="recolha" placeholder="Endereço de recolha" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="dest-label" for="destino">Destino</label>
+                    <input type="text" id="destino" name="destino" placeholder="Endereço de destino" required>
+                </div>
+
+                <button type="submit" id="submit-btn" class="submit-btn">Reservar Taxi</button>
+            </form>
+
+            <div id="success-message" class="success-message">
+                ✅ Reserva enviada com sucesso!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            pt: {
+                title: '691 Taxi',
+                subtitle: 'Serviço Premium',
+                nameLabel: 'Nome',
+                phoneLabel: 'Telefone',
+                pickupLabel: 'Local de Recolha',
+                destLabel: 'Destino',
+                submitBtn: 'Reservar Taxi',
+                statusText: 'Conectado',
+                notification: '📍 O motorista chegou! Por favor, aguarde.',
+                successMessage: '✅ Reserva enviada com sucesso!'
+            },
+            en: {
+                title: '691 Taxi',
+                subtitle: 'Premium Service',
+                nameLabel: 'Name',
+                phoneLabel: 'Phone',
+                pickupLabel: 'Pickup Location',
+                destLabel: 'Destination',
+                submitBtn: 'Book Taxi',
+                statusText: 'Connected',
+                notification: '📍 The driver has arrived! Please wait.',
+                successMessage: '✅ Booking sent successfully!'
+            }
+        };
+
+        let currentLang = 'pt';
+        let socket = null;
+
+        // Initialize Socket.io
+        function initSocket() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                console.log('Conectado ao servidor');
+                updateStatus('Conectado');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Desconectado do servidor');
+                updateStatus('Desconectado');
+            });
+
+            socket.on('driver_arrived', (data) => {
+                showNotification(data.message);
+                playSound();
+            });
+        }
+
+        // Update language
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('name-label').textContent = t.nameLabel;
+            document.getElementById('phone-label').textContent = t.phoneLabel;
+            document.getElementById('pickup-label').textContent = t.pickupLabel;
+            document.getElementById('dest-label').textContent = t.destLabel;
+            document.getElementById('submit-btn').textContent = t.submitBtn;
+            document.getElementById('status-text').textContent = t.statusText;
+            document.getElementById('notification-text').textContent = t.notification;
+            document.getElementById('success-message').textContent = t.successMessage;
+
+            // Update button states
+            document.getElementById('pt-btn').classList.toggle('active', lang === 'pt');
+            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-text').textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Play sound
+        function playSound() {
+            // Create a simple beep sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Update status
+        function updateStatus(text) {
+            document.getElementById('status-text').textContent = text;
+        }
+
+        // Handle form submission
+        document.getElementById('taxi-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                nome: formData.get('nome'),
+                telefone: formData.get('telefone'),
+                recolha: formData.get('recolha'),
+                destino: formData.get('destino')
+            };
+
+            try {
+                const response = await fetch('/api/reserva', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Reserva enviada:', result);
+                    
+                    // Show success message
+                    const successMsg = document.getElementById('success-message');
+                    successMsg.classList.add('show');
+                    
+                    // Reset form
+                    e.target.reset();
+                    
+                    // Hide success message after 3 seconds
+                    setTimeout(() => {
+                        successMsg.classList.remove('show');
+                    }, 3000);
+                } else {
+                    console.error('Erro ao enviar reserva');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        });
+
+        // Language toggle handlers
+        document.getElementById('pt-btn').addEventListener('click', () => {
+            updateLanguage('pt');
+        });
+
+        document.getElementById('en-btn').addEventListener('click', () => {
+            updateLanguage('en');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSocket();
+            updateLanguage('pt');
+        });
+    </script>
+</body>
+</html>
