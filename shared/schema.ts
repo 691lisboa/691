@@ -30,6 +30,20 @@ export const tripMessages = pgTable("trip_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: serial("conversation_id").references(() => conversations.id).notNull(),
+  role: varchar("role", { length: 50 }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const tripsRelations = relations(trips, ({ many }) => ({
   messages: many(tripMessages),
 }));
@@ -38,6 +52,17 @@ export const tripMessagesRelations = relations(tripMessages, ({ one }) => ({
   trip: one(trips, {
     fields: [tripMessages.tripId],
     references: [trips.id],
+  }),
+}));
+
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  messages: many(messages),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
   }),
 }));
 
@@ -57,3 +82,5 @@ export type Trip = typeof trips.$inferSelect;
 export type InsertTrip = z.infer<typeof insertTripSchema>;
 export type TripMessage = typeof tripMessages.$inferSelect;
 export type InsertTripMessage = z.infer<typeof insertTripMessageSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
