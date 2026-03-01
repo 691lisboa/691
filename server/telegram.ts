@@ -44,34 +44,57 @@ export function setupTelegramBot(socketIO: SocketIOServer) {
     return
   }
 
-  bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true })
+  try {
+    // Em produção, usar webhook ou polling com tratamento de erro
+    const isProduction = process.env.NODE_ENV === 'production'
+    
+    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+      polling: isProduction ? {
+        interval: 1000,
+        autoStart: true,
+        params: {
+          timeout: 10
+        }
+      } : true
+    })
 
-  bot.on('message', async (msg) => {
-    const chatId = msg.chat.id
-    const text = msg.text
+    bot.on('polling_error', (error) => {
+      console.error('Telegram polling error:', error.message)
+      // Ignorar conflitos de polling em produção
+      if (error.message.includes('ETELEGRAM: 409')) {
+        console.log('Bot já está rodando em outra instância - ignorando conflito')
+      }
+    })
 
-    console.log(`Mensagem recebida do Telegram: ${text}`)
+    bot.on('message', async (msg) => {
+      const chatId = msg.chat.id
+      const text = msg.text
 
-    // Comandos do bot
-    if (text?.startsWith('/')) {
-      await handleCommand(chatId, text)
-    }
-  })
+      console.log(`Mensagem recebida do Telegram: ${text}`)
 
-  // Callback queries para botões inline
-  bot.on('callback_query', async (callbackQuery) => {
-    const msg = callbackQuery.message!
-    const chatId = msg.chat.id
-    const data = callbackQuery.data
+      // Comandos do bot
+      if (text?.startsWith('/')) {
+        await handleCommand(chatId, text)
+      }
+    })
 
-    if (!data) return
+    // Callback queries para botões inline
+    bot.on('callback_query', async (callbackQuery) => {
+      const msg = callbackQuery.message!
+      const chatId = msg.chat.id
+      const data = callbackQuery.data
 
-    console.log(`Callback recebido: ${data}`)
+      if (!data) return
 
-    await handleCallback(chatId, data, msg)
-  })
+      console.log(`Callback recebido: ${data}`)
 
-  console.log('Bot Telegram inicializado com sucesso')
+      await handleCallback(chatId, data, msg)
+    })
+
+    console.log('Bot Telegram inicializado com sucesso')
+  } catch (error) {
+    console.error('Erro ao inicializar bot Telegram:', error)
+  }
 }
 
 async function handleCommand(chatId: number, command: string) {
