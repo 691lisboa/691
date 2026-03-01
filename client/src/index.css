@@ -1,3 +1,143 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Variáveis CSS Personalizadas */
+:root {
+  --taxi-green: #004d00;
+  --taxi-green-light: #006600;
+  --taxi-green-dark: #003300;
+  --glass-bg: rgba(0, 77, 0, 0.1);
+  --glass-border: rgba(0, 77, 0, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 77, 0, 0.2);
+}
+
+/* Classes Personalizadas */
+.glass-card {
+  @apply relative backdrop-blur-xl bg-black/40 border border-green-900/30 rounded-2xl p-6 shadow-2xl;
+  background: linear-gradient(135deg, rgba(0, 77, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%);
+  border: 1px solid rgba(0, 77, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 77, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-button {
+  @apply relative backdrop-blur-md bg-green-900/20 border border-green-700/50 text-green-400 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-green-800/30 hover:border-green-600 hover:text-green-300 hover:shadow-lg hover:shadow-green-900/25 active:scale-95;
+}
+
+.glass-input {
+  @apply w-full backdrop-blur-md bg-black/40 border border-green-900/50 text-white placeholder-green-900/50 rounded-xl px-4 py-3 focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/20 transition-all duration-300;
+}
+
+.text-taxi-green {
+  color: var(--taxi-green);
+}
+
+.bg-taxi-green {
+  background-color: var(--taxi-green);
+}
+
+.border-taxi-green {
+  border-color: var(--taxi-green);
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* Scrollbar Personalizada */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--taxi-green);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--taxi-green-light);
+}
+
+/* Estilos para mapa em fullscreen */
+.map-container {
+  @apply absolute inset-0 w-full h-full;
+}
+
+/* Notificações */
+.notification-enter {
+  @apply animate-slideInRight;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin;
+}
+
+/* Botão GPS */
+.gps-button {
+  @apply absolute right-3 top-1/2 -translate-y-1/2 p-2 text-green-600 hover:text-green-500 hover:bg-green-900/20 rounded-lg transition-all duration-200;
+}
+
+/* Estados de Loading/Success/Error */
+.state-loading {
+  @apply text-yellow-500;
+}
+
+.state-success {
+  @apply text-green-500;
+}
+
+.state-error {
+  @apply text-red-500;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .glass-card {
+    @apply mx-4 p-4;
+  }
+}

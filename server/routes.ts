@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import routingService from "./services/routing";
 
 // Attempt to import OpenAI integration, fallback to mock if not available
 let openai: any;
@@ -161,6 +162,46 @@ export async function registerRoutes(
       res.json({ address });
     } catch (err) {
       res.status(400).json({ message: "Invalid coordinates" });
+    }
+  });
+
+  // Routing API - Calculate price and route
+  app.post("/api/routing/calculate", async (req, res) => {
+    try {
+      const { pickup, dropoff } = req.body;
+      
+      if (!pickup || !dropoff) {
+        return res.status(400).json({ message: "Pickup and dropoff locations are required" });
+      }
+
+      const routeData = await routingService.calculateRoute({ pickup, dropoff });
+      
+      res.json({
+        distance: routeData.distance,
+        duration: routeData.duration,
+        price: routeData.price,
+        coordinates: routeData.coordinates
+      });
+    } catch (err: any) {
+      console.error("Routing calculation error:", err);
+      res.status(500).json({ message: err.message || "Failed to calculate route" });
+    }
+  });
+
+  // Routing API - Address suggestions
+  app.get("/api/routing/suggestions", async (req, res) => {
+    try {
+      const query = String(req.query.q || "").trim();
+      
+      if (query.length < 2) {
+        return res.json([]);
+      }
+
+      const suggestions = await routingService.getAddressSuggestions(query);
+      res.json(suggestions);
+    } catch (err: any) {
+      console.error("Address suggestions error:", err);
+      res.status(500).json({ message: "Failed to get suggestions" });
     }
   });
 
