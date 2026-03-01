@@ -23,8 +23,9 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 
 // Bot Telegram
 let bot: TelegramBot | null = null
+let connectedClients = new Set()
 
-if (TELEGRAM_TOKEN) {
+if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true })
     
@@ -43,15 +44,37 @@ if (TELEGRAM_TOKEN) {
       if (text === '/start') {
         await bot.sendMessage(chatId, 
           '🚕 *691 Taxi Bot*\n\n' +
-          'Clique no botão abaixo para simular uma chegada:\n\n',
+          'Comandos disponíveis:\n' +
+          '/start - Mostrar este menu\n' +
+          '/motorista - Simular motorista chegou\n' +
+          '/status - Ver status das conexões\n\n' +
+          'Clique no botão abaixo para simular chegada:\n\n',
           {
             parse_mode: 'Markdown',
             reply_markup: {
               inline_keyboard: [[
-                { text: '🚗 Motorista Chegou', callback_data: 'driver_arrived' }
+                { text: '🚗 Motorista Chegou', callback_data: 'driver_arrived' },
+                { text: '📱 Enviar Notificação', callback_data: 'send_notification' }
               ]]
             }
           }
+        )
+      } else if (text === '/motorista') {
+        // Notificar todos os clientes conectados
+        io.emit('driver_arrived', {
+          message: '📍 O motorista chegou! Por favor, aguarde.',
+          timestamp: new Date().toISOString()
+        })
+
+        await bot.sendMessage(chatId, '✅ Notificação de motorista enviada para o site!')
+      } else if (text === '/status') {
+        await bot.sendMessage(chatId, 
+          `📊 *Status do Sistema*\n\n` +
+          `👥 Clientes conectados: ${connectedClients.size}\n` +
+          `🤖 Bot: Online\n` +
+          `🌐 Servidor: Rodando\n` +
+          `📡 Socket.io: Funcionando`,
+          { parse_mode: 'Markdown' }
         )
       }
     })
@@ -69,7 +92,17 @@ if (TELEGRAM_TOKEN) {
         })
 
         await bot.answerCallbackQuery(callbackQuery.id)
-        await bot.sendMessage(chatId, '✅ Notificação enviada para o site!')
+        await bot.sendMessage(chatId, '✅ Notificação de motorista enviada para o site!')
+        
+      } else if (data === 'send_notification') {
+        // Enviar notificação genérica
+        io.emit('custom_notification', {
+          message: '🔔 Nova mensagem do 691 Taxi!',
+          timestamp: new Date().toISOString()
+        })
+
+        await bot.answerCallbackQuery(callbackQuery.id)
+        await bot.sendMessage(chatId, '✅ Notificação personalizada enviada!')
       }
     })
 
@@ -78,15 +111,45 @@ if (TELEGRAM_TOKEN) {
     console.error('Erro ao inicializar bot Telegram:', error)
   }
 } else {
-  console.log('TELEGRAM_BOT_TOKEN não encontrado')
+  console.log('TELEGRAM_BOT_TOKEN não configurado - bot não estará ativo')
 }
 
 // Socket.io
 io.on('connection', (socket) => {
   console.log(`Cliente conectado: ${socket.id}`)
+  connectedClients.add(socket.id)
+
+  // Notificar todos sobre nova conexão
+  socket.broadcast.emit('user_connected', {
+    message: `👥 Novo cliente conectado (${connectedClients.size} total)`,
+    timestamp: new Date().toISOString()
+  })
 
   socket.on('disconnect', () => {
     console.log(`Cliente desconectado: ${socket.id}`)
+    connectedClients.delete(socket.id)
+  })
+
+  socket.on('chat_message', (data) => {
+    console.log('Mensagem do chat:', data)
+    
+    // Broadcast para todos os clientes
+    io.emit('chat_message', {
+      ...data,
+      timestamp: new Date().toISOString()
+    })
+
+    // Enviar para Telegram se configurado
+    if (bot) {
+      bot.sendMessage(
+        process.env.TELEGRAM_CHAT_ID || 'default',
+        `💬 *Mensagem do Cliente*\n\n` +
+        `👤 Nome: ${data.name}\n` +
+        `📞 Telefone: ${data.phone}\n` +
+        `💭 Mensagem: ${data.message}`,
+        { parse_mode: 'Markdown' }
+      ).catch(console.error)
+    }
   })
 })
 
@@ -99,24 +162,69 @@ app.post('/api/reserva', express.json(), (req, res) => {
   
   console.log('Nova reserva:', { nome, telefone, recolha, destino })
   
+  // Notificar todos os clientes conectados sobre nova reserva
+  io.emit('new_booking', {
+    message: `🚕 Nova reserva de ${nome}!`,
+    booking: { nome, telefone, recolha, destino },
+    timestamp: new Date().toISOString()
+  })
+  
   // Enviar para Telegram se configurado
-  if (bot) {
+  if (bot && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
     bot.sendMessage(
-      process.env.TELEGRAM_CHAT_ID || chatId,
+      process.env.TELEGRAM_CHAT_ID || 'default',
       `🚕 *Nova Reserva 691*\n\n` +
       `👤 Nome: ${nome}\n` +
       `📞 Telefone: ${telefone}\n` +
       `📍 Recolha: ${recolha}\n` +
       `🎯 Destino: ${destino}`,
       { parse_mode: 'Markdown' }
+    ).catch(error => {
+      console.error('Erro ao enviar para Telegram:', error)
+    })
+  } else {
+    console.log('Telegram não configurado - reserva apenas no sistema')
+  }
+  
+  res.json({ 
+    success: true, 
+    message: 'Reserva recebida com sucesso!',
+    clientsConnected: connectedClients.size
+  })
+})
+
+// Rota API para chat
+app.post('/api/chat', express.json(), (req, res) => {
+  const { name, phone, message } = req.body
+  
+  console.log('Mensagem do chat:', { name, phone, message })
+  
+  // Broadcast para todos os clientes
+  io.emit('chat_message', {
+    name,
+    phone,
+    message,
+    timestamp: new Date().toISOString()
+  })
+  
+  // Enviar para Telegram se configurado
+  if (bot && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
+    bot.sendMessage(
+      process.env.TELEGRAM_CHAT_ID || 'default',
+      `💬 *Mensagem do Chat*\n\n` +
+      `👤 Nome: ${name}\n` +
+      `📞 Telefone: ${phone}\n` +
+      `💭 Mensagem: ${message}`,
+      { parse_mode: 'Markdown' }
     ).catch(console.error)
   }
   
-  res.json({ success: true, message: 'Reserva recebida!' })
+  res.json({ success: true, message: 'Mensagem enviada!' })
 })
 
 // Start server
 server.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`)
   console.log(`Site: http://localhost:${PORT}`)
+  console.log(`Bot Telegram: ${bot ? 'Ativo' : 'Inativo'}`)
 })
