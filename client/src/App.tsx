@@ -1,76 +1,73 @@
 import { useState, useEffect } from 'react'
-import { io, Socket } from 'socket.io-client'
-import BookingForm from './components/BookingForm'
-import LanguageSelector from './components/LanguageSelector'
-import { LanguageProvider } from './contexts/LanguageContext'
-import { Trip } from '@shared/schema'
 
-function AppContent() {
-  const [socket, setSocket] = useState<Socket | null>(null)
-  const [currentTrip, setCurrentTrip] = useState<Trip | null>(null)
-  const [showChat, setShowChat] = useState(false)
+function App() {
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const newSocket = io()
-    setSocket(newSocket)
-
-    newSocket.on('trip-status', (data: { status: string, message: string }) => {
-      console.log('Trip status:', data)
-    })
-
-    return () => newSocket.close()
-  }, [])
-
-  // Esconder splash screen quando App montar
-  useEffect(() => {
-    const hideSplash = () => {
-      const splash = document.getElementById('splash')
-      if (splash) {
-        splash.style.opacity = '0'
-        splash.style.transition = 'opacity 0.2s ease-out'
-        setTimeout(() => {
-          if (splash) {
-            splash.style.display = 'none'
-          }
-        }, 200)
-      }
+    setMounted(true)
+    
+    // Esconder splash screen
+    const splash = document.getElementById('splash')
+    if (splash) {
+      splash.style.opacity = '0'
+      splash.style.transition = 'opacity 0.2s ease-out'
+      setTimeout(() => {
+        if (splash) {
+          splash.style.display = 'none'
+        }
+      }, 200)
     }
-
-    hideSplash()
   }, [])
 
-  const handleBookingComplete = (trip: Trip) => {
-    setCurrentTrip(trip)
-    setShowChat(true)
+  if (!mounted) {
+    return null
   }
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* Background simples sem mapa por enquanto */}
+      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-green-950/20 to-black"></div>
-      
-      {/* Language Selector */}
-      <LanguageSelector />
       
       {/* Conteúdo Principal */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-lg">
-          {/* Formulário de Reserva */}
-          <BookingForm 
-            onBookingComplete={handleBookingComplete}
-            socket={socket}
-          />
+        <div className="w-full max-w-md bg-black/40 backdrop-blur-2xl border border-green-500/30 rounded-3xl shadow-2xl p-6">
+          <h1 className="text-3xl font-bold text-white text-center mb-6">🚕 691 Taxi</h1>
+          
+          <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Nome"
+              className="w-full px-4 py-3 bg-black/30 border border-green-500/30 rounded-xl text-white placeholder-green-400/50"
+            />
+            <input
+              type="tel"
+              placeholder="Telefone"
+              className="w-full px-4 py-3 bg-black/30 border border-green-500/30 rounded-xl text-white placeholder-green-400/50"
+            />
+            <input
+              type="text"
+              placeholder="Local de recolha"
+              className="w-full px-4 py-3 bg-black/30 border border-green-500/30 rounded-xl text-white placeholder-green-400/50"
+            />
+            <input
+              type="text"
+              placeholder="Destino"
+              className="w-full px-4 py-3 bg-black/30 border border-green-500/30 rounded-xl text-white placeholder-green-400/50"
+            />
+            
+            <button className="w-full bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-xl transition-colors">
+              Reservar Taxi
+            </button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <button className="text-green-400 text-sm">PT</button>
+            <span className="text-green-400/50 mx-2">|</span>
+            <button className="text-green-400/50 text-sm">EN</button>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
-
-function App() {
-  return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
   )
 }
 
