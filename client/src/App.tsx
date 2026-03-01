@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { io, Socket } from 'socket.io-client'
 import BookingForm from './components/BookingForm'
-import MapContainer from './components/MapContainer'
-import ChatWindow from './components/ChatWindow'
-import NotificationSystem from './components/NotificationSystem'
 import LanguageSelector from './components/LanguageSelector'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { Trip } from '@shared/schema'
@@ -12,20 +9,13 @@ function AppContent() {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null)
   const [showChat, setShowChat] = useState(false)
-  const [notifications, setNotifications] = useState<string[]>([])
 
   useEffect(() => {
     const newSocket = io()
     setSocket(newSocket)
 
     newSocket.on('trip-status', (data: { status: string, message: string }) => {
-      setNotifications(prev => [...prev, data.message])
-      
-      // Alerta sonoro para motorista chegou
-      if (data.status === 'driver_arrived') {
-        const audio = new Audio('/ping.mp3')
-        audio.play().catch(() => {})
-      }
+      console.log('Trip status:', data)
     })
 
     return () => newSocket.close()
@@ -56,11 +46,11 @@ function AppContent() {
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
+      {/* Background simples sem mapa por enquanto */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-green-950/20 to-black"></div>
+      
       {/* Language Selector */}
       <LanguageSelector />
-      
-      {/* Mapa de Fundo */}
-      <MapContainer />
       
       {/* Conteúdo Principal */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
@@ -70,22 +60,8 @@ function AppContent() {
             onBookingComplete={handleBookingComplete}
             socket={socket}
           />
-          
-          {/* Janela de Chat */}
-          {showChat && currentTrip && (
-            <div className="mt-6">
-              <ChatWindow 
-                tripId={currentTrip.id}
-                onClose={() => setShowChat(false)}
-                socket={socket}
-              />
-            </div>
-          )}
         </div>
       </div>
-
-      {/* Sistema de Notificações */}
-      <NotificationSystem notifications={notifications} />
     </div>
   )
 }
