@@ -44,7 +44,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       console.log(`Mensagem recebida: ${text}`)
 
       if (text === '/start') {
-        await bot.sendMessage(chatId, 
+        bot?.sendMessage(chatId, 
           '🚕 *691 Lisboa - Motorista*\n\n' +
           'Comandos:\n' +
           '/start - Este menu\n' +
@@ -53,14 +53,14 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           { parse_mode: 'Markdown' }
         )
       } else if (text === '/status') {
-        await bot.sendMessage(chatId, 
+        bot?.sendMessage(chatId, 
           `📊 *Status*\n\n` +
           `👥 Clientes: ${connectedClients.size}\n` +
           `🚕 Reservas: ${activeBookings.size}\n` +
           `🤖 Bot: ✅ Ativo`,
           { parse_mode: 'Markdown' }
         )
-      } else if (text.startsWith('/r ')) {
+      } else if (text?.startsWith('/r ')) {
         // Resposta rápida: /r ID mensagem
         const parts = text.split(' ')
         if (parts.length >= 3) {
@@ -80,11 +80,11 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
             })
           }
 
-          await bot.sendMessage(chatId, `✅ Mensagem enviada para ${bookingId}`)
+          bot?.sendMessage(chatId, `✅ Mensagem enviada para ${bookingId}`)
         }
-      } else if (text.startsWith('/complete ')) {
+      } else if (text?.startsWith('/complete ')) {
         // Completar viagem: /complete ID
-        const bookingId = text.replace('/complete ', '').trim()
+        const bookingId = text?.replace('/complete ', '').trim()
         
         // Enviar apenas para o cliente específico
         const clientId = Array.from(clientBookings.entries())
@@ -102,7 +102,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           clientBookings.delete(clientId)
         }
 
-        await bot.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
+        bot?.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
       }
     })
 
@@ -112,7 +112,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       const chatId = msg.chat.id
       const data = callbackQuery.data
 
-      if (data.startsWith('accept_')) {
+      if (data?.startsWith('accept_')) {
         const bookingId = data.replace('accept_', '')
         
         // Enviar apenas para o cliente específico
@@ -127,10 +127,10 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           })
         }
 
-        await bot.answerCallbackQuery(callbackQuery.id)
-        await bot.sendMessage(chatId, `✅ ${bookingId} - ACEITA`)
+        bot?.answerCallbackQuery(callbackQuery.id)
+        bot?.sendMessage(chatId, `✅ ${bookingId} - ACEITA`)
         
-      } else if (data.startsWith('reject_')) {
+      } else if (data?.startsWith('reject_')) {
         const bookingId = data.replace('reject_', '')
         
         // Enviar apenas para o cliente específico
@@ -149,13 +149,13 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           clientBookings.delete(clientId)
         }
 
-        await bot.answerCallbackQuery(callbackQuery.id)
-        await bot.sendMessage(chatId, `❌ ${bookingId} - RECUSADA`)
+        bot?.answerCallbackQuery(callbackQuery.id)
+        bot?.sendMessage(chatId, `❌ ${bookingId} - RECUSADA`)
       }
     })
 
     console.log('Bot Telegram inicializado com sucesso')
-  } catch (error: Error) {
+  } catch (error: unknown) {
     console.error('Erro ao inicializar bot Telegram:', error)
   }
 } else {
@@ -244,7 +244,7 @@ if (bot) {
     const chatId = msg.chat.id
     const data = callbackQuery.data
 
-    if (data.startsWith('reply_')) {
+    if (data?.startsWith('reply_')) {
       const parts = data.split('_')
       const bookingId = parts[1]
       const replyType = parts[2]
@@ -276,10 +276,10 @@ if (bot) {
           })
         }
 
-        await bot.answerCallbackQuery(callbackQuery.id)
-        await bot.sendMessage(chatId, `✅ Enviado para ${bookingId}: "${message}"`)
+        bot?.answerCallbackQuery(callbackQuery.id)
+        bot?.sendMessage(chatId, `✅ Enviado para ${bookingId}: "${message}"`)
       }
-    } else if (data.startsWith('complete_')) {
+    } else if (data?.startsWith('complete_')) {
       const bookingId = data.replace('complete_', '')
       
       // Enviar apenas para o cliente específico
@@ -298,8 +298,8 @@ if (bot) {
         clientBookings.delete(clientId)
       }
 
-      await bot.answerCallbackQuery(callbackQuery.id)
-      await bot.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
+      bot?.answerCallbackQuery(callbackQuery.id)
+      bot?.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
     }
   })
 }
