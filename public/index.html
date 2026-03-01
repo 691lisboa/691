@@ -8,10 +8,10 @@
     <script src="/addresses.js"></script>
     <style>
         :root {
-            --primary-color: #1e3a8a;
-            --secondary-color: #1e40af;
-            --accent-color: #3b82f6;
-            --success-color: #10b981;
+            --primary-color: #0d7d4d;
+            --secondary-color: #0a6342;
+            --accent-color: #1fa068;
+            --success-color: #0d7d4d;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
             --background-light: #000000;
@@ -40,6 +40,29 @@
             justify-content: center;
             overflow-x: hidden;
             padding: 10px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(13, 125, 77, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(31, 160, 104, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(13, 125, 77, 0.05) 0%, transparent 50%);
+            animation: luxuryFloat 10s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes luxuryFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-20px, -20px) scale(1.05); }
+            66% { transform: translate(20px, -10px) scale(0.95); }
         }
 
         .container {
@@ -49,13 +72,33 @@
         }
 
         .form-card {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
             border: 2px solid var(--border-color);
             border-radius: 25px;
             padding: 35px 25px;
             backdrop-filter: blur(25px);
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5),
-                        inset 0 0 30px rgba(255, 255, 255, 0.05);
+                        inset 0 0 30px rgba(13, 125, 77, 0.05),
+                        0 0 100px rgba(13, 125, 77, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(13, 125, 77, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: luxuryShine 3s ease-in-out infinite;
+        }
+
+        @keyframes luxuryShine {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
         .logo {
@@ -67,7 +110,14 @@
             font-size: 2.8rem;
             font-weight: 900;
             color: var(--accent-color);
-            text-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            text-shadow: 0 2px 4px rgba(31, 160, 104, 0.3),
+                        0 0 20px rgba(31, 160, 104, 0.2);
+            animation: luxuryGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes luxuryGlow {
+            from { text-shadow: 0 2px 4px rgba(31, 160, 104, 0.3), 0 0 20px rgba(31, 160, 104, 0.2); }
+            to { text-shadow: 0 2px 4px rgba(31, 160, 104, 0.5), 0 0 30px rgba(31, 160, 104, 0.4); }
         }
 
         .logo h2 {
@@ -110,12 +160,24 @@
             transition: all 0.3s ease;
             color: var(--text-light);
             font-size: 1rem;
+            position: relative;
         }
 
-        .form-control:focus {
+        .form-group input:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 3px rgba(31, 160, 104, 0.2),
+                        0 0 20px rgba(31, 160, 104, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            transition: opacity 0.3s ease;
+        }
+
+        .form-group input:focus::placeholder {
+            opacity: 0.6;
         }
 
         .submit-btn {
@@ -131,12 +193,31 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 5px 20px rgba(31, 160, 104, 0.3),
+                        0 0 30px rgba(31, 160, 104, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 35px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 8px 35px rgba(31, 160, 104, 0.4),
+                        0 0 40px rgba(31, 160, 104, 0.3);
         }
 
         .submit-btn:active {
@@ -346,12 +427,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.98);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 3000;
             padding: 20px;
+            backdrop-filter: blur(20px);
         }
 
         .booking-window.show {
@@ -359,7 +441,7 @@
         }
 
         .booking-container {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
             border: 2px solid var(--border-color);
             border-radius: 25px;
             width: 100%;
@@ -369,7 +451,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8),
+                        inset 0 0 50px rgba(13, 125, 77, 0.1);
         }
 
         .booking-header {
@@ -641,8 +724,8 @@
         /* Contact Footer */
         .contact-footer {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 80px;
+            left: 20px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -693,6 +776,21 @@
 
         .contact-text {
             opacity: 0.9;
+        }
+
+        /* Language Toggle Repositioned */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            z-index: 1001;
+            background: rgba(26, 26, 26, 0.95);
+            padding: 5px;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
         }
 
         /* Mobile Optimizations */
@@ -854,12 +952,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.98);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 2500;
             padding: 15px;
+            backdrop-filter: blur(20px);
         }
 
         .chat-popup.show {
@@ -867,7 +966,7 @@
         }
 
         .chat-container {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
             border: 2px solid var(--border-color);
             border-radius: 20px;
             width: 100%;
@@ -877,7 +976,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+                        inset 0 0 30px rgba(13, 125, 77, 0.1);
         }
 
         .chat-header {
@@ -1358,7 +1458,7 @@
         </div>
         <div class="contact-item">
             <a href="https://signal.me/#p/fernandes.79" target="_blank" class="contact-link">
-                <span class="contact-icon">💬</span>
+                <span class="contact-icon">�</span>
                 <span class="contact-text">Signal: fernandes.79</span>
             </a>
         </div>
