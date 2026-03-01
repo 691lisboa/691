@@ -1,7 +1,7 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { createServer } from 'http'
-import { Server as SocketIOServer } from 'socket.io'
-import TelegramBot from 'node-telegram-bot-api'
+import { Server as SocketIOServer, Socket } from 'socket.io'
+import TelegramBot, { Message, CallbackQuery } from 'node-telegram-bot-api'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -31,13 +31,13 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true })
     
-    bot.on('polling_error', (error) => {
+    bot.on('polling_error', (error: Error) => {
       if (error.message.includes('ETELEGRAM: 409')) {
         console.log('Bot já está rodando em outra instância - ignorando conflito')
       }
     })
 
-    bot.on('message', async (msg) => {
+    bot.on('message', async (msg: Message) => {
       const chatId = msg.chat.id
       const text = msg.text
 
@@ -107,7 +107,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
     })
 
     // Callbacks simplificados
-    bot.on('callback_query', async (callbackQuery) => {
+    bot.on('callback_query', async (callbackQuery: CallbackQuery) => {
       const msg = callbackQuery.message!
       const chatId = msg.chat.id
       const data = callbackQuery.data
@@ -155,7 +155,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
     })
 
     console.log('Bot Telegram inicializado com sucesso')
-  } catch (error) {
+  } catch (error: Error) {
     console.error('Erro ao inicializar bot Telegram:', error)
   }
 } else {
@@ -239,7 +239,7 @@ io.on('connection', (socket) => {
 
 // Respostas rápidas do motorista
 if (bot) {
-  bot.on('callback_query', async (callbackQuery) => {
+  bot.on('callback_query', async (callbackQuery: CallbackQuery) => {
     const msg = callbackQuery.message!
     const chatId = msg.chat.id
     const data = callbackQuery.data
@@ -308,7 +308,7 @@ if (bot) {
 app.use(express.static(path.join(__dirname, '../public')))
 
 // Rota API para receber reservas
-app.post('/api/reserva', express.json(), (req, res) => {
+app.post('/api/reserva', express.json(), (req: Request, res: Response) => {
   const { nome, telefone, data, hora, recolha, destino, clientId } = req.body
   
   // Gerar ID único para reserva
@@ -356,7 +356,7 @@ app.post('/api/reserva', express.json(), (req, res) => {
           ]]
         }
       }
-    ).catch(error => {
+    ).catch((error: Error) => {
       console.error('Erro ao enviar para Telegram:', error)
     })
   } else {
