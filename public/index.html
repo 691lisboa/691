@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>691 Taxi - Serviço Premium</title>
+    <title>691 Lisboa</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         * {
@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #0a1a0a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #ffffff;
             min-height: 100vh;
             display: flex;
@@ -31,13 +31,13 @@
         }
 
         .form-card {
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ff00;
+            background: rgba(30, 30, 30, 0.95);
+            border: 2px solid #2a5434;
             border-radius: 25px;
             padding: 35px 25px;
             backdrop-filter: blur(25px);
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2),
-                        inset 0 0 30px rgba(0, 255, 0, 0.05);
+            box-shadow: 0 0 50px rgba(42, 84, 52, 0.2),
+                        inset 0 0 30px rgba(42, 84, 52, 0.05);
         }
 
         .logo {
@@ -48,14 +48,14 @@
         .logo h1 {
             font-size: 2.8rem;
             font-weight: 900;
-            color: #00ff00;
+            color: #4a7c59;
             margin-bottom: 8px;
-            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            text-shadow: 0 0 20px rgba(74, 124, 89, 0.3);
             letter-spacing: -1px;
         }
 
         .logo p {
-            color: #00ff00;
+            color: #4a7c59;
             opacity: 0.8;
             font-size: 1rem;
             font-weight: 500;
@@ -68,7 +68,7 @@
 
         .form-group label {
             display: block;
-            color: #00ff00;
+            color: #4a7c59;
             font-size: 0.95rem;
             margin-bottom: 8px;
             font-weight: 600;
@@ -79,8 +79,8 @@
         .form-group input {
             width: 100%;
             padding: 18px 15px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #00ff00;
+            background: rgba(20, 20, 20, 0.6);
+            border: 2px solid #2a5434;
             border-radius: 15px;
             color: #ffffff;
             font-size: 1.1rem;
@@ -90,14 +90,14 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
-            background: rgba(0, 0, 0, 0.8);
+            border-color: #4a7c59;
+            box-shadow: 0 0 20px rgba(74, 124, 89, 0.4);
+            background: rgba(20, 20, 20, 0.8);
             transform: translateY(-2px);
         }
 
         .form-group input::placeholder {
-            color: #00ff00;
+            color: #4a7c59;
             opacity: 0.4;
             font-weight: 400;
         }
@@ -105,8 +105,8 @@
         .submit-btn {
             width: 100%;
             padding: 20px;
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
             border: none;
             border-radius: 15px;
             font-size: 1.2rem;
@@ -116,12 +116,12 @@
             margin-top: 15px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 5px 25px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 5px 25px rgba(74, 124, 89, 0.3);
         }
 
         .submit-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 35px rgba(0, 255, 0, 0.5);
+            box-shadow: 0 8px 35px rgba(74, 124, 89, 0.5);
         }
 
         .submit-btn:active {
@@ -131,9 +131,9 @@
         .cancel-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2) 0%, rgba(255, 0, 0, 0.3) 100%);
-            color: #ff4444;
-            border: 2px solid #ff4444;
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2) 0%, rgba(139, 69, 19, 0.3) 100%);
+            color: #d2691e;
+            border: 2px solid #d2691e;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 700;
@@ -145,20 +145,20 @@
         }
 
         .cancel-btn:hover {
-            background: linear-gradient(135deg, rgba(255, 0, 0, 0.3) 0%, rgba(255, 0, 0, 0.4) 100%);
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.3) 0%, rgba(139, 69, 19, 0.4) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(255, 68, 68, 0.3);
+            box-shadow: 0 5px 20px rgba(210, 105, 30, 0.3);
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
             padding: 18px 22px;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+            box-shadow: 0 0 30px rgba(74, 124, 89, 0.6);
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 1000;
@@ -173,20 +173,21 @@
         .language-toggle {
             position: fixed;
             top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ff00;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid #2a5434;
             border-radius: 25px;
             padding: 6px;
             display: flex;
             gap: 6px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 20px rgba(42, 84, 52, 0.2);
+            z-index: 1001;
         }
 
         .language-toggle button {
             padding: 10px 18px;
             background: transparent;
-            color: #00ff00;
+            color: #4a7c59;
             border: none;
             border-radius: 18px;
             cursor: pointer;
@@ -196,8 +197,8 @@
         }
 
         .language-toggle button.active {
-            background: #00ff00;
-            color: #000000;
+            background: #4a7c59;
+            color: #ffffff;
             font-weight: 700;
         }
 
@@ -208,22 +209,22 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            color: #00ff00;
+            color: #4a7c59;
             font-size: 0.9rem;
             font-weight: 600;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(30, 30, 30, 0.8);
             padding: 10px 15px;
             border-radius: 20px;
-            border: 1px solid #00ff00;
+            border: 1px solid #2a5434;
         }
 
         .status-dot {
             width: 10px;
             height: 10px;
-            background: #00ff00;
+            background: #4a7c59;
             border-radius: 50%;
             animation: pulse 2s infinite;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            box-shadow: 0 0 10px rgba(74, 124, 89, 0.8);
         }
 
         @keyframes pulse {
@@ -233,7 +234,7 @@
 
         .success-message {
             text-align: center;
-            color: #00ff00;
+            color: #4a7c59;
             margin-top: 18px;
             font-size: 1rem;
             opacity: 0;
@@ -246,17 +247,17 @@
         }
 
         .booking-info {
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 0, 0.05) 100%);
-            border: 2px solid #00ff00;
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0.05) 100%);
+            border: 2px solid #4a7c59;
             border-radius: 18px;
             padding: 20px;
             margin-bottom: 20px;
             font-size: 0.95rem;
-            box-shadow: 0 0 25px rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 25px rgba(74, 124, 89, 0.1);
         }
 
         .booking-info h3 {
-            color: #00ff00;
+            color: #4a7c59;
             margin-bottom: 12px;
             font-size: 1.2rem;
             font-weight: 700;
@@ -271,8 +272,8 @@
         .chat-btn {
             flex: 1;
             padding: 14px;
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
             border: none;
             border-radius: 12px;
             font-size: 1rem;
@@ -285,12 +286,12 @@
 
         .chat-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+            box-shadow: 0 5px 20px rgba(74, 124, 89, 0.4);
         }
 
         .no-bookings {
             text-align: center;
-            color: #00ff00;
+            color: #4a7c59;
             font-size: 1rem;
             margin-bottom: 20px;
             font-style: italic;
@@ -307,8 +308,8 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00ff00;
+            background: rgba(30, 30, 30, 0.95);
+            border: 2px solid #2a5434;
             border-top: none;
             border-radius: 0 0 15px 15px;
             max-height: 200px;
@@ -327,11 +328,11 @@
             cursor: pointer;
             transition: background 0.2s ease;
             font-size: 0.95rem;
-            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+            border-bottom: 1px solid rgba(74, 124, 89, 0.1);
         }
 
         .autocomplete-item:hover {
-            background: rgba(0, 255, 0, 0.1);
+            background: rgba(74, 124, 89, 0.1);
         }
 
         .autocomplete-item:last-child {
@@ -345,7 +346,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(20, 20, 20, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
@@ -358,8 +359,8 @@
         }
 
         .chat-container {
-            background: rgba(0, 0, 0, 0.98);
-            border: 2px solid #00ff00;
+            background: rgba(30, 30, 30, 0.98);
+            border: 2px solid #4a7c59;
             border-radius: 25px;
             width: 100%;
             max-width: 500px;
@@ -368,12 +369,12 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 50px rgba(74, 124, 89, 0.3);
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
             padding: 20px;
             display: flex;
             justify-content: space-between;
@@ -389,7 +390,7 @@
         .close-chat {
             background: transparent;
             border: none;
-            color: #000000;
+            color: #ffffff;
             font-size: 1.8rem;
             cursor: pointer;
             padding: 5px;
@@ -403,14 +404,14 @@
         }
 
         .close-chat:hover {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(20, 20, 20, 0.6);
         }
 
         .chat-message {
@@ -422,16 +423,16 @@
         }
 
         .chat-message.client {
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.2) 0%, rgba(74, 124, 89, 0.1) 100%);
             align-self: flex-end;
             margin-left: auto;
-            border: 1px solid rgba(0, 255, 0, 0.3);
+            border: 1px solid rgba(74, 124, 89, 0.3);
         }
 
         .chat-message.driver {
-            background: linear-gradient(135deg, rgba(0, 200, 0, 0.2) 0%, rgba(0, 200, 0, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(42, 84, 52, 0.2) 0%, rgba(42, 84, 52, 0.1) 100%);
             align-self: flex-start;
-            border: 1px solid rgba(0, 200, 0, 0.3);
+            border: 1px solid rgba(42, 84, 52, 0.3);
         }
 
         .chat-message strong {
@@ -442,24 +443,24 @@
         }
 
         .chat-message.client strong {
-            color: #00ff00;
+            color: #4a7c59;
         }
 
         .chat-message.driver strong {
-            color: #00cc00;
+            color: #2a5434;
         }
 
         .chat-message .time {
             font-size: 0.8rem;
-            color: #00ff00;
+            color: #4a7c59;
             margin-top: 6px;
             opacity: 0.7;
         }
 
         .chat-input {
             padding: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            border-top: 2px solid #00ff00;
+            background: rgba(30, 30, 30, 0.9);
+            border-top: 2px solid #4a7c59;
         }
 
         .chat-input form {
@@ -470,8 +471,8 @@
         .chat-input input {
             flex: 1;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid #00ff00;
+            background: rgba(20, 20, 20, 0.6);
+            border: 2px solid #4a7c59;
             border-radius: 12px;
             color: #ffffff;
             font-size: 1rem;
@@ -480,14 +481,14 @@
 
         .chat-input input:focus {
             outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            border-color: #4a7c59;
+            box-shadow: 0 0 15px rgba(74, 124, 89, 0.3);
         }
 
         .chat-input button {
             padding: 15px 25px;
-            background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
-            color: #000000;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
             border: none;
             border-radius: 12px;
             font-weight: 700;
@@ -499,7 +500,7 @@
 
         .chat-input button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+            box-shadow: 0 5px 20px rgba(74, 124, 89, 0.4);
         }
 
         .booking-status {
@@ -520,15 +521,31 @@
         }
 
         .booking-status.accepted {
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.1) 100%);
-            border: 2px solid #00ff00;
-            color: #00ff00;
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.2) 0%, rgba(74, 124, 89, 0.1) 100%);
+            border: 2px solid #4a7c59;
+            color: #4a7c59;
         }
 
         .booking-status.rejected {
-            background: linear-gradient(135deg, rgba(255, 0, 0, 0.2) 0%, rgba(255, 0, 0, 0.1) 100%);
-            border: 2px solid #ff4444;
-            color: #ff4444;
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2) 0%, rgba(139, 69, 19, 0.1) 100%);
+            border: 2px solid #d2691e;
+            color: #d2691e;
+        }
+
+        .booking-status.completed {
+            background: linear-gradient(135deg, rgba(70, 130, 180, 0.2) 0%, rgba(70, 130, 180, 0.1) 100%);
+            border: 2px solid #4682b4;
+            color: #4682b4;
+        }
+
+        .datetime-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .datetime-inputs .form-group {
+            margin-bottom: 0;
         }
 
         /* Mobile Optimizations */
@@ -568,6 +585,16 @@
             .chat-btn {
                 padding: 16px;
             }
+
+            .language-toggle {
+                top: 70px;
+                left: 15px;
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -593,8 +620,8 @@
     <div class="container">
         <div class="form-card">
             <div class="logo">
-                <h1 id="title">691 Taxi</h1>
-                <p id="subtitle">Serviço Premium</p>
+                <h1 id="title">691 Lisboa</h1>
+                <p id="subtitle">Táxi</p>
             </div>
 
             <!-- Booking Info -->
@@ -623,6 +650,17 @@
                 <div class="form-group">
                     <label id="phone-label" for="telefone">Telefone</label>
                     <input type="tel" id="telefone" name="telefone" placeholder="Seu telefone" required>
+                </div>
+
+                <div class="datetime-inputs">
+                    <div class="form-group">
+                        <label id="date-label" for="data">Data</label>
+                        <input type="date" id="data" name="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="time-label" for="hora">Hora</label>
+                        <input type="time" id="hora" name="hora" required>
+                    </div>
                 </div>
 
                 <div class="form-group autocomplete-container">
@@ -654,7 +692,7 @@
                 <button id="close-chat" class="close-chat">×</button>
             </div>
             <div id="chat-messages" class="chat-messages">
-                <div style="text-align: center; color: #00ff00; font-style: italic; padding: 20px;">
+                <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
                     <span id="chat-placeholder">Nenhuma mensagem ainda</span>
                 </div>
             </div>
@@ -787,10 +825,12 @@
         // Translations
         const translations = {
             pt: {
-                title: '691 Taxi',
-                subtitle: 'Serviço Premium',
+                title: '691 Lisboa',
+                subtitle: 'Táxi',
                 nameLabel: 'Nome',
                 phoneLabel: 'Telefone',
+                dateLabel: 'Data',
+                timeLabel: 'Hora',
                 pickupLabel: 'Local de Recolha',
                 destLabel: 'Destino',
                 submitBtn: 'Reservar Taxi',
@@ -806,15 +846,18 @@
                 bookingAccepted: '✅ Reserva aceita! Motorista a caminho.',
                 bookingRejected: '❌ Reserva recusada. Tente novamente.',
                 bookingCancelled: '❌ Reserva cancelada.',
+                bookingCompleted: '✅ Viagem concluída!',
                 driverArrived: '📍 O motorista chegou! Por favor, aguarde.',
                 newBooking: '🚕 Nova reserva recebida!',
                 messageFromDriver: '💬 Mensagem do motorista:'
             },
             en: {
-                title: '691 Taxi',
-                subtitle: 'Premium Service',
+                title: '691 Lisbon',
+                subtitle: 'Taxi',
                 nameLabel: 'Name',
                 phoneLabel: 'Phone',
+                dateLabel: 'Date',
+                timeLabel: 'Time',
                 pickupLabel: 'Pickup Location',
                 destLabel: 'Destination',
                 submitBtn: 'Book Taxi',
@@ -830,6 +873,7 @@
                 bookingAccepted: '✅ Booking accepted! Driver on the way.',
                 bookingRejected: '❌ Booking rejected. Please try again.',
                 bookingCancelled: '❌ Booking cancelled.',
+                bookingCompleted: '✅ Trip completed!',
                 driverArrived: '📍 The driver has arrived! Please wait.',
                 newBooking: '🚕 New booking received!',
                 messageFromDriver: '💬 Message from driver:'
@@ -839,6 +883,17 @@
         let currentLang = 'pt';
         let socket = null;
         let currentBooking = null;
+        let clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+
+        // Set default date and time
+        function setDefaultDateTime() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().slice(0, 5);
+            
+            document.getElementById('data').value = dateStr;
+            document.getElementById('hora').value = timeStr;
+        }
 
         // Autocomplete functionality
         function setupAutocomplete(inputId, listId) {
@@ -924,7 +979,7 @@
             socket.on('connect', () => {
                 console.log('Conectado ao servidor');
                 updateStatus('Conectado');
-                showNotification('🟢 Conectado ao servidor 691 Taxi!');
+                showNotification('🟢 Conectado ao 691 Lisboa!');
             });
 
             socket.on('disconnect', () => {
@@ -934,14 +989,18 @@
             });
 
             socket.on('driver_arrived', (data) => {
-                showNotification(data.message || translations[currentLang].driverArrived);
-                playSound();
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    showNotification(data.message || translations[currentLang].driverArrived);
+                    playSound();
+                }
             });
 
             socket.on('new_booking', (data) => {
-                showNotification(data.message || translations[currentLang].newBooking);
-                displayBooking(data);
-                playSound();
+                if (data.clientId === clientId) {
+                    showNotification(data.message || translations[currentLang].newBooking);
+                    displayBooking(data);
+                    playSound();
+                }
             });
 
             socket.on('booking_accepted', (data) => {
@@ -971,6 +1030,17 @@
                 }
             });
 
+            socket.on('booking_completed', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    updateBookingStatus('completed');
+                    showNotification(data.message);
+                    playSound();
+                    setTimeout(() => {
+                        hideBooking();
+                    }, 3000);
+                }
+            });
+
             socket.on('message_from_driver', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     displayChatMessage({
@@ -993,6 +1063,8 @@
             document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('name-label').textContent = t.nameLabel;
             document.getElementById('phone-label').textContent = t.phoneLabel;
+            document.getElementById('date-label').textContent = t.dateLabel;
+            document.getElementById('time-label').textContent = t.timeLabel;
             document.getElementById('pickup-label').textContent = t.pickupLabel;
             document.getElementById('dest-label').textContent = t.destLabel;
             document.getElementById('submit-btn').textContent = t.submitBtn;
@@ -1019,7 +1091,8 @@
                 <strong>🆔 ID: ${booking.bookingId}</strong><br>
                 <strong>👤 ${booking.nome}</strong><br>
                 📞 ${booking.telefone}<br>
-                📍 ${booking.recolha}<br>
+                � ${booking.data} às ${booking.hora}<br>
+                �📍 ${booking.recolha}<br>
                 🎯 ${booking.destino}
             `;
             
@@ -1048,6 +1121,9 @@
                 case 'cancelled':
                     statusElement.textContent = t.bookingCancelled;
                     break;
+                case 'completed':
+                    statusElement.textContent = t.bookingCompleted;
+                    break;
             }
         }
 
@@ -1059,6 +1135,14 @@
             bookingInfo.style.display = 'none';
             noBookings.style.display = 'block';
             currentBooking = null;
+            
+            // Clear chat messages
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
+                    <span id="chat-placeholder">${translations[currentLang].chatPlaceholder}</span>
+                </div>
+            `;
         }
 
         // Display chat message
@@ -1126,8 +1210,11 @@
             const data = {
                 nome: formData.get('nome'),
                 telefone: formData.get('telefone'),
+                data: formData.get('data'),
+                hora: formData.get('hora'),
                 recolha: formData.get('recolha'),
-                destino: formData.get('destino')
+                destino: formData.get('destino'),
+                clientId: clientId
             };
 
             try {
@@ -1155,6 +1242,7 @@
                     
                     // Reset form
                     e.target.reset();
+                    setDefaultDateTime();
                     
                     // Hide success message after 3 seconds
                     setTimeout(() => {
@@ -1182,7 +1270,8 @@
                 name: currentBooking.nome,
                 phone: currentBooking.telefone,
                 bookingId: currentBooking.bookingId,
-                message: message
+                message: message,
+                clientId: clientId
             });
             
             // Display as own message
@@ -1211,7 +1300,8 @@
                 socket.emit('cancel_booking', {
                     bookingId: currentBooking.bookingId,
                     name: currentBooking.nome,
-                    phone: currentBooking.telefone
+                    phone: currentBooking.telefone,
+                    clientId: clientId
                 });
                 
                 updateBookingStatus('cancelled');
@@ -1236,6 +1326,7 @@
             updateLanguage('pt');
             setupAutocomplete('recolha', 'recolha-autocomplete');
             setupAutocomplete('destino', 'destino-autocomplete');
+            setDefaultDateTime();
         });
     </script>
 </body>
