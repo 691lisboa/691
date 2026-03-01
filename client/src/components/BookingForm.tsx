@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { InsertTrip } from '@shared/schema'
+import { useLanguage } from '../contexts/LanguageContext'
+import AddressAutocomplete from './AddressAutocomplete'
+import { MapPin, Calculator, Clock, User, Phone, Car } from 'lucide-react'
 
 interface BookingFormProps {
   onBookingComplete: (trip: InsertTrip) => void
@@ -8,20 +11,22 @@ interface BookingFormProps {
 }
 
 export default function BookingForm({ onBookingComplete, socket }: BookingFormProps) {
+  const { t, language } = useLanguage()
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
     pickupLocation: '',
     dropoffLocation: '',
     pickupTime: '',
-    customerLanguage: 'pt'
+    customerLanguage: language
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [priceLoading, setPriceLoading] = useState(false)
   const [price, setPrice] = useState<number | null>(null)
 
-  const handleLocationInput = async (type: 'pickup' | 'dropoff') => {
+  const handleGPSLocation = async () => {
     if (!navigator.geolocation) {
-      alert('Geolocalização não suportada pelo seu navegador')
+      alert(t('gps.error'))
       return
     }
 
@@ -31,26 +36,27 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
       async (position) => {
         try {
           // Simular reverse geocoding (implementar API real)
-          const mockAddress = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`
+          const mockAddress = `Localização atual (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})`
           
           setFormData(prev => ({
             ...prev,
-            [`${type}Location`]: mockAddress
+            pickupLocation: mockAddress
           }))
 
-          // Calcular preço se ambos os campos estiverem preenchidos
-          if (type === 'dropoff' && formData.pickupLocation || 
-              type === 'pickup' && formData.dropoffLocation) {
+          // Calcular preço se destino estiver preenchido
+          if (formData.dropoffLocation) {
             calculatePrice()
           }
         } catch (error) {
           console.error('Erro ao obter localização:', error)
+          alert(t('gps.error'))
         } finally {
           setIsLoading(false)
         }
       },
       (error) => {
         console.error('Erro de geolocalização:', error)
+        alert(t('gps.error'))
         setIsLoading(false)
       }
     )
@@ -59,7 +65,7 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
   const calculatePrice = async () => {
     if (!formData.pickupLocation || !formData.dropoffLocation) return
 
-    setIsLoading(true)
+    setPriceLoading(true)
     
     try {
       // Chamar API de preços
@@ -79,7 +85,7 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
         setPrice(routeData.price)
       } else {
         // Fallback para cálculo mock
-        const mockDistance = Math.random() * 20 + 5 // 5-25 km
+        const mockDistance = Math.random() * 20 + 5
         const calculatedPrice = 3.25 + (mockDistance * 0.90)
         setPrice(Math.round(calculatedPrice * 100) / 100)
       }
@@ -90,13 +96,18 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
       const calculatedPrice = 3.25 + (mockDistance * 0.90)
       setPrice(Math.round(calculatedPrice * 100) / 100)
     } finally {
-      setIsLoading(false)
+      setPriceLoading(false)
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!socket) return
+
+    // Validação
+    if (!formData.customerName || !formData.customerPhone || !formData.pickupLocation || !formData.dropoffLocation) {
+      alert(t('booking.fill_fields'))
+      return
+    }
 
     setIsLoading(true)
 
@@ -109,31 +120,50 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
         pickupLat: 0, // Obter da geocoding
         pickupLng: 0,
         dropoffLat: 0,
-        dropoffLng: 0
+        dropoffLng: 0,
+        customerLanguage: language
       }
 
-      // Enviar para o servidor
-      socket.emit('create-trip', tripData)
+      // Enviar via HTTP API (não Socket.io)
+      const response = await fetch('/api/trips/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tripData)
+      })
 
-      // Simular resposta do servidor
-      setTimeout(() => {
-        onBookingComplete({
-          ...tripData,
-          id: Date.now(),
-          status: 'pending',
-          createdAt: new Date()
-        } as any)
-        setIsLoading(false)
-      }, 1000)
+      if (!response.ok) {
+        throw new Error('Erro ao criar reserva')
+      }
+
+      const savedTrip = await response.json()
+
+      // Notificar sucesso
+      alert(t('booking.success'))
+      onBookingComplete(savedTrip)
+
+      // Reset form
+      setFormData({
+        customerName: '',
+        customerPhone: '',
+        pickupLocation: '',
+        dropoffLocation: '',
+        pickupTime: '',
+        customerLanguage: language
+      })
+      setPrice(null)
 
     } catch (error) {
       console.error('Erro ao criar reserva:', error)
+      alert(t('booking.error'))
+    } finally {
       setIsLoading(false)
     }
   }
 
   const handleCancel = () => {
-    if (socket && formData.customerName) {
+    if (socket) {
       socket.emit('cancel-trip', {
         customerName: formData.customerName,
         customerPhone: formData.customerPhone
@@ -147,125 +177,131 @@ export default function BookingForm({ onBookingComplete, socket }: BookingFormPr
       pickupLocation: '',
       dropoffLocation: '',
       pickupTime: '',
-      customerLanguage: 'pt'
+      customerLanguage: language
     })
     setPrice(null)
   }
 
+  // Recalcular preço quando endereços mudam
+  React.useEffect(() => {
+    if (formData.pickupLocation && formData.dropoffLocation) {
+      calculatePrice()
+    }
+  }, [formData.pickupLocation, formData.dropoffLocation])
+
   return (
-    <div className="glass-card animate-fadeInUp">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-taxi-green mb-2">691</h1>
-        <p className="text-green-600/70 text-sm">Serviço de Taxi Premium</p>
+    <div className="w-full max-w-md mx-auto p-6 bg-black/40 backdrop-blur-2xl border border-green-500/30 rounded-3xl shadow-2xl">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center mb-3">
+          <Car className="w-8 h-8 text-green-500 mr-3" />
+          <h1 className="text-3xl font-bold text-white">{t('booking.title')}</h1>
+        </div>
+        <p className="text-green-400/80 text-sm">{t('app.subtitle')}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Nome */}
-        <div>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <User className="h-5 w-5 text-green-400" />
+          </div>
           <input
             type="text"
-            placeholder="Nome completo"
             value={formData.customerName}
             onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
-            className="glass-input"
+            placeholder={t('booking.name')}
+            className="w-full pl-10 pr-4 py-4 bg-black/30 border border-green-500/30 rounded-2xl text-white placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 backdrop-blur-xl transition-all duration-300"
             required
           />
         </div>
 
         {/* Telefone */}
-        <div>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Phone className="h-5 w-5 text-green-400" />
+          </div>
           <input
             type="tel"
-            placeholder="Telemóvel"
             value={formData.customerPhone}
             onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
-            className="glass-input"
+            placeholder={t('booking.phone')}
+            className="w-full pl-10 pr-4 py-4 bg-black/30 border border-green-500/30 rounded-2xl text-white placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 backdrop-blur-xl transition-all duration-300"
             required
           />
         </div>
 
-        {/* Local de Recolha */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Local de recolha"
-            value={formData.pickupLocation}
-            onChange={(e) => {
-              setFormData(prev => ({ ...prev, pickupLocation: e.target.value }))
-              if (e.target.value && formData.dropoffLocation) calculatePrice()
-            }}
-            className="glass-input pr-12"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => handleLocationInput('pickup')}
-            className="gps-button"
-            disabled={isLoading}
-          >
-            📍
-          </button>
-        </div>
-
-        {/* Destino */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Destino"
-            value={formData.dropoffLocation}
-            onChange={(e) => {
-              setFormData(prev => ({ ...prev, dropoffLocation: e.target.value }))
-              if (e.target.value && formData.pickupLocation) calculatePrice()
-            }}
-            className="glass-input pr-12"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => handleLocationInput('dropoff')}
-            className="gps-button"
-            disabled={isLoading}
-          >
-            📍
-          </button>
-        </div>
-
-        {/* Hora de Recolha */}
+        {/* Local de Recolha com GPS */}
         <div>
+          <AddressAutocomplete
+            value={formData.pickupLocation}
+            onChange={(value) => setFormData(prev => ({ ...prev, pickupLocation: value }))}
+            placeholder={t('booking.pickup')}
+            showGPS={true}
+            onGPSClick={handleGPSLocation}
+            isLoading={isLoading}
+          />
+        </div>
+
+        {/* Destino (sem GPS) */}
+        <div>
+          <AddressAutocomplete
+            value={formData.dropoffLocation}
+            onChange={(value) => setFormData(prev => ({ ...prev, dropoffLocation: value }))}
+            placeholder={t('booking.destination')}
+            showGPS={false}
+          />
+        </div>
+
+        {/* Hora */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Clock className="h-5 w-5 text-green-400" />
+          </div>
           <input
             type="datetime-local"
             value={formData.pickupTime}
             onChange={(e) => setFormData(prev => ({ ...prev, pickupTime: e.target.value }))}
-            className="glass-input"
-            min={new Date().toISOString().slice(0, 16)}
+            className="w-full pl-10 pr-4 py-4 bg-black/30 border border-green-500/30 rounded-2xl text-white placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 backdrop-blur-xl transition-all duration-300"
           />
         </div>
 
-        {/* Preço Calculado */}
-        {price && (
-          <div className="text-center p-3 bg-green-900/20 rounded-lg border border-green-700/30">
-            <p className="text-green-400 text-sm">Preço Estimado</p>
-            <p className="text-2xl font-bold text-taxi-green">€{price}</p>
+        {/* Preço */}
+        {price !== null && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Calculator className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-green-400 font-medium">{t('booking.price')}</span>
+              </div>
+              <span className="text-2xl font-bold text-white">€{price.toFixed(2)}</span>
+            </div>
           </div>
         )}
 
         {/* Botões */}
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button
             type="submit"
-            disabled={isLoading || !price}
-            className="glass-button flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || priceLoading}
+            className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-green-500/30 text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-green-500/25"
           >
-            {isLoading ? <span className="spinner mr-2" /> : null}
-            {isLoading ? 'A processar...' : 'Reservar Taxi'}
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2"></div>
+                {language === 'pt' ? 'A processar...' : 'Processing...'}
+              </span>
+            ) : (
+              t('booking.book')
+            )}
           </button>
           
           <button
             type="button"
             onClick={handleCancel}
-            className="glass-button bg-red-900/20 border-red-700/50 text-red-400 hover:bg-red-800/30"
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold py-4 px-6 rounded-2xl transition-all duration-300 border border-red-500/30"
           >
-            Cancelar
+            {t('booking.cancel')}
           </button>
         </div>
       </form>
