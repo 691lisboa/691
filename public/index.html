@@ -247,46 +247,7 @@
         }
 
         .booking-info {
-            background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0.05) 100%);
-            border: 2px solid #4a7c59;
-            border-radius: 18px;
-            padding: 20px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            box-shadow: 0 0 25px rgba(74, 124, 89, 0.1);
-        }
-
-        .booking-info h3 {
-            color: #4a7c59;
-            margin-bottom: 12px;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        .booking-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 18px;
-        }
-
-        .chat-btn {
-            flex: 1;
-            padding: 14px;
-            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .chat-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(74, 124, 89, 0.4);
+            display: none;
         }
 
         .no-bookings {
@@ -296,6 +257,158 @@
             margin-bottom: 20px;
             font-style: italic;
             opacity: 0.7;
+        }
+
+        .booking-cta {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .view-booking-btn {
+            padding: 16px 30px;
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 25px rgba(74, 124, 89, 0.3);
+        }
+
+        .view-booking-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(74, 124, 89, 0.5);
+        }
+
+        /* Booking Window */
+        .booking-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 20, 20, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 15px;
+        }
+
+        .booking-window.show {
+            display: flex;
+        }
+
+        .booking-container {
+            background: rgba(30, 30, 30, 0.98);
+            border: 2px solid #4a7c59;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 800px;
+            height: 85%;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(74, 124, 89, 0.3);
+        }
+
+        .booking-header {
+            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            color: #ffffff;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .close-booking {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-booking:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .booking-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .booking-details-panel {
+            flex: 1;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.6);
+            border-right: 1px solid #4a7c59;
+        }
+
+        .booking-chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 30, 30, 0.6);
+        }
+
+        .booking-info-card {
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0.05) 100%);
+            border: 2px solid #4a7c59;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            box-shadow: 0 0 25px rgba(74, 124, 89, 0.1);
+        }
+
+        .booking-info-card h4 {
+            color: #4a7c59;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .booking-actions-panel {
+            padding: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border-top: 2px solid #4a7c59;
+        }
+
+        .booking-actions-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .booking-status {
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Autocomplete */
@@ -541,11 +654,21 @@
         .datetime-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 5px;
         }
 
         .datetime-inputs .form-group {
             margin-bottom: 0;
+        }
+
+        .datetime-label {
+            font-size: 0.85rem;
+            color: #4a7c59;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Mobile Optimizations */
@@ -641,6 +764,10 @@
                 <span id="no-bookings-text">Sem reservas ativas</span>
             </div>
 
+            <div id="booking-cta" class="booking-cta" style="display: none;">
+                <button id="view-booking-btn" class="view-booking-btn">🚕 Ver Reserva Ativa</button>
+            </div>
+
             <form id="taxi-form">
                 <div class="form-group">
                     <label id="name-label" for="nome">Nome</label>
@@ -705,121 +832,223 @@
         </div>
     </div>
 
+    <!-- Booking Window -->
+    <div id="booking-window" class="booking-window">
+        <div class="booking-container">
+            <div class="booking-header">
+                <h3 id="booking-window-title">🚕 Reserva Ativa</h3>
+                <button id="close-booking" class="close-booking">×</button>
+            </div>
+            <div class="booking-content">
+                <div class="booking-details-panel">
+                    <div class="booking-info-card">
+                        <h4>📋 Detalhes da Reserva</h4>
+                        <div id="booking-window-details"></div>
+                        <div id="booking-window-status" class="booking-status pending">
+                            ⏳ Aguardando confirmação...
+                        </div>
+                    </div>
+                    <div class="booking-actions-panel">
+                        <div class="booking-actions-row">
+                            <button id="window-chat-btn" class="chat-btn">💬 Chat</button>
+                            <button id="window-cancel-btn" class="cancel-btn">❌ Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="booking-chat-panel">
+                    <div class="chat-header">
+                        <h3 id="booking-chat-title">💬 Chat com Motorista</h3>
+                    </div>
+                    <div id="booking-chat-messages" class="chat-messages">
+                        <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
+                            <span id="booking-chat-placeholder">Nenhuma mensagem ainda</span>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <form id="booking-chat-form">
+                            <input type="text" id="booking-chat-message" placeholder="Digite sua mensagem..." required>
+                            <button type="submit">Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Autocomplete de moradas portuguesas
+        // Autocomplete de moradas portuguesas com POIs e números
         const portugueseAddresses = [
-            "Avenida da Liberdade, Lisboa",
-            "Rua Augusta, Lisboa", 
-            "Praça do Comércio, Lisboa",
-            "Rua de Santa Catarina, Porto",
-            "Avenida dos Aliados, Porto",
-            "Rua Miguel Bombarda, Porto",
-            "Praça da República, Lisboa",
-            "Avenida de Roma, Lisboa",
-            "Rua de O Século, Lisboa",
-            "Campo de Ourique, Lisboa",
-            "Alfama, Lisboa",
-            "Baixa Chiado, Lisboa",
-            "Bairro Alto, Lisboa",
-            "Belém, Lisboa",
-            "Parque das Nações, Lisboa",
-            "Cascais, Cascais",
-            "Estoril, Cascais",
-            "Sintra, Sintra",
-            "Funchal, Madeira",
-            "Albufeira, Algarve",
-            "Vilamoura, Algarve",
-            "Portimão, Algarve",
-            "Faro, Algarve",
-            "Coimbra, Coimbra",
-            "Universidade de Coimbra, Coimbra",
-            "Braga, Braga",
-            "Guimarães, Guimarães",
-            "Aveiro, Aveiro",
-            "Évora, Évora",
-            "Viseu, Viseu",
-            "Vila Real, Vila Real",
-            "Leiria, Leiria",
-            "Santarém, Santarém",
-            "Fátima, Fátima",
-            "Nazaré, Nazaré",
-            "Óbidos, Óbidos",
-            "Tomar, Tomar",
-            "Aveiro, Aveiro",
-            "Costa Nova, Aveiro",
-            "Barra, Aveiro",
-            "Vila Nova de Gaia, Porto",
-            "Matosinhos, Porto",
-            "Maia, Porto",
-            "Gondomar, Porto",
-            "Rio Tinto, Porto",
-            "Valongo, Porto",
-            "Póvoa de Varzim, Porto",
-            "Vila do Conde, Porto",
-            "Esposende, Braga",
-            "Viana do Castelo, Viana do Castelo",
-            "Chaves, Vila Real",
-            "Vila Pouca de Aguiar, Vila Real",
-            "Lamego, Viseu",
-            "Viseu, Viseu",
-            "Guarda, Guarda",
-            "Covilhã, Castelo Branco",
-            "Castelo Branco, Castelo Branco",
-            "Portalegre, Portalegre",
-            "Santarém, Santarém",
-            "Torres Vedras, Lisboa",
-            "Mafra, Lisboa",
-            "Sintra, Lisboa",
-            "Cascais, Lisboa",
-            "Estoril, Lisboa",
-            "Oeiras, Lisboa",
-            "Amadora, Lisboa",
-            "Odivelas, Lisboa",
-            "Loures, Lisboa",
-            "Vila Franca de Xira, Lisboa",
-            "Alcochete, Setúbal",
-            "Almada, Setúbal",
-            "Barreiro, Setúbal",
-            "Moita, Setúbal",
-            "Montijo, Setúbal",
-            "Palmela, Setúbal",
-            "Seixal, Setúbal",
-            "Sesimbra, Setúbal",
-            "Setúbal, Setúbal",
-            "Sines, Setúbal",
-            "Grândola, Setúbal",
-            "Alcácer do Sal, Setúbal",
-            "Santiago do Cacém, Setúbal",
-            "Beja, Beja",
-            "Mértola, Beja",
-            "Serpa, Beja",
-            "Odemira, Beja",
-            "Ourique, Beja",
-            "Castro Verde, Beja",
-            "Aljustrel, Beja",
-            "Vila Nova de Milfontes, Beja",
-            "Zambujeira do Mar, Beja",
-            "Odeceixe, Beja",
-            "Lagos, Algarve",
-            "Loulé, Algarve",
-            "São Brás de Alportel, Algarve",
-            "Tavira, Algarve",
-            "Olhão, Algarve",
-            "Silves, Algarve",
-            "Alcoutim, Algarve",
-            "Aljezur, Algarve",
-            "Monchique, Algarve",
-            "Vila do Bispo, Algarve",
-            "Sagres, Algarve",
-            "Budens, Algarve",
-            "Ribeira Grande, Açores",
-            "Ponta Delgada, Açores",
-            "Angra do Heroísmo, Açores",
-            "Horta, Açores",
-            "Madalena, Açores",
-            "Velas, Açores",
-            "Santa Cruz das Flores, Açores",
-            "Vila do Porto, Açores"
+            "Avenida da Liberdade 1, Lisboa",
+            "Avenida da Liberdade 100, Lisboa", 
+            "Avenida da Liberdade 250, Lisboa",
+            "Rua Augusta 10, Lisboa",
+            "Rua Augusta 50, Lisboa",
+            "Rua Augusta 100, Lisboa",
+            "Praça do Comércio 1, Lisboa",
+            "Praça do Comércio 50, Lisboa",
+            "Rua de Santa Catarina 25, Porto",
+            "Rua de Santa Catarina 100, Porto",
+            "Rua de Santa Catarina 200, Porto",
+            "Avenida dos Aliados 50, Porto",
+            "Avenida dos Aliados 100, Porto",
+            "Rua Miguel Bombarda 25, Porto",
+            "Rua Miguel Bombarda 150, Porto",
+            "Praça da República 1, Lisboa",
+            "Praça da República 50, Lisboa",
+            "Avenida de Roma 10, Lisboa",
+            "Avenida de Roma 100, Lisboa",
+            "Rua de O Século 5, Lisboa",
+            "Rua de O Século 25, Lisboa",
+            "Campo de Ourique 25, Lisboa",
+            "Campo de Ourique 100, Lisboa",
+            "Alfama - Rua dos Remédios 10, Lisboa",
+            "Alfama - Largo das Portas do Sol 5, Lisboa",
+            "Baixa Chiado - Rua Garrett 25, Lisboa",
+            "Baixa Chiado - Largo do Chiado 10, Lisboa",
+            "Bairro Alto - Rua da Atalaia 15, Lisboa",
+            "Bairro Alto - Rua Diário de Notícias 50, Lisboa",
+            "Belém - Praça Afonso de Albuquerque 1, Lisboa",
+            "Belém - Rua de Belém 100, Lisboa",
+            "Parque das Nações - Gare do Oriente, Lisboa",
+            "Parque das Nações - Torre Vasco da Gama, Lisboa",
+            "Parque das Nações - Oceanário, Lisboa",
+            "Cascais - Rua Frederico Arouca 10, Cascais",
+            "Cascais - Boca do Inferno, Cascais",
+            "Estoril - Casino Estoril, Estoril",
+            "Estoril - Praia da Poça, Estoril",
+            "Sintra - Palácio da Pena, Sintra",
+            "Sintra - Castelo dos Mouros, Sintra",
+            "Sintra - Centro Histórico 25, Sintra",
+            "Funchal - Avenida do Mar 100, Funchal",
+            "Funchal - Mercado dos Lavradores, Funchal",
+            "Albufeira - Praia dos Pescadores, Albufeira",
+            "Albufeira - Strip do Algarve, Albufeira",
+            "Vilamoura - Marina de Vilamoura, Vilamoura",
+            "Vilamoura - Praia da Falésia, Vilamoura",
+            "Portimão - Praia da Rocha, Portimão",
+            "Portimão - Marina de Portimão, Portimão",
+            "Faro - Aeroporto de Faro, Faro",
+            "Faro - Centro Histórico 50, Faro",
+            "Coimbra - Universidade de Coimbra, Coimbra",
+            "Coimbra - Praça da República 10, Coimbra",
+            "Braga - Bom Jesus do Monte, Braga",
+            "Braga - Sé de Braga, Braga",
+            "Guimarães - Castelo de Guimarães, Guimarães",
+            "Guimarães - Palácio dos Duques de Bragança, Guimarães",
+            "Aveiro - Canal de Aveiro, Aveiro",
+            "Aveiro - Praça da República 25, Aveiro",
+            "Évora - Templo de Diana, Évora",
+            "Évora - Praça do Giraldo 1, Évora",
+            "Viseu - Sé de Viseu, Viseu",
+            "Vila Real - Palácio de Mateus, Vila Real",
+            "Leiria - Castelo de Leiria, Leiria",
+            "Santarém - Jardim Portas do Sol, Santarém",
+            "Fátima - Santuário de Fátima, Fátima",
+            "Nazaré - Praia da Nazaré, Nazaré",
+            "Nazaré - Miradouro do Suberco, Nazaré",
+            "Óbidos - Castelo de Óbidos, Óbidos",
+            "Óbidos - Rua Direita 25, Óbidos",
+            "Tomar - Convento de Cristo, Tomar",
+            "Costa Nova - Praia da Costa Nova, Aveiro",
+            "Barra - Farol de Aveiro, Aveiro",
+            "Vila Nova de Gaia - Cais de Gaia, Vila Nova de Gaia",
+            "Vila Nova de Gaia - Jardim do Morro, Vila Nova de Gaia",
+            "Matosinhos - Mercado Municipal, Matosinhos",
+            "Matosinhos - Praia de Matosinhos, Matosinhos",
+            "Maia - Parque da Maia, Maia",
+            "Gondomar - Parque de São Domingos, Gondomar",
+            "Rio Tinto - Centro Comercial, Rio Tinto",
+            "Valongo - Piscinas Municipais, Valongo",
+            "Póvoa de Varzim - Praia da Póvoa, Póvoa de Varzim",
+            "Vila do Conde - Praia de Vila do Conde, Vila do Conde",
+            "Esposende - Praia de Esposende, Esposende",
+            "Viana do Castelo - Praia do Cabedelo, Viana do Castelo",
+            "Chaves - Praça de Camões, Chaves",
+            "Vila Pouca de Aguiar - Termas, Vila Pouca de Aguiar",
+            "Lamego - Santuário de Nossa Senhora dos Remédios, Lamego",
+            "Guarda - Sé da Guarda, Guarda",
+            "Covilhã - Praça do Município, Covilhã",
+            "Castelo Branco - Jardim do Paço, Castelo Branco",
+            "Portalegre - Praça da República, Portalegre",
+            "Torres Vedras - Castelo de Torres Vedras, Torres Vedras",
+            "Mafra - Palácio Nacional de Mafra, Mafra",
+            "Oeiras - Parque dos Poetas, Oeiras",
+            "Amadora - Centro Comercial Dolce Vita, Amadora",
+            "Odivelas - Jardim Odivelas, Odivelas",
+            "Loures - Centro Histórico de Loures, Loures",
+            "Vila Franca de Xira - Praça da República, Vila Franca de Xira",
+            "Alcochete - Praça 21 de Agosto, Alcochete",
+            "Almada - Cacilhas, Almada",
+            "Almada - Costa da Caparica, Almada",
+            "Barreiro - Praça da República, Barreiro",
+            "Moita - Centro Comercial, Moita",
+            "Montijo - Aeroporto, Montijo",
+            "Palmela - Castelo de Palmela, Palmela",
+            "Seixal - Jardim Municipal, Seixal",
+            "Sesimbra - Praia da Ribeira, Sesimbra",
+            "Setúbal - Praça do Bocage, Setúbal",
+            "Sines - Porto de Sines, Sines",
+            "Grândola - Praça da República, Grândola",
+            "Alcácer do Sal - Castelo de Alcácer do Sal, Alcácer do Sal",
+            "Santiago do Cacém - Praça da República, Santiago do Cacém",
+            "Beja - Praça da República, Beja",
+            "Mértola - Castelo de Mértola, Mértola",
+            "Serpa - Castelo de Serpa, Serpa",
+            "Odemira - Praia de Zambujeira do Mar, Odemira",
+            "Ourique - Praça da República, Ourique",
+            "Aljustrel - Museu, Aljustrel",
+            "Vila Nova de Milfontes - Praia, Vila Nova de Milfontes",
+            "Zambujeira do Mar - Praia, Zambujeira do Mar",
+            "Odeceixe - Praia, Odeceixe",
+            "Lagos - Praia Dona Ana, Lagos",
+            "Lagos - Centro Histórico, Lagos",
+            "Loulé - Mercado Municipal, Loulé",
+            "São Brás de Alportel - Centro, São Brás de Alportel",
+            "Tavira - Praça da República, Tavira",
+            "Tavira - Ilha de Tavira, Tavira",
+            "Olhão - Mercado, Olhão",
+            "Silves - Castelo, Silves",
+            "Alcoutim - Centro, Alcoutim",
+            "Aljezur - Praia da Amoreira, Aljezur",
+            "Monchique - Serra de Monchique, Monchique",
+            "Vila do Bispo - Sagres, Vila do Bispo",
+            "Sagres - Fortaleza de Sagres, Sagres",
+            "Budens - Praia do Burgau, Budens",
+            "Ribeira Grande - Praia, Ribeira Grande",
+            "Ponta Delgada - Portas da Cidade, Ponta Delgada",
+            "Ponta Delgada - Mercado, Ponta Delgada",
+            "Angra do Heroísmo - Centro Histórico, Angra do Heroísmo",
+            "Angra do Heroísmo - Monte Brasil, Angra do Heroísmo",
+            "Horta - Porto da Horta, Horta",
+            "Horta - Jardim Florêncio Terra, Horta",
+            "Madalena - Porto da Madalena, Madalena",
+            "Velas - Porto das Velas, Velas",
+            "Santa Cruz das Flores - Centro, Santa Cruz das Flores",
+            "Vila do Porto - Porto, Vila do Porto",
+            "Hospital de São José, Lisboa",
+            "Hospital de Santa Maria, Lisboa",
+            "Hospital Curry Cabral, Lisboa",
+            "Centro Hospitalar de Lisboa Central, Lisboa",
+            "Hospital de São João, Porto",
+            "Hospital Santo António, Porto",
+            "Centro Hospitalar do Porto, Porto",
+            "Hospital da Universidade de Coimbra, Coimbra",
+            "Hospital Espírito Santo, Évora",
+            "Hospital de Faro, Faro",
+            "Aeroporto Humberto Delgado, Lisboa",
+            "Aeroporto Francisco Sá Carneiro, Porto",
+            "Aeroporto de Faro, Faro",
+            "Aeroporto João Paulo II, Ponta Delgada",
+            "Gare do Oriente, Lisboa",
+            "Santa Apolónia, Lisboa",
+            "São Bento, Porto",
+            "Campanhã, Porto",
+            "Centro Comercial Colombo, Lisboa",
+            "Centro Comercial Vasco da Gama, Lisboa",
+            "El Corte Inglés, Lisboa",
+            "El Corte Inglés, Porto",
+            "IKEA Loures, Loures",
+            "IKEA Matosinhos, Matosinhos"
         ];
 
         // Translations
@@ -1086,44 +1315,67 @@
             const bookingInfo = document.getElementById('booking-info');
             const noBookings = document.getElementById('no-bookings');
             const bookingDetails = document.getElementById('booking-details');
+            const bookingCta = document.getElementById('booking-cta');
+            
+            // Mostrar CTA e esconder formulário antigo
+            bookingInfo.style.display = 'none';
+            noBookings.style.display = 'none';
+            bookingCta.style.display = 'block';
+            
+            // Atualizar detalhes na janela
+            updateBookingWindow(booking);
+            updateBookingStatus('pending');
+        }
+
+        // Update booking window
+        function updateBookingWindow(booking) {
+            const bookingDetails = document.getElementById('booking-window-details');
             
             bookingDetails.innerHTML = `
                 <strong>🆔 ID: ${booking.bookingId}</strong><br>
                 <strong>👤 ${booking.nome}</strong><br>
                 📞 ${booking.telefone}<br>
-                � ${booking.data} às ${booking.hora}<br>
-                �📍 ${booking.recolha}<br>
+                📅 ${booking.data} às ${booking.hora}<br>
+                📍 ${booking.recolha}<br>
                 🎯 ${booking.destino}
             `;
-            
-            bookingInfo.style.display = 'block';
-            noBookings.style.display = 'none';
-            updateBookingStatus('pending');
         }
 
         // Update booking status
         function updateBookingStatus(status) {
             const statusElement = document.getElementById('booking-status');
+            const windowStatusElement = document.getElementById('booking-window-status');
             const t = translations[currentLang];
             
-            statusElement.className = 'booking-status ' + status;
+            const statusClass = 'booking-status ' + status;
+            const statusText = getStatusText(status, t);
             
+            if (statusElement) {
+                statusElement.className = statusClass;
+                statusElement.textContent = statusText;
+            }
+            
+            if (windowStatusElement) {
+                windowStatusElement.className = statusClass;
+                windowStatusElement.textContent = statusText;
+            }
+        }
+
+        // Get status text
+        function getStatusText(status, t) {
             switch(status) {
                 case 'pending':
-                    statusElement.textContent = t.bookingPending;
-                    break;
+                    return t.bookingPending;
                 case 'accepted':
-                    statusElement.textContent = t.bookingAccepted;
-                    break;
+                    return t.bookingAccepted;
                 case 'rejected':
-                    statusElement.textContent = t.bookingRejected;
-                    break;
+                    return t.bookingRejected;
                 case 'cancelled':
-                    statusElement.textContent = t.bookingCancelled;
-                    break;
+                    return t.bookingCancelled;
                 case 'completed':
-                    statusElement.textContent = t.bookingCompleted;
-                    break;
+                    return t.bookingCompleted;
+                default:
+                    return '';
             }
         }
 
@@ -1131,40 +1383,67 @@
         function hideBooking() {
             const bookingInfo = document.getElementById('booking-info');
             const noBookings = document.getElementById('no-bookings');
+            const bookingCta = document.getElementById('booking-cta');
+            const bookingWindow = document.getElementById('booking-window');
             
             bookingInfo.style.display = 'none';
+            bookingCta.style.display = 'none';
             noBookings.style.display = 'block';
+            bookingWindow.classList.remove('show');
             currentBooking = null;
             
             // Clear chat messages
-            const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = `
-                <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
-                    <span id="chat-placeholder">${translations[currentLang].chatPlaceholder}</span>
-                </div>
-            `;
+            clearAllChats();
         }
 
-        // Display chat message
+        // Clear all chats
+        function clearAllChats() {
+            const chatContainers = [
+                'chat-messages',
+                'booking-chat-messages'
+            ];
+            
+            chatContainers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
+                            <span class="chat-placeholder">${translations[currentLang].chatPlaceholder}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Display chat message in all active chats
         function displayChatMessage(data) {
-            const chatMessages = document.getElementById('chat-messages');
-            const placeholder = document.getElementById('chat-placeholder');
+            const chatContainers = [
+                { id: 'chat-messages', placeholderId: 'chat-placeholder' },
+                { id: 'booking-chat-messages', placeholderId: 'booking-chat-placeholder' }
+            ];
             
-            // Remove placeholder if exists
-            if (placeholder) {
-                placeholder.remove();
-            }
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${data.type || 'client'}`;
-            messageDiv.innerHTML = `
-                <strong>${data.name}</strong>
-                <div>${data.message}</div>
-                <div class="time">${new Date().toLocaleTimeString()}</div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatContainers.forEach(({ id, placeholderId }) => {
+                const container = document.getElementById(id);
+                const placeholder = document.getElementById(placeholderId);
+                
+                if (container) {
+                    // Remove placeholder if exists
+                    if (placeholder) {
+                        placeholder.remove();
+                    }
+                    
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${data.type || 'client'}`;
+                    messageDiv.innerHTML = `
+                        <strong>${data.name}</strong>
+                        <div>${data.message}</div>
+                        <div class="time">${new Date().toLocaleTimeString()}</div>
+                    `;
+                    
+                    container.appendChild(messageDiv);
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
         }
 
         // Show notification
@@ -1228,44 +1507,31 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Reserva enviada:', result);
-                    
-                    // Show success message
                     const successMsg = document.getElementById('success-message');
                     successMsg.classList.add('show');
-                    
-                    // Display booking with ID from server
                     displayBooking({
                         ...data,
                         bookingId: result.bookingId
                     });
-                    
-                    // Reset form
                     e.target.reset();
-                    setDefaultDateTime();
-                    
-                    // Hide success message after 3 seconds
                     setTimeout(() => {
                         successMsg.classList.remove('show');
                     }, 3000);
                 } else {
-                    console.error('Erro ao enviar reserva');
                     showNotification('❌ Erro ao enviar reserva');
                 }
             } catch (error) {
-                console.error('Erro:', error);
                 showNotification('❌ Erro de conexão');
             }
         });
 
-        // Handle chat form submission
+        // Chat form submission (popup)
         document.getElementById('chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const message = document.getElementById('chat-message').value.trim();
             if (!message || !currentBooking) return;
             
-            // Send via Socket.io
             socket.emit('message_to_driver', {
                 name: currentBooking.nome,
                 phone: currentBooking.telefone,
@@ -1274,27 +1540,83 @@
                 clientId: clientId
             });
             
-            // Display as own message
             displayChatMessage({
                 name: 'Você',
                 message: message,
                 type: 'client'
             });
             
-            // Clear form
             document.getElementById('chat-message').value = '';
         });
 
-        // Chat popup controls
+        // Chat form submission (booking window)
+        document.getElementById('booking-chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = document.getElementById('booking-chat-message').value.trim();
+            if (!message || !currentBooking) return;
+            
+            socket.emit('message_to_driver', {
+                name: currentBooking.nome,
+                phone: currentBooking.telefone,
+                bookingId: currentBooking.bookingId,
+                message: message,
+                clientId: clientId
+            });
+            
+            displayChatMessage({
+                name: 'Você',
+                message: message,
+                type: 'client'
+            });
+            
+            document.getElementById('booking-chat-message').value = '';
+        });
+
+        // View booking button
+        document.getElementById('view-booking-btn').addEventListener('click', () => {
+            document.getElementById('booking-window').classList.add('show');
+        });
+
+        // Close booking window
+        document.getElementById('close-booking').addEventListener('click', () => {
+            document.getElementById('booking-window').classList.remove('show');
+        });
+
+        // Window chat button
+        document.getElementById('window-chat-btn').addEventListener('click', () => {
+            // Focus on the booking chat input
+            document.getElementById('booking-chat-message').focus();
+        });
+
+        // Window cancel button
+        document.getElementById('window-cancel-btn').addEventListener('click', () => {
+            if (currentBooking) {
+                socket.emit('cancel_booking', {
+                    bookingId: currentBooking.bookingId,
+                    name: currentBooking.nome,
+                    phone: currentBooking.telefone,
+                    clientId: clientId
+                });
+                
+                updateBookingStatus('cancelled');
+                setTimeout(() => {
+                    hideBooking();
+                }, 2000);
+            }
+        });
+
+        // Original chat button (opens popup)
         document.getElementById('chat-btn').addEventListener('click', () => {
             document.getElementById('chat-popup').classList.add('show');
         });
 
+        // Close chat popup
         document.getElementById('close-chat').addEventListener('click', () => {
             document.getElementById('chat-popup').classList.remove('show');
         });
 
-        // Cancel booking
+        // Original cancel button
         document.getElementById('cancel-btn').addEventListener('click', () => {
             if (currentBooking) {
                 socket.emit('cancel_booking', {
