@@ -404,6 +404,141 @@
             background: #f8f9fa;
         }
 
+        .booking-chat-panel .chat-header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #ffffff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #2980b9;
+        }
+
+        .booking-chat-panel .chat-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .booking-chat-panel .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .booking-chat-panel .chat-message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            word-wrap: break-word;
+            animation: slideInUp 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .booking-chat-panel .chat-message.client {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 6px;
+        }
+
+        .booking-chat-panel .chat-message.driver {
+            align-self: flex-start;
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            color: #2c3e50;
+            border-bottom-left-radius: 6px;
+        }
+
+        .booking-chat-panel .chat-message strong {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+            opacity: 0.9;
+        }
+
+        .booking-chat-panel .chat-message.client strong {
+            color: #ffffff;
+        }
+
+        .booking-chat-panel .chat-message.driver strong {
+            color: #2c3e50;
+        }
+
+        .booking-chat-panel .chat-message .time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .booking-chat-panel .chat-input {
+            padding: 15px;
+            background: #ffffff;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .booking-chat-panel .chat-input form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .booking-chat-panel .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ecf0f1;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+        }
+
+        .booking-chat-panel .chat-input input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: #ffffff;
+        }
+
+        .booking-chat-panel .chat-input input::placeholder {
+            color: #95a5a6;
+        }
+
+        .booking-chat-panel .chat-input button {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .booking-chat-panel .chat-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+        }
+
+        .booking-chat-panel .chat-input button:active {
+            transform: translateY(0);
+        }
+
+        .booking-chat-panel .chat-placeholder {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            padding: 30px 20px;
+            font-size: 0.9rem;
+        }
+
         .booking-info-card {
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             border: none;
@@ -635,7 +770,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(44, 62, 80, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
@@ -648,43 +783,45 @@
         }
 
         .chat-container {
-            background: rgba(30, 30, 30, 0.98);
-            border: 2px solid #4a7c59;
-            border-radius: 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #2c3e50;
+            border-radius: 20px;
             width: 100%;
             max-width: 500px;
-            height: 85%;
+            height: 80vh;
             max-height: 700px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 0 50px rgba(74, 124, 89, 0.3);
+            box-shadow: 0 20px 60px rgba(44, 62, 80, 0.3);
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: #ffffff;
             padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid #3498db;
         }
 
         .chat-header h3 {
             margin: 0;
-            font-size: 1.3rem;
-            font-weight: 800;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .close-chat {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: #ffffff;
             font-size: 1.8rem;
             cursor: pointer;
-            padding: 5px;
-            border-radius: 8px;
-            transition: background 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
             width: 40px;
             height: 40px;
             display: flex;
@@ -693,63 +830,85 @@
         }
 
         .close-chat:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .chat-messages {
             flex: 1;
-            overflow-y: auto;
             padding: 20px;
-            background: rgba(20, 20, 20, 0.6);
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .chat-message {
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 18px;
             max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
             word-wrap: break-word;
+            animation: slideInUp 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chat-message.client {
-            background: linear-gradient(135deg, rgba(74, 124, 89, 0.2) 0%, rgba(74, 124, 89, 0.1) 100%);
             align-self: flex-end;
-            margin-left: auto;
-            border: 1px solid rgba(74, 124, 89, 0.3);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 6px;
         }
 
         .chat-message.driver {
-            background: linear-gradient(135deg, rgba(42, 84, 52, 0.2) 0%, rgba(42, 84, 52, 0.1) 100%);
             align-self: flex-start;
-            border: 1px solid rgba(42, 84, 52, 0.3);
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            color: #2c3e50;
+            border-bottom-left-radius: 6px;
         }
 
         .chat-message strong {
             display: block;
-            margin-bottom: 6px;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 700;
+            margin-bottom: 4px;
+            opacity: 0.9;
         }
 
         .chat-message.client strong {
-            color: #4a7c59;
+            color: #ffffff;
         }
 
         .chat-message.driver strong {
-            color: #2a5434;
+            color: #2c3e50;
         }
 
         .chat-message .time {
-            font-size: 0.8rem;
-            color: #4a7c59;
-            margin-top: 6px;
+            font-size: 0.75rem;
             opacity: 0.7;
+            margin-top: 6px;
+            text-align: right;
+        }
+
+        .chat-message.driver .time {
+            text-align: right;
         }
 
         .chat-input {
             padding: 20px;
-            background: rgba(30, 30, 30, 0.9);
-            border-top: 2px solid #4a7c59;
+            background: #ffffff;
+            border-top: 1px solid #ecf0f1;
         }
 
         .chat-input form {
@@ -759,37 +918,154 @@
 
         .chat-input input {
             flex: 1;
-            padding: 15px;
-            background: rgba(20, 20, 20, 0.6);
-            border: 2px solid #4a7c59;
-            border-radius: 12px;
-            color: #ffffff;
+            padding: 14px 16px;
+            border: 2px solid #ecf0f1;
+            border-radius: 25px;
             font-size: 1rem;
-            font-weight: 500;
+            background: #f8f9fa;
+            color: #2c3e50;
+            transition: all 0.3s ease;
         }
 
         .chat-input input:focus {
             outline: none;
-            border-color: #4a7c59;
-            box-shadow: 0 0 15px rgba(74, 124, 89, 0.3);
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: #ffffff;
+        }
+
+        .chat-input input::placeholder {
+            color: #95a5a6;
         }
 
         .chat-input button {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #4a7c59 0%, #2a5434 100%);
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: #ffffff;
             border: none;
-            border-radius: 12px;
+            border-radius: 25px;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
         .chat-input button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(74, 124, 89, 0.4);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .chat-input button:active {
+            transform: translateY(0);
+        }
+
+        /* Chat placeholder styling */
+        .chat-placeholder {
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+            padding: 40px 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Mobile chat optimizations */
+        @media (max-width: 768px) {
+            .chat-popup {
+                padding: 10px;
+            }
+
+            .chat-container {
+                height: 90vh;
+                max-height: none;
+                border-radius: 15px;
+            }
+
+            .chat-header {
+                padding: 15px;
+            }
+
+            .chat-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .chat-messages {
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .chat-message {
+                max-width: 85%;
+                padding: 10px 14px;
+            }
+
+            .chat-input {
+                padding: 15px;
+            }
+
+            .chat-input input {
+                padding: 12px 16px;
+            }
+
+            .chat-input button {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-popup {
+                padding: 0;
+            }
+
+            .chat-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .chat-header {
+                padding: 12px;
+            }
+
+            .chat-header h3 {
+                font-size: 1rem;
+            }
+
+            .chat-messages {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .chat-message {
+                max-width: 90%;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .chat-message strong {
+                font-size: 0.8rem;
+            }
+
+            .chat-message .time {
+                font-size: 0.7rem;
+            }
+
+            .chat-input {
+                padding: 12px;
+            }
+
+            .chat-input input {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+
+            .chat-input button {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
         }
 
         .booking-status {
@@ -1237,51 +1513,57 @@
                 dateLabel: 'Data',
                 timeLabel: 'Hora',
                 pickupLabel: 'Local de Recolha',
-                destLabel: 'Destino',
-                submitBtn: 'Reservar Taxi',
-                statusText: 'Conectado',
-                notification: '📍 O motorista chegou! Por favor, aguarde.',
-                successMessage: '✅ Reserva enviada com sucesso!',
-                chatTitle: '💬 Chat com Motorista',
-                chatPlaceholder: 'Nenhuma mensagem ainda',
-                chatMessagePlaceholder: 'Digite sua mensagem...',
+                destinationLabel: 'Destino',
+                submitButton: 'Reservar Táxi',
                 bookingTitle: '🚕 Reserva Ativa',
-                noBookings: 'Sem reservas ativas',
-                bookingPending: '⏳ Aguardando confirmação...',
-                bookingAccepted: '✅ Reserva aceita! Motorista a caminho.',
-                bookingRejected: '❌ Reserva recusada. Tente novamente.',
-                bookingCancelled: '❌ Reserva cancelada.',
-                bookingCompleted: '✅ Viagem concluída!',
-                driverArrived: '📍 O motorista chegou! Por favor, aguarde.',
+                chatTitle: '� Chat com Motorista',
+                bookingPending: '⏳ Aguardando Confirmação',
+                bookingAccepted: '✅ Reserva Aceita',
+                bookingRejected: '❌ Reserva Recusada',
+                bookingCancelled: '❌ Reserva Cancelada',
+                bookingCompleted: '✅ Viagem Concluída',
+                chatPlaceholder: 'Nenhuma mensagem ainda. Inicie a conversa!',
+                messagePlaceholder: 'Digite sua mensagem...',
+                sendButton: 'Enviar',
+                viewBookingButton: '🚕 Ver Reserva Ativa',
+                chatButton: '💬 Chat',
+                cancelButton: '❌ Cancelar',
+                driverArrived: '🚕 Motorista chegou!',
                 newBooking: '🚕 Nova reserva recebida!',
-                messageFromDriver: '💬 Mensagem do motorista:'
+                messageFromDriver: 'Mensagem do motorista:',
+                connected: 'Conectado',
+                disconnected: 'Desconectado',
+                noBookings: 'Sem reservas ativas no momento'
             },
             en: {
-                title: '691 Lisbon',
+                title: '691 Lisboa',
                 subtitle: 'Taxi',
                 nameLabel: 'Name',
                 phoneLabel: 'Phone',
                 dateLabel: 'Date',
                 timeLabel: 'Time',
                 pickupLabel: 'Pickup Location',
-                destLabel: 'Destination',
-                submitBtn: 'Book Taxi',
-                statusText: 'Connected',
-                notification: '📍 The driver has arrived! Please wait.',
-                successMessage: '✅ Booking sent successfully!',
-                chatTitle: '💬 Chat with Driver',
-                chatPlaceholder: 'No messages yet',
-                chatMessagePlaceholder: 'Type your message...',
+                destinationLabel: 'Destination',
+                submitButton: 'Book Taxi',
                 bookingTitle: '🚕 Active Booking',
-                noBookings: 'No active bookings',
-                bookingPending: '⏳ Awaiting confirmation...',
-                bookingAccepted: '✅ Booking accepted! Driver on the way.',
-                bookingRejected: '❌ Booking rejected. Please try again.',
-                bookingCancelled: '❌ Booking cancelled.',
-                bookingCompleted: '✅ Trip completed!',
-                driverArrived: '📍 The driver has arrived! Please wait.',
+                chatTitle: '� Chat with Driver',
+                bookingPending: '⏳ Awaiting Confirmation',
+                bookingAccepted: '✅ Booking Accepted',
+                bookingRejected: '❌ Booking Rejected',
+                bookingCancelled: '❌ Booking Cancelled',
+                bookingCompleted: '✅ Trip Completed',
+                chatPlaceholder: 'No messages yet. Start the conversation!',
+                messagePlaceholder: 'Type your message...',
+                sendButton: 'Send',
+                viewBookingButton: '🚕 View Active Booking',
+                chatButton: '💬 Chat',
+                cancelButton: '❌ Cancel',
+                driverArrived: '🚕 Driver has arrived!',
                 newBooking: '🚕 New booking received!',
-                messageFromDriver: '💬 Message from driver:'
+                messageFromDriver: 'Message from driver:',
+                connected: 'Connected',
+                disconnected: 'Disconnected',
+                noBookings: 'No active bookings at the moment'
             }
         };
 
