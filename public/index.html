@@ -5,7 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>691 Lisboa</title>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/addresses.js"></script>
     <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --background-light: #f8fafc;
+            --background-dark: #1e293b;
+            --text-light: #1e293b;
+            --text-dark: #f8fafc;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --input-bg: #f8fafc;
+            --chat-bg: #f1f5f9;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +32,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, var(--background-light) 0%, #e2e8f0 100%);
+            color: var(--text-light);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -31,13 +49,13 @@
         }
 
         .form-card {
-            background: rgba(30, 30, 30, 0.95);
-            border: 2px solid #2a5434;
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
             border-radius: 25px;
             padding: 35px 25px;
             backdrop-filter: blur(25px);
-            box-shadow: 0 0 50px rgba(42, 84, 52, 0.2),
-                        inset 0 0 30px rgba(42, 84, 52, 0.05);
+            box-shadow: 0 0 50px rgba(30, 58, 138, 0.15),
+                        inset 0 0 30px rgba(30, 58, 138, 0.05);
         }
 
         .logo {
@@ -48,10 +66,15 @@
         .logo h1 {
             font-size: 2.8rem;
             font-weight: 900;
-            color: #4a7c59;
-            margin-bottom: 8px;
-            text-shadow: 0 0 20px rgba(74, 124, 89, 0.3);
-            letter-spacing: -1px;
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+        }
+
+        .logo h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-top: 5px;
         }
 
         .logo p {
@@ -62,27 +85,29 @@
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             position: relative;
         }
 
         .form-group label {
             display: block;
-            color: #4a7c59;
-            font-size: 0.95rem;
             margin-bottom: 8px;
             font-weight: 600;
+            color: var(--text-light);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-size: 0.85rem;
         }
 
         .form-group input {
             width: 100%;
             padding: 18px 15px;
-            background: rgba(20, 20, 20, 0.6);
-            border: 2px solid #2a5434;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
             border-radius: 15px;
             transition: all 0.3s ease;
+            color: var(--text-light);
+            font-size: 1rem;
         }
 
         .form-control:focus {
@@ -319,12 +344,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(44, 62, 80, 0.95);
+            background: rgba(30, 58, 138, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
-            padding: 10px;
+            z-index: 3000;
+            padding: 20px;
         }
 
         .booking-window.show {
@@ -332,32 +357,32 @@
         }
 
         .booking-container {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border: 2px solid #2c3e50;
-            border-radius: 20px;
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 25px;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             height: 90vh;
-            max-height: 900px;
+            max-height: 700px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(44, 62, 80, 0.3);
+            box-shadow: 0 25px 70px rgba(30, 58, 138, 0.3);
         }
 
         .booking-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-dark);
             padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid var(--accent-color);
         }
 
-        .booking-header h3 {
+        .booking-header h2 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 700;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
@@ -365,7 +390,7 @@
         .close-booking {
             background: rgba(255, 255, 255, 0.2);
             border: none;
-            color: #ffffff;
+            color: var(--text-dark);
             font-size: 1.8rem;
             cursor: pointer;
             padding: 8px;
@@ -770,11 +795,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(44, 62, 80, 0.95);
+            background: rgba(30, 58, 138, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
+            z-index: 2500;
             padding: 15px;
         }
 
@@ -783,8 +808,8 @@
         }
 
         .chat-container {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border: 2px solid #2c3e50;
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--background-light) 100%);
+            border: 2px solid var(--primary-color);
             border-radius: 20px;
             width: 100%;
             max-width: 500px;
@@ -793,17 +818,17 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(44, 62, 80, 0.3);
+            box-shadow: 0 20px 60px rgba(30, 58, 138, 0.3);
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-dark);
             padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid var(--accent-color);
         }
 
         .chat-header h3 {
@@ -866,15 +891,15 @@
 
         .chat-message.client {
             align-self: flex-end;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            color: var(--text-dark);
             border-bottom-right-radius: 6px;
         }
 
         .chat-message.driver {
             align-self: flex-start;
-            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
-            color: #2c3e50;
+            background: linear-gradient(135deg, var(--background-light) 0%, var(--border-color) 100%);
+            color: var(--text-light);
             border-bottom-left-radius: 6px;
         }
 
@@ -1518,7 +1543,7 @@
                 bookingTitle: '🚕 Reserva Ativa',
                 chatTitle: '� Chat com Motorista',
                 bookingPending: '⏳ Aguardando Confirmação',
-                bookingAccepted: '✅ Reserva Aceita',
+                bookingAccepted: '✅ Reserva Aceite',
                 bookingRejected: '❌ Reserva Recusada',
                 bookingCancelled: '❌ Reserva Cancelada',
                 bookingCompleted: '✅ Viagem Concluída',
@@ -1571,6 +1596,119 @@
         let socket = null;
         let currentBooking = null;
         let clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+
+        // Autocomplete para endereços
+        function setupAddressAutocomplete() {
+            const pickupInput = document.getElementById('recolha');
+            const destinationInput = document.getElementById('destino');
+            
+            [pickupInput, destinationInput].forEach(input => {
+                let currentFocus = -1;
+                
+                // Create autocomplete container
+                const autocompleteContainer = document.createElement('div');
+                autocompleteContainer.className = 'autocomplete-items';
+                autocompleteContainer.style.position = 'absolute';
+                autocompleteContainer.style.top = '100%';
+                autocompleteContainer.style.left = '0';
+                autocompleteContainer.style.right = '0';
+                autocompleteContainer.style.background = 'var(--card-bg)';
+                autocompleteContainer.style.border = '2px solid var(--primary-color)';
+                autocompleteContainer.style.borderTop = 'none';
+                autocompleteContainer.style.borderRadius = '0 0 15px 15px';
+                autocompleteContainer.style.maxHeight = '200px';
+                autocompleteContainer.style.overflowY = 'auto';
+                autocompleteContainer.style.zIndex = '9999';
+                autocompleteContainer.style.display = 'none';
+                
+                input.parentElement.style.position = 'relative';
+                input.parentElement.appendChild(autocompleteContainer);
+                
+                input.addEventListener('input', function() {
+                    const value = this.value.trim();
+                    if (!value) {
+                        autocompleteContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    const suggestions = searchAddresses(value);
+                    if (suggestions.length === 0) {
+                        autocompleteContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    autocompleteContainer.innerHTML = '';
+                    suggestions.forEach(suggestion => {
+                        const item = document.createElement('div');
+                        item.style.padding = '12px 15px';
+                        item.style.cursor = 'pointer';
+                        item.style.borderBottom = '1px solid var(--border-color)';
+                        item.style.color = 'var(--text-light)';
+                        item.style.fontSize = '0.9rem';
+                        item.innerHTML = `<strong>${suggestion.substring(0, value.length)}</strong>${suggestion.substring(value.length)}`;
+                        
+                        item.addEventListener('click', function() {
+                            input.value = suggestion;
+                            autocompleteContainer.style.display = 'none';
+                        });
+                        
+                        item.addEventListener('mouseenter', function() {
+                            this.style.background = 'var(--background-light)';
+                        });
+                        
+                        item.addEventListener('mouseleave', function() {
+                            this.style.background = 'transparent';
+                        });
+                        
+                        autocompleteContainer.appendChild(item);
+                    });
+                    
+                    autocompleteContainer.style.display = 'block';
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    const items = autocompleteContainer.getElementsByTagName('div');
+                    if (e.keyCode === 40) { // DOWN
+                        currentFocus++;
+                        addActive(items);
+                    } else if (e.keyCode === 38) { // UP
+                        currentFocus--;
+                        addActive(items);
+                    } else if (e.keyCode === 13) { // ENTER
+                        e.preventDefault();
+                        if (currentFocus > -1 && items[currentFocus]) {
+                            items[currentFocus].click();
+                        }
+                    } else if (e.keyCode === 27) { // ESC
+                        autocompleteContainer.style.display = 'none';
+                    }
+                });
+                
+                function addActive(items) {
+                    if (!items) return false;
+                    removeActive(items);
+                    if (currentFocus >= items.length) currentFocus = 0;
+                    if (currentFocus < 0) currentFocus = (items.length - 1);
+                    items[currentFocus].style.background = 'var(--background-light)';
+                }
+                
+                function removeActive(items) {
+                    for (let item of items) {
+                        item.style.background = 'transparent';
+                    }
+                }
+            });
+            
+            // Close autocomplete when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.matches('#recolha, #destino')) {
+                    const autocompleteItems = document.querySelectorAll('.autocomplete-items');
+                    autocompleteItems.forEach(item => {
+                        item.style.display = 'none';
+                    });
+                }
+            });
+        }
 
         // Set default date and time
         function setDefaultDateTime() {
@@ -2101,13 +2239,14 @@
             updateLanguage('en');
         });
 
-        // Initialize
+        // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            initSocket();
-            updateLanguage('pt');
-            setupAutocomplete('recolha', 'recolha-autocomplete');
-            setupAutocomplete('destino', 'destino-autocomplete');
             setDefaultDateTime();
+            initSocket();
+            setupAutocomplete('recolha', 'recolha-list');
+            setupAutocomplete('destino', 'destino-list');
+            setupAddressAutocomplete();
+            updateLanguage();
         });
     </script>
 </body>
