@@ -33,16 +33,20 @@ function AppContent() {
 
   // Esconder splash screen quando App montar
   useEffect(() => {
-    const splash = document.getElementById('splash')
-    if (splash) {
-      splash.style.opacity = '0'
-      splash.style.transition = 'opacity 0.3s ease-out'
-      setTimeout(() => {
-        if (splash) {
-          splash.style.display = 'none'
-        }
-      }, 300)
+    const hideSplash = () => {
+      const splash = document.getElementById('splash')
+      if (splash) {
+        splash.style.opacity = '0'
+        splash.style.transition = 'opacity 0.2s ease-out'
+        setTimeout(() => {
+          if (splash) {
+            splash.style.display = 'none'
+          }
+        }, 200)
+      }
     }
+
+    hideSplash()
   }, [])
 
   const handleBookingComplete = (trip: Trip) => {
