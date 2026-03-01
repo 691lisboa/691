@@ -25,6 +25,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 let bot: TelegramBot | null = null
 let connectedClients = new Set()
 let activeBookings = new Map() // bookingId -> booking data
+let clientBookings = new Map() // clientId -> bookingId
 
 if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
@@ -44,7 +45,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
 
       if (text === '/start') {
         await bot.sendMessage(chatId, 
-          '🚕 *691 Taxi - Motorista*\n\n' +
+          '🚕 *691 Lisboa - Motorista*\n\n' +
           'Comandos:\n' +
           '/start - Este menu\n' +
           '/status - Ver status\n\n' +
@@ -66,15 +67,42 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           const bookingId = parts[1]
           const message = parts.slice(2).join(' ')
           
-          io.emit('message_from_driver', {
-            bookingId: bookingId,
-            message: message,
-            driverName: 'Motorista 691',
-            timestamp: new Date().toISOString()
-          })
+          // Enviar apenas para o cliente específico
+          const clientId = Array.from(clientBookings.entries())
+            .find(([_, bid]) => bid === bookingId)?.[0]
+          
+          if (clientId) {
+            io.to(clientId).emit('message_from_driver', {
+              bookingId: bookingId,
+              message: message,
+              driverName: 'Motorista 691',
+              timestamp: new Date().toISOString()
+            })
+          }
 
           await bot.sendMessage(chatId, `✅ Mensagem enviada para ${bookingId}`)
         }
+      } else if (text.startsWith('/complete ')) {
+        // Completar viagem: /complete ID
+        const bookingId = text.replace('/complete ', '').trim()
+        
+        // Enviar apenas para o cliente específico
+        const clientId = Array.from(clientBookings.entries())
+          .find(([_, bid]) => bid === bookingId)?.[0]
+        
+        if (clientId) {
+          io.to(clientId).emit('booking_completed', {
+            bookingId: bookingId,
+            message: '✅ Viagem concluída! Obrigado pela preferência.',
+            timestamp: new Date().toISOString()
+          })
+          
+          // Limpar reservas
+          activeBookings.delete(bookingId)
+          clientBookings.delete(clientId)
+        }
+
+        await bot.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
       }
     })
 
@@ -87,11 +115,17 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       if (data.startsWith('accept_')) {
         const bookingId = data.replace('accept_', '')
         
-        io.emit('booking_accepted', {
-          bookingId: bookingId,
-          message: '✅ Reserva aceita! Motorista a caminho.',
-          timestamp: new Date().toISOString()
-        })
+        // Enviar apenas para o cliente específico
+        const clientId = Array.from(clientBookings.entries())
+          .find(([_, bid]) => bid === bookingId)?.[0]
+        
+        if (clientId) {
+          io.to(clientId).emit('booking_accepted', {
+            bookingId: bookingId,
+            message: '✅ Reserva aceita! Motorista a caminho.',
+            timestamp: new Date().toISOString()
+          })
+        }
 
         await bot.answerCallbackQuery(callbackQuery.id)
         await bot.sendMessage(chatId, `✅ ${bookingId} - ACEITA`)
@@ -99,13 +133,21 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       } else if (data.startsWith('reject_')) {
         const bookingId = data.replace('reject_', '')
         
-        io.emit('booking_rejected', {
-          bookingId: bookingId,
-          message: '❌ Reserva recusada. Tente novamente.',
-          timestamp: new Date().toISOString()
-        })
-
-        activeBookings.delete(bookingId)
+        // Enviar apenas para o cliente específico
+        const clientId = Array.from(clientBookings.entries())
+          .find(([_, bid]) => bid === bookingId)?.[0]
+        
+        if (clientId) {
+          io.to(clientId).emit('booking_rejected', {
+            bookingId: bookingId,
+            message: '❌ Reserva recusada. Tente novamente.',
+            timestamp: new Date().toISOString()
+          })
+          
+          // Limpar reservas
+          activeBookings.delete(bookingId)
+          clientBookings.delete(clientId)
+        }
 
         await bot.answerCallbackQuery(callbackQuery.id)
         await bot.sendMessage(chatId, `❌ ${bookingId} - RECUSADA`)
@@ -128,6 +170,13 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`Cliente desconectado: ${socket.id}`)
     connectedClients.delete(socket.id)
+    
+    // Limpar reservas do cliente desconectado
+    const bookingId = clientBookings.get(socket.id)
+    if (bookingId) {
+      activeBookings.delete(bookingId)
+      clientBookings.delete(socket.id)
+    }
   })
 
   // Cliente envia mensagem para o motorista
@@ -142,16 +191,18 @@ io.on('connection', (socket) => {
         `💬 *${data.bookingId}*\n\n` +
         `👤 ${data.name}\n` +
         `📞 ${data.phone}\n` +
-        `� ${data.message}\n\n` +
+        `💭 ${data.message}\n\n` +
         `_Responda: ${quickReply}_`,
         { 
           parse_mode: 'Markdown',
           reply_markup: {
             inline_keyboard: [[
-              { text: '� 5 min', callback_data: `reply_${data.bookingId}_5min` },
+              { text: '📍 5 min', callback_data: `reply_${data.bookingId}_5min` },
               { text: '📍 10 min', callback_data: `reply_${data.bookingId}_10min` }
             ], [
               { text: '📍 Cheguei', callback_data: `reply_${data.bookingId}_cheguei` },
+              { text: '✅ Concluir', callback_data: `complete_${data.bookingId}` }
+            ], [
               { text: '❌ Cancelar', callback_data: `reject_${data.bookingId}` }
             ]]
           }
@@ -165,6 +216,7 @@ io.on('connection', (socket) => {
     console.log('Reserva cancelada:', data)
     
     activeBookings.delete(data.bookingId)
+    clientBookings.delete(data.clientId)
     
     if (bot && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       bot.sendMessage(
@@ -176,7 +228,8 @@ io.on('connection', (socket) => {
       ).catch(console.error)
     }
     
-    io.emit('booking_cancelled', {
+    // Enviar apenas para o cliente específico
+    socket.emit('booking_cancelled', {
       bookingId: data.bookingId,
       message: `❌ Reserva ${data.bookingId} cancelada`,
       timestamp: new Date().toISOString()
@@ -210,16 +263,43 @@ if (bot) {
       }
       
       if (message) {
-        io.emit('message_from_driver', {
-          bookingId: bookingId,
-          message: message,
-          driverName: 'Motorista 691',
-          timestamp: new Date().toISOString()
-        })
+        // Enviar apenas para o cliente específico
+        const clientId = Array.from(clientBookings.entries())
+          .find(([_, bid]) => bid === bookingId)?.[0]
+        
+        if (clientId) {
+          io.to(clientId).emit('message_from_driver', {
+            bookingId: bookingId,
+            message: message,
+            driverName: 'Motorista 691',
+            timestamp: new Date().toISOString()
+          })
+        }
 
         await bot.answerCallbackQuery(callbackQuery.id)
         await bot.sendMessage(chatId, `✅ Enviado para ${bookingId}: "${message}"`)
       }
+    } else if (data.startsWith('complete_')) {
+      const bookingId = data.replace('complete_', '')
+      
+      // Enviar apenas para o cliente específico
+      const clientId = Array.from(clientBookings.entries())
+        .find(([_, bid]) => bid === bookingId)?.[0]
+      
+      if (clientId) {
+        io.to(clientId).emit('booking_completed', {
+          bookingId: bookingId,
+          message: '✅ Viagem concluída! Obrigado pela preferência.',
+          timestamp: new Date().toISOString()
+        })
+        
+        // Limpar reservas
+        activeBookings.delete(bookingId)
+        clientBookings.delete(clientId)
+      }
+
+      await bot.answerCallbackQuery(callbackQuery.id)
+      await bot.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
     }
   })
 }
@@ -229,19 +309,29 @@ app.use(express.static(path.join(__dirname, '../public')))
 
 // Rota API para receber reservas
 app.post('/api/reserva', express.json(), (req, res) => {
-  const { nome, telefone, recolha, destino } = req.body
+  const { nome, telefone, data, hora, recolha, destino, clientId } = req.body
   
   // Gerar ID único para reserva
   const bookingId = '691-' + Date.now().toString().slice(-6)
-  const bookingData = { bookingId, nome, telefone, recolha, destino }
+  const bookingData = { 
+    bookingId, 
+    nome, 
+    telefone, 
+    data, 
+    hora, 
+    recolha, 
+    destino, 
+    clientId 
+  }
   
   console.log('Nova reserva:', bookingData)
   
   // Adicionar às reservas ativas
   activeBookings.set(bookingId, bookingData)
+  clientBookings.set(clientId, bookingId)
   
-  // Notificar todos os clientes conectados sobre nova reserva
-  io.emit('new_booking', {
+  // Notificar apenas o cliente específico sobre nova reserva
+  io.to(clientId).emit('new_booking', {
     ...bookingData,
     message: `🚕 Nova reserva de ${nome}!`,
     timestamp: new Date().toISOString()
@@ -254,6 +344,7 @@ app.post('/api/reserva', express.json(), (req, res) => {
       `🚕 *NOVA RESERVA - ${bookingId}*\n\n` +
       `👤 ${nome}\n` +
       `📞 ${telefone}\n` +
+      `📅 ${data} às ${hora}\n` +
       `📍 ${recolha}\n` +
       `🎯 ${destino}`,
       { 
