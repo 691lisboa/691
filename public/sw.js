@@ -1,4 +1,4 @@
-const CACHE = '691-v5'
+const CACHE = '691-v6'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
@@ -46,6 +46,14 @@ self.addEventListener('fetch', (e) => {
   if (url.includes('/socket.io/') || url.includes('/api/')) return
 
   if (e.request.mode === 'navigate') {
+    // Avoid caching tracking page navigations to prevent stale versions
+    try {
+      const p = new URL(url).pathname
+      if (p.startsWith('/reserva/')) {
+        e.respondWith(fetch(e.request).catch(() => caches.match(OFFLINE)))
+        return
+      }
+    } catch { /* ignore */ }
     e.respondWith(
       fetch(e.request)
         .then(res => {
