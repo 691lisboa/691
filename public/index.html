@@ -1552,7 +1552,7 @@
             <div class="chat-input">
                 <form id="chat-form">
                     <input type="text" id="chat-message" placeholder="Digite sua mensagem..." required>
-                    <button type="submit">Enviar</button>
+                    <button type="submit" id="chat-send-btn">Enviar</button>
                 </form>
             </div>
         </div>
@@ -1568,7 +1568,7 @@
             <div class="booking-content">
                 <div class="booking-details-panel">
                     <div class="booking-info-card">
-                        <h4>📋 Detalhes da Reserva</h4>
+                        <h4 id="booking-details-title">📋 Detalhes da Reserva</h4>
                         <div id="booking-window-details"></div>
                         <div id="booking-window-status" class="booking-status pending">
                             ⏳ Aguardando confirmação...
@@ -1587,7 +1587,7 @@
                     <div class="chat-input">
                         <form id="booking-chat-form">
                             <input type="text" id="booking-chat-message" placeholder="Digite sua mensagem..." required>
-                            <button type="submit">Enviar</button>
+                            <button type="submit" id="booking-chat-send-btn">Enviar</button>
                         </form>
                     </div>
                 </div>
@@ -1813,7 +1813,9 @@
                 messageFromDriver: 'Mensagem do motorista:',
                 connected: 'Conectado',
                 disconnected: 'Desconectado',
-                noBookings: 'Sem reservas ativas no momento'
+                noBookings: 'Sem reservas ativas no momento',
+                bookingDetailsTitle: '📋 Detalhes da Reserva',
+                successMessage: '✅ Reserva enviada com sucesso!'
             },
             en: {
                 title: '691 Lisboa',
@@ -1843,7 +1845,9 @@
                 messageFromDriver: 'Message from driver:',
                 connected: 'Connected',
                 disconnected: 'Disconnected',
-                noBookings: 'No active bookings at the moment'
+                noBookings: 'No active bookings at the moment',
+                bookingDetailsTitle: '📋 Booking Details',
+                successMessage: '✅ Booking sent successfully!'
             }
         };
 
@@ -2206,6 +2210,38 @@
             document.getElementById('no-bookings-text').textContent = t.noBookings;
             const viewBtn = document.getElementById('view-booking-btn');
             if (viewBtn) viewBtn.textContent = t.viewBookingButton;
+
+            // Booking window
+            const bwTitle = document.getElementById('booking-window-title');
+            if (bwTitle) bwTitle.textContent = t.bookingTitle;
+            const bDetailsTitle = document.getElementById('booking-details-title');
+            if (bDetailsTitle) bDetailsTitle.textContent = t.bookingDetailsTitle;
+            const bChatTitle = document.getElementById('booking-chat-title');
+            if (bChatTitle) bChatTitle.textContent = t.chatTitle;
+            const bChatPlaceholder = document.getElementById('booking-chat-placeholder');
+            if (bChatPlaceholder) bChatPlaceholder.textContent = t.chatPlaceholder;
+            const bChatMsg = document.getElementById('booking-chat-message');
+            if (bChatMsg) bChatMsg.placeholder = t.messagePlaceholder;
+            const bChatSend = document.getElementById('booking-chat-send-btn');
+            if (bChatSend) bChatSend.textContent = t.sendButton;
+
+            // Chat popup
+            const chatSend = document.getElementById('chat-send-btn');
+            if (chatSend) chatSend.textContent = t.sendButton;
+
+            // Booking info panel buttons
+            const cancelBtn = document.getElementById('cancel-btn');
+            if (cancelBtn) cancelBtn.textContent = t.cancelButton;
+            const windowCancelBtn = document.getElementById('window-cancel-btn');
+            if (windowCancelBtn) windowCancelBtn.textContent = t.cancelButton;
+            const chatBtn = document.getElementById('chat-btn');
+            if (chatBtn) chatBtn.textContent = t.chatButton;
+            const windowChatBtn = document.getElementById('window-chat-btn');
+            if (windowChatBtn) windowChatBtn.textContent = t.chatButton;
+
+            // Success message
+            const successMsg = document.getElementById('success-message');
+            if (successMsg && !successMsg.classList.contains('show')) successMsg.textContent = t.successMessage;
         }
 
         // Display booking info
