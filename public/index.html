@@ -958,8 +958,8 @@
             border-radius: 20px;
             width: 100%;
             max-width: 500px;
-            height: 80vh;
-            max-height: 700px;
+            height: 88vh;
+            max-height: 820px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -1591,6 +1591,7 @@
                         <div id="booking-window-status" class="booking-status pending">
                             ⏳ Aguardando confirmação...
                         </div>
+                        <button id="window-cancel-btn" class="cancel-btn" style="width:100%;margin-top:12px;">❌ Cancelar Reserva</button>
                     </div>
                     <!-- GPS Tracking (visible when accepted/arrived) -->
                     <div id="tracking-section" class="tracking-section">
@@ -1618,8 +1619,7 @@
             <!-- Action buttons always visible at bottom -->
             <div class="booking-actions-panel">
                 <div class="booking-actions-row">
-                    <button id="window-chat-btn" class="chat-btn">💬 Chat</button>
-                    <button id="window-cancel-btn" class="cancel-btn">❌ Cancelar</button>
+                    <button id="window-chat-btn" class="chat-btn" style="flex:1;">💬 Chat</button>
                 </div>
             </div>
         </div>
@@ -1830,7 +1830,7 @@
                 sendButton: 'Enviar',
                 viewBookingButton: '🚕 Ver Reserva Ativa',
                 chatButton: '💬 Chat',
-                cancelButton: '❌ Cancelar',
+                cancelButton: '❌ Cancelar Reserva',
                 driverArrived: '� O motorista chegou.',
                 newBooking: '🚕 Nova reserva recebida!',
                 messageFromDriver: 'Mensagem do motorista:',
@@ -1869,7 +1869,7 @@
                 sendButton: 'Send',
                 viewBookingButton: '🚕 View Active Booking',
                 chatButton: '💬 Chat',
-                cancelButton: '❌ Cancel',
+                cancelButton: '❌ Cancel Booking',
                 driverArrived: '� Driver arrived.',
                 newBooking: '🚕 New booking received!',
                 messageFromDriver: 'Message from driver:',
@@ -2620,7 +2620,19 @@
             try {
                 const history = JSON.parse(localStorage.getItem(key) || '[]');
                 history.forEach(entry => renderChatMessage(entry));
+                // Garantir que a última mensagem está visível após renderização
+                if (history.length > 0) {
+                    setTimeout(() => scrollChatsToBottom(), 0);
+                }
             } catch {}
+        }
+
+        // Scroll all chat containers to the bottom
+        function scrollChatsToBottom() {
+            ['chat-messages', 'booking-chat-messages'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.scrollTop = el.scrollHeight;
+            });
         }
 
         // Render a single message bubble into both chat containers
