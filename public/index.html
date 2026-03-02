@@ -2108,6 +2108,7 @@
 
             socket.on('driver_arrived', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    updateBookingStatus('arrived');
                     showNotification(data.message || translations[currentLang].driverArrived);
                     playSound();
                 }
@@ -2252,6 +2253,8 @@
                     return t.bookingPending;
                 case 'accepted':
                     return t.bookingAccepted;
+                case 'arrived':
+                    return t.driverArrived;
                 case 'rejected':
                     return t.bookingRejected;
                 case 'cancelled':
