@@ -35,7 +35,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 // ── Estado em memória ────────────────────────────────────────────────────────
 let bot: Bot | null = null
 const connectedClients = new Set<string>()
-const activeBookings   = new Map<string, Record<string, any>>()  // bookingId → dados + chatHistory
+const activeBookings   = new Map<string, Record<string, any>>()  // bookingId → dados
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
 const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
@@ -332,7 +332,6 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           '<b>🚕 691 Lisboa — Central de Comando</b>\n\n' +
           '/start — Este menu\n' +
           '/status — Reservas ativas\n' +
-          '/r [ID] [msg] — Enviar mensagem ao cliente\n\n' +
           'Aguarde novas reservas.',
           { parse_mode: 'HTML' }
         )
@@ -350,44 +349,6 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           `🤖 Bot: ✅ Ativo\n\n${bookingList}`,
           { parse_mode: 'HTML' }
         )
-
-      } else if (text.startsWith('/r ')) {
-        const parts    = text.split(' ')
-        if (parts.length >= 3) {
-          const bookingId  = parts[1]
-          const message    = parts.slice(2).join(' ')
-          const clientId   = clientIdForBooking(bookingId)
-          const clientLang = activeBookings.get(bookingId)?.lang || 'pt'
-          if (clientId) {
-            // Traduzir PT → EN se o cliente estiver em inglês
-            let outMsg = message
-            let note   = ''
-            if (clientLang === 'en') {
-              const translated = await translate(message, 'pt', 'en')
-              if (translated !== message) {
-                outMsg = translated
-                note   = ` <i>(🇵🇹 original: "${esc(message)}")</i>`
-              }
-            }
-            const driverName = clientLang === 'en' ? 'Driver 691' : 'Motorista 691'
-            const timestamp  = new Date().toISOString()
-            const msgEntry   = { type: 'driver', name: driverName, message: outMsg, timestamp }
-            // Persistir mensagem no histórico da reserva
-            const booking = activeBookings.get(bookingId)
-            if (booking) {
-              if (!booking.chatHistory) booking.chatHistory = []
-              booking.chatHistory.push(msgEntry)
-              saveBookings()
-            }
-            io.to(clientId).emit('message_from_driver', {
-              bookingId, message: outMsg, driverName, timestamp
-            })
-            sendPush(clientId, driverName, outMsg, { bookingId, type: 'message', message: outMsg, driverName }).catch(() => {})
-            await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
-          } else {
-            await ctx.reply(`❌ Cliente não encontrado para <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
-          }
-        }
       }
     })
 
@@ -500,10 +461,9 @@ io.on('connection', (socket) => {
         socket.data.clientId = clientId
         socket.emit('session_restored', {
           booking,
-          status: booking.status || 'pending',
-          chatHistory: booking.chatHistory || []  // enviar histórico completo
+          status: booking.status || 'pending'
         })
-        console.log(`Sessão restaurada: ${clientId} → ${bookingId} (${(booking.chatHistory || []).length} msgs)`)
+        console.log(`Sessão restaurada: ${clientId} → ${bookingId}`)
         return
       }
     }
@@ -525,47 +485,6 @@ io.on('connection', (socket) => {
     const clientId = clientIdForBooking(bookingId)
     if (!clientId) return
     io.to(clientId).emit('tracking_update', { lat, lng, bookingId, ts: Date.now() })
-  })
-
-  // Mensagem de chat do cliente para o motorista
-  socket.on('message_to_driver', async (data) => {
-    const clientId  = sanitize(data.clientId, 64)
-    const bookingId = sanitize(data.bookingId, 20)
-    const message   = sanitize(data.message, 500)
-    const lang      = (data.lang === 'en') ? 'en' : 'pt'
-
-    // Verificar que o socket é o dono desta reserva
-    if (clientId !== socket.data.clientId) return
-    const owned = clientBookings.get(clientId)
-    if (!owned || owned !== bookingId) return
-    if (!message) return
-
-    // Guardar língua do cliente na reserva (para respostas futuras)
-    const booking = activeBookings.get(bookingId)
-    if (booking) booking.lang = lang
-
-    if (bot && TELEGRAM_CHAT_ID) {
-      // Traduzir EN → PT para o motorista se cliente estiver em inglês
-      let telegramMsg = message
-      let translationNote = ''
-      if (lang === 'en') {
-        const translated = await translate(message, 'en', 'pt')
-        if (translated !== message) {
-          telegramMsg = translated
-          translationNote = `\n<i>🇬🇧 Original: "${esc(message)}"</i>`
-        }
-      }
-      const langFlag = lang === 'en' ? ' 🇬🇧→🇵🇹' : ''
-      bot.api.sendMessage(
-        Number(TELEGRAM_CHAT_ID),
-        `<b>💬 Mensagem do cliente${langFlag}</b>\n` +
-        `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
-        `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>\n\n` +
-        `${esc(telegramMsg)}${translationNote}\n\n` +
-        `<i>Responder: /r ${esc(bookingId)} &lt;mensagem&gt;</i>`,
-        { parse_mode: 'HTML' }
-      ).catch(console.error)
-    }
   })
 
   // Cliente cancela reserva
@@ -789,7 +708,6 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const bookingData: Record<string, any> = {
     bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
     status: 'pending', _ts: String(Date.now()),
-    chatHistory: []  // array de { type: 'driver'|'client', name: string, message: string, timestamp: string }
   }
 
   activeBookings.set(bookingId, bookingData)
