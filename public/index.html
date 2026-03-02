@@ -1868,6 +1868,7 @@
         let currentLang = 'pt';
         let socket = null;
         let currentBooking = null;
+        let currentStatus = 'pending';
 
         // clientId persiste no localStorage para sobreviver a refreshes
         let clientId = localStorage.getItem('691_clientId');
@@ -2262,6 +2263,9 @@
             // Success message
             const successMsg = document.getElementById('success-message');
             if (successMsg && !successMsg.classList.contains('show')) successMsg.textContent = t.successMessage;
+
+            // Re-render booking status badge in the new language
+            if (currentBooking) updateBookingStatus(currentStatus);
         }
 
         // Display booking info
@@ -2304,6 +2308,7 @@
 
         // Update booking status
         function updateBookingStatus(status) {
+            currentStatus = status;
             const statusElement = document.getElementById('booking-status');
             const windowStatusElement = document.getElementById('booking-window-status');
             const t = translations[currentLang];
