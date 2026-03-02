@@ -93,7 +93,7 @@ self.addEventListener('push', (e) => {
     badge:              '/icon.svg',
     data:               payload.data || {},
     vibrate:            [200, 100, 200, 100, 200],
-    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed'].includes(type),
+    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed', 'message'].includes(type),
     tag:                payload.data?.bookingId || '691',
     renotify:           true,
     silent:             false

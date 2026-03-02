@@ -2250,7 +2250,7 @@
                     openBookingWindow();
                     if (pendingPushStatus?.bookingId === data.booking.bookingId) {
                         const pst = pendingPushStatus; pendingPushStatus = null;
-                        applyPushStatus(pst.type, pst.bookingId);
+                        applyPushStatus(pst);
                     } else if (st === 'completed') {
                         localStorage.removeItem('691_booking');
                         showNotification(translations[currentLang].bookingCompleted);
@@ -2530,10 +2530,19 @@
         }
 
         // Aplicar estado recebido via push (PUSH_STATUS ou session_restored)
-        function applyPushStatus(st, bookingId) {
+        // pushData = { type, bookingId, message?, driverName? }
+        function applyPushStatus(pushData) {
+            const st = pushData.type;
+            const bookingId = pushData.bookingId;
             if (!currentBooking || currentBooking.bookingId !== bookingId) return;
             openBookingWindow();
-            if (st === 'completed') {
+            if (st === 'message') {
+                // Mensagem do motorista recebida via push (browser estava fechado)
+                const msg   = pushData.message   || '';
+                const dName = pushData.driverName || 'Motorista 691';
+                if (msg) displayChatMessage({ name: dName, message: msg, type: 'driver' });
+                playSound();
+            } else if (st === 'completed') {
                 localStorage.removeItem('691_booking');
                 updateBookingStatus('completed');
                 showNotification(translations[currentLang].bookingCompleted);
@@ -3012,10 +3021,11 @@
                 if (e.data?.type !== 'PUSH_STATUS') return;
                 const { type: st, bookingId } = e.data.data || {};
                 if (!st || !bookingId) return;
-                // Guardar estado pendente — será aplicado em session_restored se necessário
-                pendingPushStatus = { type: st, bookingId };
+                // Guardar dados completos do push — serão aplicados em session_restored se necessário
+                const pushData = e.data.data || {};
+                pendingPushStatus = pushData;
                 if (currentBooking?.bookingId === bookingId) {
-                    applyPushStatus(st, bookingId);
+                    applyPushStatus(pushData);
                     pendingPushStatus = null;
                 }
                 // else: session_restored vai aplicar quando chegar
