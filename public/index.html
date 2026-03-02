@@ -309,25 +309,6 @@
             box-shadow: 0 8px 35px rgba(0, 200, 83, 0.55);
         }
 
-        .chat-btn {
-            flex: 1;
-            padding: 13px;
-            background: rgba(0,77,0,0.25);
-            color: #ffffff;
-            border: 1px solid rgba(0,77,0,0.55);
-            border-radius: 10px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chat-btn:hover {
-            background: rgba(0,77,0,0.45);
-            transform: translateY(-1px);
-        }
-
         .cancel-btn {
             flex: 1;
             padding: 13px;
@@ -463,6 +444,20 @@
             display: none;
         }
 
+        .booking-info-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .booking-banner-contacts {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
         .no-bookings {
             text-align: center;
             color: rgba(255,255,255,0.3);
@@ -492,15 +487,13 @@
             display: flex;
         }
 
-        /* Booking window floating actions (contact + chat)
+        /* Booking window floating actions (contact)
            These should appear only when the booking window is open. */
-        #booking-contact-fab,
-        #floating-chat-btn {
+        #booking-contact-fab {
             display: none;
             z-index: 4001 !important;
         }
-        #booking-window.show ~ #booking-contact-fab,
-        #booking-window.show ~ #floating-chat-btn {
+        #booking-window.show ~ #booking-contact-fab {
             display: flex !important;
         }
 
@@ -745,8 +738,6 @@
             gap: 12px;
         }
 
-
-
         .contact-icon {
             font-size: 1rem;
             opacity: 0.9;
@@ -755,7 +746,6 @@
         .contact-text {
             opacity: 0.9;
         }
-
 
         /* Mobile Optimizations */
         @media (max-width: 768px) {
@@ -805,7 +795,7 @@
                 gap: 10px;
             }
 
-            .chat-btn, .cancel-btn {
+            .cancel-btn {
                 padding: 15px;
                 font-size: 1rem;
             }
@@ -847,14 +837,6 @@
 
             .booking-actions-panel {
                 padding: 12px;
-            }
-
-            .chat-messages {
-                padding: 10px;
-            }
-
-            .chat-input {
-                padding: 10px;
             }
         }
 
@@ -902,295 +884,89 @@
             border-bottom: none;
         }
 
-        /* Chat Popup */
-        .chat-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.98);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2500;
-            padding: 15px;
-            backdrop-filter: blur(20px);
-        }
-
-        .chat-popup.show {
-            display: flex;
-        }
-
-        .chat-container {
-            background: rgba(4, 4, 4, 0.98);
-            border: 1px solid rgba(0,77,0,0.45);
-            border-radius: 20px;
-            width: 100%;
-            max-width: 500px;
-            height: 88vh;
-            max-height: 820px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 40px rgba(0,77,0,0.08);
-        }
-
-        .chat-header {
-            background: rgba(0,77,0,0.12);
-            border-bottom: 1px solid rgba(0,77,0,0.35);
-            padding: 18px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-header h3 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .close-chat {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.65);
-            font-size: 1.4rem;
-            cursor: pointer;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            line-height: 1;
-        }
-
-        .close-chat:hover {
-            background: rgba(255,255,255,0.1);
-            color: #ffffff;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: transparent;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .chat-message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            animation: slideInUp 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .chat-message.client {
-            align-self: flex-end;
-            background: #004d00;
-            color: #ffffff;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-message.driver {
-            align-self: flex-start;
-            background: rgba(255,255,255,0.07);
-            color: #ffffff;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-message strong {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 3px;
-            opacity: 0.55;
-        }
-
-        .chat-message .time {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 6px;
-            text-align: right;
-        }
-
-        .chat-message.driver .time {
-            text-align: right;
-        }
-
-        .chat-input {
-            padding: 18px 20px;
-            background: rgba(0,0,0,0.5);
-            border-top: 1px solid rgba(0,77,0,0.2);
-        }
-
-        .chat-input form {
-            display: flex;
-            gap: 12px;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 13px 18px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 25px;
-            font-size: 0.9rem;
-            background: rgba(255,255,255,0.05);
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input input:focus {
-            outline: none;
-            border-color: #004d00;
-            box-shadow: 0 0 0 2px rgba(0,77,0,0.2);
-        }
-
-        .chat-input input::placeholder {
-            color: rgba(255,255,255,0.22);
-        }
-
-        .chat-input button {
-            padding: 13px 22px;
-            background: #004d00;
-            color: #ffffff;
-            border: none;
-            border-radius: 25px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: filter 0.2s;
-            white-space: nowrap;
-        }
-
-        .chat-input button:hover {
-            filter: brightness(1.4);
-        }
-
-        /* Chat placeholder styling */
-        .chat-placeholder {
-            text-align: center;
-            color: #95a5a6;
-            font-style: italic;
-            padding: 40px 20px;
-            font-size: 0.95rem;
-        }
-
-        /* Mobile chat optimizations */
+        /* Mobile Optimizations */
         @media (max-width: 768px) {
-            .chat-popup {
-                padding: 10px;
+            body {
+                padding: 12px;
+                align-items: flex-start;
+                padding-top: 80px;
             }
 
-            .chat-container {
-                height: 90vh;
-                max-height: none;
-                border-radius: 15px;
+            .container {
+                max-width: 100%;
             }
 
-            .chat-header {
-                padding: 15px;
+            .form-card {
+                padding: 28px 20px;
+                border-radius: 20px;
             }
 
-            .chat-header h3 {
-                font-size: 1.1rem;
+            .logo h1 {
+                font-size: 2.2rem;
             }
 
-            .chat-messages {
-                padding: 15px;
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
 
-            .chat-message {
-                max-width: 85%;
-                padding: 10px 14px;
-            }
-
-            .chat-input {
-                padding: 15px;
-            }
-
-            .chat-input input {
-                padding: 12px 16px;
-            }
-
-            .chat-input button {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chat-popup {
-                padding: 0;
-            }
-
-            .chat-container {
+            .booking-container {
                 height: 100vh;
                 max-height: none;
                 border-radius: 0;
             }
 
-            .chat-header {
-                padding: 12px;
+            .booking-content {
+                flex-direction: column;
             }
 
-            .chat-header h3 {
+            .booking-details-panel {
+                flex: none;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,77,0,0.2);
+                overflow-y: visible;
+            }
+
+
+            .booking-actions-panel {
+                padding: 15px;
+            }
+
+            .booking-actions-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .cancel-btn {
+                padding: 15px;
                 font-size: 1rem;
             }
 
-            .chat-messages {
+            .booking-status {
                 padding: 12px;
-                gap: 8px;
-            }
-
-            .chat-message {
-                max-width: 90%;
-                padding: 8px 12px;
                 font-size: 0.9rem;
             }
+        }
 
-            .chat-message strong {
-                font-size: 0.8rem;
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                padding-top: 72px;
             }
 
-            .chat-message .time {
-                font-size: 0.7rem;
+            .form-card {
+                padding: 24px 16px;
+                border-radius: 18px;
             }
 
-            .chat-input {
-                padding: 12px;
+            .logo h1 {
+                font-size: 2rem;
             }
 
-            .chat-input input {
-                padding: 10px 14px;
-                font-size: 0.9rem;
-            }
-
-            .chat-input button {
-                padding: 10px 14px;
-                font-size: 0.85rem;
+            .datetime-inputs {
+                grid-template-columns: 1fr;
+                gap: 0;
             }
         }
 
@@ -1292,41 +1068,21 @@
 
         .contact-icon-btn svg { width: 15px; height: 15px; }
 
-        /* Floating Chat Button */
-        .floating-chat-btn {
-            position: fixed;
-            bottom: 28px;
-            left: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: rgba(0,77,0,0.9);
-            border: 2px solid rgba(0,204,68,0.6);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1002;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .floating-chat-btn:hover {
-            background: rgba(0,204,68,0.95);
-            border-color: rgba(0,204,68,0.8);
-            transform: scale(1.05);
-        }
-        .floating-chat-btn svg {
-            width: 24px;
-            height: 24px;
-        }
-
         .contact-icon-btn:hover {
             background: rgba(0,77,0,0.3);
             border-color: rgba(0,204,68,0.55);
             color: #fff;
             transform: scale(1.1);
+        }
+
+        .booking-banner-contacts .contact-icon-btn {
+            width: 28px;
+            height: 28px;
+        }
+
+        .booking-banner-contacts .contact-icon-btn svg {
+            width: 12px;
+            height: 12px;
         }
 
         /* Booking actions always at bottom */
@@ -1381,13 +1137,6 @@
                 border-bottom: 1px solid rgba(0,77,0,0.2);
                 overflow-y: visible;
             }
-
-
-            .chat-container {
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
-            }
         }
 
         @media (max-width: 480px) {
@@ -1429,15 +1178,14 @@
                 height: 14px;
             }
 
-            .floating-chat-btn {
-                bottom: 20px;
-                left: 18px;
-                width: 48px;
-                height: 48px;
+            .booking-banner-contacts .contact-icon-btn {
+                width: 24px;
+                height: 24px;
             }
-            .floating-chat-btn svg {
-                width: 20px;
-                height: 20px;
+
+            .booking-banner-contacts .contact-icon-btn svg {
+                width: 10px;
+                height: 10px;
             }
 
             .language-toggle {
@@ -1458,7 +1206,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         /* Momentum scroll + overscroll containment */
-        .chat-messages, .booking-content, .booking-details-panel {
+        .booking-content, .booking-details-panel {
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
         }
@@ -1468,15 +1216,14 @@
         }
         /* Dynamic viewport height — avoids address-bar resize jump */
         @supports (height: 100dvh) {
-            .booking-window, .chat-popup { height: 100dvh; }
+            .booking-window { height: 100dvh; }
             @media (max-width: 768px) {
-                .booking-container, .chat-container { height: 100dvh; }
+                .booking-container { height: 100dvh; }
             }
         }
         /* Safe-area insets for iPhone notch / home-bar */
         @supports (padding: env(safe-area-inset-bottom)) {
             .booking-actions-panel { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
-            .chat-input             { padding-bottom: calc(8px  + env(safe-area-inset-bottom)); }
             body { padding-bottom: env(safe-area-inset-bottom); }
         }
         /* Respect system reduced-motion preference */
@@ -1505,7 +1252,7 @@
     </div>
 
     <!-- Contact Icons (bottom-right, always visible) -->
-    <div class="contact-fab">
+    <div id="main-contact-fab" class="contact-fab">
         <a href="tel:+351928158158" class="contact-icon-btn" title="+351 928 158 158">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
         </a>
@@ -1538,13 +1285,25 @@
 
             <!-- Booking Info -->
             <div id="booking-info" class="booking-info" style="display: none;">
-                <h3 id="booking-title">🚕 Reserva Ativa</h3>
+                <div class="booking-info-header">
+                    <h3 id="booking-title">🚕 Reserva Ativa</h3>
+                    <div class="booking-banner-contacts">
+                        <a href="tel:+351928158158" class="contact-icon-btn" title="+351 928 158 158">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
+                        </a>
+                        <a href="https://signal.me/#p/+351928158158" target="_blank" class="contact-icon-btn" title="Signal: fernandes.79">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.124 1.535 5.853L.053 23.09a.5.5 0 0 0 .633.633l5.237-1.482A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 2c5.523 0 10 4.477 10 10S17.523 22 12 22a9.944 9.944 0 0 1-4.912-1.287l-.35-.21-3.625 1.026 1.026-3.625-.21-.35A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2z"/></svg>
+                        </a>
+                        <a href="mailto:reservas@691.pt" class="contact-icon-btn" title="reservas@691.pt">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </a>
+                    </div>
+                </div>
                 <div id="booking-details"></div>
                 <div id="booking-status" class="booking-status pending">
                     ⏳ Aguardando confirmação...
                 </div>
                 <div class="booking-actions">
-                    <button id="chat-btn" class="chat-btn">💬 Chat</button>
                     <button id="cancel-btn" class="cancel-btn">❌ Cancelar</button>
                 </div>
             </div>
@@ -1604,27 +1363,6 @@
     <footer class="page-footer">&copy; 2026 691 Lisboa&nbsp;&bull;&nbsp;Servi&ccedil;o de T&aacute;xi</footer>
 
 
-    <!-- Chat Popup -->
-    <div id="chat-popup" class="chat-popup">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h3 id="chat-title">💬 Chat com Motorista</h3>
-                <button id="close-chat" class="close-chat">×</button>
-            </div>
-            <div id="chat-messages" class="chat-messages">
-                <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
-                    <span id="chat-placeholder">Nenhuma mensagem ainda</span>
-                </div>
-            </div>
-            <div class="chat-input">
-                <form id="chat-form">
-                    <input type="text" id="chat-message" placeholder="Digite sua mensagem..." required>
-                    <button type="submit" id="chat-send-btn">Enviar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Booking Window -->
     <div id="booking-window" class="booking-window">
         <div class="booking-container">
@@ -1663,11 +1401,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
         </a>
     </div>
-
-    <!-- Floating Chat Button (discreet, round) - only visible on booking page -->
-    <button id="floating-chat-btn" class="floating-chat-btn" title="💬 Chat" style="z-index: 3001;">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-    </button>
 
     <script>
         // Autocomplete uses addresses.js (loaded externally)
@@ -1863,17 +1596,12 @@
                 destinationLabel: 'Destino',
                 submitButton: 'Reservar Táxi',
                 bookingTitle: '🚕 Reserva Ativa',
-                chatTitle: '💬 Chat com Motorista',
                 bookingPending: '⏳ Aguardando Confirmação',
                 bookingAccepted: '✅ Reserva aceite.',
                 bookingRejected: '❌ Reserva recusada.',
                 bookingCancelled: '❌ Reserva cancelada.',
                 bookingCompleted: '✅ Viagem concluída.',
-                chatPlaceholder: 'Nenhuma mensagem ainda. Inicie a conversa!',
-                messagePlaceholder: 'Digite sua mensagem...',
-                sendButton: 'Enviar',
                 viewBookingButton: '🚕 Ver Reserva Ativa',
-                chatButton: '💬 Chat',
                 cancelButton: '❌ Cancelar Reserva',
                 driverArrived: '🚕 O motorista chegou.',
                 newBooking: '🚕 Nova reserva recebida!',
@@ -1902,17 +1630,12 @@
                 destinationLabel: 'Destination',
                 submitButton: 'Book Taxi',
                 bookingTitle: '🚕 Active Booking',
-                chatTitle: '💬 Chat with Driver',
                 bookingPending: '⏳ Awaiting Confirmation',
                 bookingAccepted: '✅ Booking accepted.',
                 bookingRejected: '❌ Booking rejected.',
                 bookingCancelled: '❌ Booking cancelled.',
                 bookingCompleted: '✅ Trip completed.',
-                chatPlaceholder: 'No messages yet. Start the conversation!',
-                messagePlaceholder: 'Type your message...',
-                sendButton: 'Send',
                 viewBookingButton: '🚕 View Active Booking',
-                chatButton: '💬 Chat',
                 cancelButton: '❌ Cancel Booking',
                 driverArrived: '🚕 Driver arrived.',
                 newBooking: '🚕 New booking received!',
@@ -2301,35 +2024,7 @@
                     currentBooking = data.booking;
                     displayBooking(data.booking);
                     updateBookingStatus(st);
-                    
-                    // Restaurar mensagens do servidor (enviadas enquanto browser estava fechado)
-                    if (data.chatHistory && Array.isArray(data.chatHistory)) {
-                        const localKey = '691_chat_' + data.booking.bookingId;
-                        const localHistory = JSON.parse(localStorage.getItem(localKey) || '[]');
-                        const localTimestamps = new Set(localHistory.map(m => m.timestamp));
-                        
-                        // Adicionar mensagens do servidor que não estão no localStorage
-                        data.chatHistory.forEach(msg => {
-                            if (!localTimestamps.has(msg.timestamp)) {
-                                const entry = {
-                                    name: msg.name,
-                                    message: msg.message,
-                                    type: msg.type,
-                                    time: new Date(msg.timestamp).toLocaleTimeString(),
-                                    timestamp: msg.timestamp
-                                };
-                                localHistory.push(entry);
-                                renderChatMessage(entry);
-                            }
-                        });
-                        
-                        // Salvar histórico completo
-                        if (data.chatHistory.length > 0) {
-                            localStorage.setItem(localKey, JSON.stringify(localHistory));
-                            setTimeout(() => scrollChatsToBottom(), 100);
-                        }
-                    }
-                    
+
                     if (st === 'accepted' || st === 'arrived') {
                         initTrackingMap(data.booking.recolha);
                     }
@@ -2443,18 +2138,6 @@
                     setTimeout(() => { hideBooking(); }, 5000);
                 }
             });
-
-            socket.on('message_from_driver', (data) => {
-                if (currentBooking && currentBooking.bookingId === data.bookingId) {
-                    displayChatMessage({
-                        name: data.driverName,
-                        message: data.message,
-                        type: 'driver'
-                    });
-                    showNotification(translations[currentLang].messageFromDriver + ' ' + data.message);
-                    playSound();
-                }
-            });
         }
 
         // Update language
@@ -2472,9 +2155,6 @@
             document.getElementById('pickup-label').textContent = t.pickupLabel;
             document.getElementById('dest-label').textContent = t.destinationLabel;
             document.getElementById('submit-btn').textContent = t.submitButton;
-            document.getElementById('chat-title').textContent = t.chatTitle;
-            document.getElementById('chat-placeholder').textContent = t.chatPlaceholder;
-            document.getElementById('chat-message').placeholder = t.messagePlaceholder;
             document.getElementById('booking-title').textContent = t.bookingTitle;
             document.getElementById('no-bookings-text').textContent = t.noBookings;
             // Form input placeholders
@@ -2488,28 +2168,12 @@
             if (bwTitle) bwTitle.textContent = t.bookingTitle;
             const bDetailsTitle = document.getElementById('booking-details-title');
             if (bDetailsTitle) bDetailsTitle.textContent = t.bookingDetailsTitle;
-            const bChatTitle = document.getElementById('booking-chat-title');
-            if (bChatTitle) bChatTitle.textContent = t.chatTitle;
-            const bChatPlaceholder = document.getElementById('booking-chat-placeholder');
-            if (bChatPlaceholder) bChatPlaceholder.textContent = t.chatPlaceholder;
-            const bChatMsg = document.getElementById('booking-chat-message');
-            if (bChatMsg) bChatMsg.placeholder = t.messagePlaceholder;
-            const bChatSend = document.getElementById('booking-chat-send-btn');
-            if (bChatSend) bChatSend.textContent = t.sendButton;
-
-            // Chat popup
-            const chatSend = document.getElementById('chat-send-btn');
-            if (chatSend) chatSend.textContent = t.sendButton;
 
             // Booking info panel buttons
             const cancelBtn = document.getElementById('cancel-btn');
             if (cancelBtn) cancelBtn.textContent = t.cancelButton;
             const windowCancelBtn = document.getElementById('window-cancel-btn');
             if (windowCancelBtn) windowCancelBtn.textContent = t.cancelButton;
-            const chatBtn = document.getElementById('chat-btn');
-            if (chatBtn) chatBtn.textContent = t.chatButton;
-            const windowChatBtn = document.getElementById('window-chat-btn');
-            if (windowChatBtn) windowChatBtn.textContent = t.chatButton;
 
             // Success message
             const successMsg = document.getElementById('success-message');
@@ -2528,16 +2192,15 @@
             const bookingInfo = document.getElementById('booking-info');
             const noBookings  = document.getElementById('no-bookings');
             const taxiForm    = document.getElementById('taxi-form');
+            const mainContactFab = document.getElementById('main-contact-fab');
 
             noBookings.style.display  = 'none';
             bookingInfo.style.display = 'block';
             if (taxiForm) taxiForm.style.display = 'none';
+            if (mainContactFab) mainContactFab.style.display = 'none';
 
             updateBookingWindow(booking);
             updateBookingStatus('pending');
-
-            // Restaurar histórico de chat após refresh
-            if (booking.bookingId) restoreChatHistory(booking.bookingId);
 
             // Abrir directamente a janela de detalhes
             openBookingWindow();
@@ -2663,9 +2326,7 @@
             const bw = document.getElementById('booking-window');
             if (bw) bw.classList.add('show');
             
-            // Show floating chat button and contact buttons when booking is open
-            const floatingChatBtn = document.getElementById('floating-chat-btn');
-            if (floatingChatBtn) floatingChatBtn.style.display = 'flex';
+            // Show contact buttons when booking is open
             const bookingContactFab = document.getElementById('booking-contact-fab');
             if (bookingContactFab) bookingContactFab.style.display = 'flex';
             
@@ -2680,10 +2341,6 @@
             if (!currentBooking || currentBooking.bookingId !== bookingId) return;
             openBookingWindow();
             if (st === 'message') {
-                // Mensagem do motorista recebida via push (browser estava fechado)
-                const msg   = pushData.message   || '';
-                const dName = pushData.driverName || 'Motorista 691';
-                if (msg) displayChatMessage({ name: dName, message: msg, type: 'driver' });
                 playSound();
             } else if (st === 'completed') {
                 localStorage.removeItem('691_booking');
@@ -2721,94 +2378,21 @@
             const noBookings    = document.getElementById('no-bookings');
             const bookingWindow = document.getElementById('booking-window');
             const taxiForm      = document.getElementById('taxi-form');
-
-            // Limpar historial de chat do localStorage
-            if (currentBooking?.bookingId) {
-                localStorage.removeItem('691_chat_' + currentBooking.bookingId);
-            }
+            const mainContactFab = document.getElementById('main-contact-fab');
 
             bookingInfo.style.display = 'none';
             noBookings.style.display  = 'block';
             taxiForm.style.display = 'block';
             bookingWindow.classList.remove('show');
+            if (mainContactFab) mainContactFab.style.display = 'flex';
 
-            // Hide floating chat button and contact buttons when booking is closed
-            const floatingChatBtn = document.getElementById('floating-chat-btn');
-            if (floatingChatBtn) floatingChatBtn.style.display = 'none';
+            // Hide contact buttons when booking is closed
             const bookingContactFab = document.getElementById('booking-contact-fab');
             if (bookingContactFab) bookingContactFab.style.display = 'none';
 
             currentBooking = null;
             currentStatus = 'pending';
             hideTrackingMap();
-        }
-        // Persist chat message to localStorage
-        function saveChatMessage(entry) {
-            if (!currentBooking) return;
-            const key = '691_chat_' + currentBooking.bookingId;
-            try {
-                const history = JSON.parse(localStorage.getItem(key) || '[]');
-                history.push(entry);
-                localStorage.setItem(key, JSON.stringify(history));
-            } catch {}
-        }
-
-        // Restore chat from localStorage after refresh
-        function restoreChatHistory(bookingId) {
-            const key = '691_chat_' + bookingId;
-            try {
-                const history = JSON.parse(localStorage.getItem(key) || '[]');
-                history.forEach(entry => renderChatMessage(entry));
-                // Garantir que a última mensagem está visível após renderização
-                if (history.length > 0) {
-                    setTimeout(() => scrollChatsToBottom(), 0);
-                }
-            } catch {}
-        }
-
-        // Scroll chat container to the bottom
-        function scrollChatsToBottom() {
-            const el = document.getElementById('chat-messages');
-            if (el) el.scrollTop = el.scrollHeight;
-        }
-
-        // Render a single message bubble into chat popup only
-        function renderChatMessage(data) {
-            const chatContainers = [
-                { id: 'chat-messages', placeholderId: 'chat-placeholder' }
-            ];
-            chatContainers.forEach(({ id, placeholderId }) => {
-                const container = document.getElementById(id);
-                if (!container) return;
-                const placeholder = document.getElementById(placeholderId);
-                if (placeholder) placeholder.remove();
-
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `chat-message ${data.type || 'client'}`;
-                const nameEl = document.createElement('strong');
-                nameEl.textContent = data.name;
-                const msgEl  = document.createElement('div');
-                msgEl.textContent = data.message;
-                const timeEl = document.createElement('div');
-                timeEl.className = 'time';
-                timeEl.textContent = data.time || new Date().toLocaleTimeString();
-                messageDiv.appendChild(nameEl);
-                messageDiv.appendChild(msgEl);
-                messageDiv.appendChild(timeEl);
-                container.appendChild(messageDiv);
-                container.scrollTop = container.scrollHeight;
-            });
-        }
-
-        // Display chat message in all active chats (and persist)
-        function displayChatMessage(data) {
-            const entry = { 
-                ...data, 
-                time: new Date().toLocaleTimeString(),
-                timestamp: data.timestamp || new Date().toISOString()
-            };
-            saveChatMessage(entry);
-            renderChatMessage(entry);
         }
 
         // Show notification (toast)
@@ -2902,41 +2486,6 @@
             }
         });
 
-        // Chat form submission (popup)
-        document.getElementById('chat-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const message = document.getElementById('chat-message').value.trim();
-            if (!message || !currentBooking) return;
-            
-            socket.emit('message_to_driver', {
-                name: currentBooking.nome,
-                phone: currentBooking.telefone,
-                bookingId: currentBooking.bookingId,
-                message: message,
-                clientId: clientId,
-                lang: currentLang
-            });
-            
-            displayChatMessage({
-                name: translations[currentLang].youLabel,
-                message: message,
-                type: 'client'
-            });
-            
-            document.getElementById('chat-message').value = '';
-        });
-
-        // Floating chat button - open separate window
-        document.getElementById('floating-chat-btn').addEventListener('click', () => {
-            if (currentBooking?.bookingId) {
-                const chatUrl = `${window.location.origin}/chat.html?bookingId=${encodeURIComponent(currentBooking.bookingId)}&lang=${currentLang}`;
-                window.open(chatUrl, '691-chat', 'width=420,height=600,resizable=yes,scrollbars=yes');
-            } else {
-                showNotification(currentLang === 'pt' ? '❌ Nenhuma reserva ativa para abrir chat' : '❌ No active booking to open chat');
-            }
-        });
-
         // Window cancel button
         document.getElementById('window-cancel-btn').addEventListener('click', () => {
             if (currentBooking) {
@@ -2950,16 +2499,6 @@
                 updateBookingStatus('cancelled');
                 setTimeout(() => { hideBooking(); }, 2000);
             }
-        });
-
-        // Original chat button (opens popup)
-        document.getElementById('chat-btn').addEventListener('click', () => {
-            document.getElementById('chat-popup').classList.add('show');
-        });
-
-        // Close chat popup
-        document.getElementById('close-chat').addEventListener('click', () => {
-            document.getElementById('chat-popup').classList.remove('show');
         });
 
         // Original cancel button
