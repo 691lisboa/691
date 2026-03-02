@@ -131,14 +131,14 @@ function statusMsg(event: string, lang: string): string {
   const en: Record<string, string> = {
     accepted:  '✅ Booking accepted! Driver on the way.',
     rejected:  '❌ Booking rejected. Please try again.',
-    arrived:   '📍 Driver has arrived! Please come out.',
+    arrived:   '📍 Driver arrived.',
     completed: '✅ Trip completed! Thank you. 🙏',
     cancelled: '❌ Booking cancelled.'
   }
   const pt: Record<string, string> = {
     accepted:  '✅ Reserva aceite! Motorista a caminho.',
     rejected:  '❌ Reserva recusada. Por favor tente novamente.',
-    arrived:   '📍 O motorista chegou! Por favor, aguarde.',
+    arrived:   '📍 O motorista chegou.',
     completed: '✅ Viagem concluída! Obrigado pela preferência. 🙏',
     cancelled: '❌ Reserva cancelada.'
   }
