@@ -26,7 +26,21 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 let bot: Bot | null = null
 const connectedClients = new Set<string>()
 const activeBookings = new Map<string, Record<string, string>>()
-const clientBookings = new Map<string, string>()
+const clientBookings = new Map<string, string>() // clientId → bookingId
+
+// Limpar reservas abandonadas com mais de 4 horas
+setInterval(() => {
+  const cutoff = Date.now() - 4 * 60 * 60 * 1000
+  for (const [bookingId, booking] of activeBookings) {
+    if (Number(booking._ts || 0) < cutoff) {
+      for (const [cid, bid] of clientBookings) {
+        if (bid === bookingId) clientBookings.delete(cid)
+      }
+      activeBookings.delete(bookingId)
+      console.log(`Reserva expirada removida: ${bookingId}`)
+    }
+  }
+}, 30 * 60 * 1000)
 
 // Helper para encontrar clientId de uma reserva
 function clientIdForBooking(bookingId: string): string | undefined {
@@ -197,18 +211,30 @@ io.on('connection', (socket) => {
   connectedClients.add(socket.id)
 
   socket.on('register_client', (data: { clientId: string }) => {
-    console.log(`Cliente ${socket.id} registrado com clientId: ${data.clientId}`)
+    console.log(`Cliente ${socket.id} registrado: ${data.clientId}`)
     socket.join(data.clientId)
+  })
+
+  // Restaurar sessão após refresh — reenvia dados da reserva ativa se existir
+  socket.on('restore_session', (data: { clientId: string }) => {
+    const bookingId = clientBookings.get(data.clientId)
+    if (bookingId) {
+      const booking = activeBookings.get(bookingId)
+      if (booking) {
+        socket.join(data.clientId)
+        socket.emit('session_restored', { booking })
+        console.log(`Sessão restaurada: ${data.clientId} → ${bookingId}`)
+        return
+      }
+    }
+    socket.emit('session_not_found')
   })
 
   socket.on('disconnect', () => {
     console.log(`Cliente desconectado: ${socket.id}`)
     connectedClients.delete(socket.id)
-    const bookingId = clientBookings.get(socket.id)
-    if (bookingId) {
-      activeBookings.delete(bookingId)
-      clientBookings.delete(socket.id)
-    }
+    // Não apagar reserva: cliente pode estar a fazer refresh
+    // As reservas são limpas pelo intervalo de expiração (4h)
   })
 
   // Cliente envia mensagem para o motorista
@@ -265,11 +291,45 @@ io.on('connection', (socket) => {
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, '../public')))
 
+// Proxy TomTom Search API (mantém a chave no servidor)
+app.get('/api/search', async (req: Request, res: Response) => {
+  const q = String(req.query.q || '').trim()
+  if (!q || q.length < 2) return res.json([])
+
+  const TOMTOM_KEY = process.env.TOMTOM_API_KEY
+  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') {
+    return res.json([]) // sem chave → cliente usa fallback local
+  }
+
+  try {
+    const url = `https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json` +
+      `?key=${TOMTOM_KEY}&language=pt-PT&countrySet=PT&limit=8&typeahead=true` +
+      `&lat=38.7169&lon=-9.1399&radius=60000`
+    const r = await fetch(url)
+    if (!r.ok) return res.json([])
+    const data = await r.json() as { results?: Array<Record<string, unknown>> }
+    const results = (data.results || []).map((item: Record<string, unknown>) => {
+      const a = (item.address || {}) as Record<string, string>
+      const poi = (item.poi as Record<string, string> | undefined)?.name
+      const street = a.streetName || ''
+      const num    = a.streetNumber ? ` ${a.streetNumber}` : ''
+      const city   = a.municipality || a.municipalitySubdivision || ''
+      if (poi) return `${poi}${street ? ' – ' + street + num : ''}${city ? ', ' + city : ''}`
+      if (street) return `${street}${num}${city ? ', ' + city : ''}`
+      return a.freeformAddress || ''
+    }).filter(Boolean)
+    return res.json([...new Set(results)])
+  } catch (err) {
+    console.error('TomTom search error:', err)
+    return res.json([])
+  }
+})
+
 // Rota API para receber reservas
 app.post('/api/reserva', express.json(), (req: Request, res: Response) => {
   const { nome, telefone, data, hora, recolha, destino, clientId } = req.body
   const bookingId = '691-' + Date.now().toString().slice(-6)
-  const bookingData = { bookingId, nome, telefone, data, hora, recolha, destino, clientId }
+  const bookingData = { bookingId, nome, telefone, data, hora, recolha, destino, clientId, _ts: String(Date.now()) }
 
   console.log('Nova reserva:', bookingData)
   activeBookings.set(bookingId, bookingData)
