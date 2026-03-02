@@ -691,35 +691,170 @@
             font-size: 0.9rem;
         }
 
+        /* booking-info-card is now a transparent wrapper */
         .booking-info-card {
-            background: rgba(0,77,0,0.1);
-            border: 1px solid rgba(0,77,0,0.3);
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 16px;
-            font-size: 0.875rem;
-            line-height: 1.8;
-            color: rgba(255,255,255,0.85);
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin-bottom: 0;
         }
+        .booking-info-card > h4 { display: none; }
 
-        .booking-info-card h4 {
-            color: #ffffff;
+        #booking-window-details { margin-bottom: 14px; }
+        #booking-window-status  { margin-bottom: 12px; }
+
+        /* ── Trip Card (Uber-style) ──────────────────────────────────── */
+        .trip-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px;
+            overflow: hidden;
             margin-bottom: 14px;
-            font-size: 0.9rem;
-            font-weight: 600;
         }
 
-        .booking-info-card strong {
+        .trip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 16px;
+            background: rgba(0,77,0,0.18);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .trip-id-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            color: #00cc44;
+            background: rgba(0,204,68,0.1);
+            border: 1px solid rgba(0,204,68,0.28);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .trip-datetime {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+        .trip-date {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.55);
+            text-transform: capitalize;
+        }
+        .trip-time {
+            font-size: 0.92rem;
+            font-weight: 700;
             color: #ffffff;
+            letter-spacing: 0.03em;
+        }
+
+        .trip-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .trip-passenger {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 14px 16px;
+        }
+        .trip-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #004d00 0%, #00cc44 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+            letter-spacing: 0;
+        }
+        .trip-passenger-name {
+            font-size: 0.95rem;
             font-weight: 600;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+        .trip-passenger-phone {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.45);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
         }
 
-        #booking-window-details {
-            margin-bottom: 16px;
+        .trip-route {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
-
-        #booking-window-status {
-            margin-bottom: 10px;
+        .trip-route-row {
+            display: flex;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .trip-route-track {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 16px;
+            flex-shrink: 0;
+            padding-top: 3px;
+        }
+        .trip-dot-pickup {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #00cc44;
+            border: 2px solid rgba(0,204,68,0.35);
+            flex-shrink: 0;
+        }
+        .trip-connector {
+            width: 2px;
+            flex: 1;
+            min-height: 18px;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 3px,
+                transparent 3px, transparent 7px
+            );
+            margin: 5px 0;
+        }
+        .trip-dot-dest {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.85);
+            flex-shrink: 0;
+        }
+        .trip-route-info {
+            flex: 1;
+            padding-bottom: 14px;
+        }
+        .trip-route-row:last-child .trip-route-info {
+            padding-bottom: 0;
+        }
+        .trip-route-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        .trip-route-address {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.92);
+            line-height: 1.4;
         }
 
         /* GPS Tracking */
@@ -1213,43 +1348,51 @@
         }
 
         .booking-status {
-            padding: 11px 16px;
-            border-radius: 10px;
-            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
             text-align: center;
-            font-weight: 600;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.06em;
         }
-
         .booking-status.pending {
-            background: rgba(255,165,0,0.08);
-            border: 1px solid rgba(255,165,0,0.45);
-            color: #ffa500;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.35);
+            color: #fbbf24;
         }
-
         .booking-status.accepted {
-            background: rgba(0,204,68,0.08);
-            border: 1px solid rgba(0,204,68,0.45);
+            background: rgba(0,204,68,0.1);
+            border: 1px solid rgba(0,204,68,0.4);
             color: #00cc44;
         }
-
+        .booking-status.arrived {
+            background: rgba(0,204,68,0.18);
+            border: 1px solid rgba(0,204,68,0.55);
+            color: #00e64d;
+            animation: pulse-arrived 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse-arrived {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,204,68,0); }
+            50%       { box-shadow: 0 0 0 6px rgba(0,204,68,0.12); }
+        }
         .booking-status.rejected {
-            background: rgba(239,68,68,0.08);
-            border: 1px solid rgba(239,68,68,0.45);
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.35);
             color: #f87171;
         }
-
         .booking-status.cancelled {
-            background: rgba(107,114,128,0.08);
-            border: 1px solid rgba(107,114,128,0.45);
+            background: rgba(107,114,128,0.1);
+            border: 1px solid rgba(107,114,128,0.35);
             color: #9ca3af;
         }
-
         .booking-status.completed {
-            background: rgba(96,165,250,0.08);
-            border: 1px solid rgba(96,165,250,0.45);
+            background: rgba(96,165,250,0.1);
+            border: 1px solid rgba(96,165,250,0.35);
             color: #60a5fa;
         }
 
@@ -2492,24 +2635,75 @@
             openBookingWindow();
         }
 
-        // Update booking window (safe DOM — no innerHTML with user data)
+        // Update booking window — Uber-style trip card (safe DOM, no innerHTML with user data)
         function updateBookingWindow(booking) {
             const bookingDetails = document.getElementById('booking-window-details');
             bookingDetails.innerHTML = '';
-            const rows = [
-                { emoji: '🆔', label: 'ID', value: booking.bookingId, bold: true },
-                { emoji: '👤', label: '',   value: booking.nome,      bold: true },
-                { emoji: '📞', label: '',   value: booking.telefone,  bold: false },
-                { emoji: '📅', label: '',   value: `${booking.data} às ${booking.hora}`, bold: false },
-                { emoji: '📍', label: '',   value: booking.recolha,   bold: false },
-                { emoji: '🎯', label: '',   value: booking.destino,   bold: false }
-            ];
-            rows.forEach(({ emoji, label, value, bold }) => {
-                const line = document.createElement(bold ? 'strong' : 'span');
-                line.textContent = `${emoji}${label ? ' ' + label + ':' : ''} ${value}`;
-                bookingDetails.appendChild(line);
-                bookingDetails.appendChild(document.createElement('br'));
-            });
+
+            const isPT = currentLang === 'pt';
+
+            // ── helpers ──────────────────────────────────────────────
+            function el(tag, cls, txt) {
+                const e = document.createElement(tag);
+                if (cls) e.className = cls;
+                if (txt !== undefined) e.textContent = txt;
+                return e;
+            }
+            function divider() { return el('div', 'trip-divider'); }
+
+            // ── card root ────────────────────────────────────────────
+            const card = el('div', 'trip-card');
+
+            // ── header: ID pill  +  date/time ───────────────────────
+            const header = el('div', 'trip-header');
+            header.appendChild(el('div', 'trip-id-pill', '#' + (booking.bookingId || '').slice(-8).toUpperCase()));
+            const dtWrap = el('div', 'trip-datetime');
+            dtWrap.appendChild(el('span', 'trip-date', booking.data  || ''));
+            dtWrap.appendChild(el('span', 'trip-time', booking.hora  || ''));
+            header.appendChild(dtWrap);
+            card.appendChild(header);
+
+            // ── passenger ────────────────────────────────────────────
+            card.appendChild(divider());
+            const pRow = el('div', 'trip-passenger');
+            const avatar = el('div', 'trip-avatar', (booking.nome || '?')[0].toUpperCase());
+            const pInfo  = el('div');
+            pInfo.appendChild(el('div', 'trip-passenger-name',  booking.nome      || ''));
+            pInfo.appendChild(el('div', 'trip-passenger-phone', booking.telefone  || ''));
+            pRow.appendChild(avatar);
+            pRow.appendChild(pInfo);
+            card.appendChild(pRow);
+
+            // ── route timeline ───────────────────────────────────────
+            card.appendChild(divider());
+            const route = el('div', 'trip-route');
+
+            // pickup row
+            const pickupRow   = el('div', 'trip-route-row');
+            const pickupTrack = el('div', 'trip-route-track');
+            pickupTrack.appendChild(el('div', 'trip-dot-pickup'));
+            pickupTrack.appendChild(el('div', 'trip-connector'));
+            const pickupInfo  = el('div', 'trip-route-info');
+            pickupInfo.appendChild(el('div', 'trip-route-label',   isPT ? 'Recolha' : 'Pickup'));
+            pickupInfo.appendChild(el('div', 'trip-route-address', booking.recolha || ''));
+            pickupRow.appendChild(pickupTrack);
+            pickupRow.appendChild(pickupInfo);
+
+            // destination row
+            const destRow   = el('div', 'trip-route-row');
+            const destTrack = el('div', 'trip-route-track');
+            destTrack.appendChild(el('div', 'trip-dot-dest'));
+            const destInfo  = el('div', 'trip-route-info');
+            destInfo.appendChild(el('div', 'trip-route-label',   isPT ? 'Destino' : 'Destination'));
+            destInfo.appendChild(el('div', 'trip-route-address', booking.destino || ''));
+            destRow.appendChild(destTrack);
+            destRow.appendChild(destInfo);
+
+            route.appendChild(pickupRow);
+            route.appendChild(destRow);
+            card.appendChild(route);
+
+            bookingDetails.appendChild(card);
         }
 
         // Update booking status (persists to localStorage — excepto estados finais)
