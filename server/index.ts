@@ -542,6 +542,34 @@ app.get('/api/geocode', async (req: Request, res: Response) => {
   }
 })
 
+// ── Route (motorista → recolha, rota real + tráfego) ─────────────────────────
+app.get('/api/route', async (req: Request, res: Response) => {
+  const from = String(req.query.from || '').trim()  // "lat,lng"
+  const to   = String(req.query.to   || '').trim()  // "lat,lng"
+  if (!from || !to) return res.json(null)
+  const TOMTOM_KEY = process.env.TOMTOM_API_KEY
+  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return res.json(null)
+  try {
+    const url =
+      `https://api.tomtom.com/routing/1/calculateRoute/${encodeURIComponent(from)}:${encodeURIComponent(to)}/json` +
+      `?key=${TOMTOM_KEY}&traffic=true&travelMode=car`
+    const r = await fetch(url)
+    if (!r.ok) return res.json(null)
+    const body = await r.json() as {
+      routes?: Array<{ summary: { lengthInMeters: number; travelTimeInSeconds: number; trafficDelayInSeconds: number } }>
+    }
+    const s = body.routes?.[0]?.summary
+    if (!s) return res.json(null)
+    return res.json({
+      distanceKm:      (s.lengthInMeters / 1000).toFixed(1),
+      etaMin:          Math.max(1, Math.ceil(s.travelTimeInSeconds / 60)),
+      trafficDelaySec: s.trafficDelayInSeconds ?? 0
+    })
+  } catch {
+    return res.json(null)
+  }
+})
+
 // ── Proxy TomTom Search API ───────────────────────────────────────────────────
 app.get('/api/search', async (req: Request, res: Response) => {
   const q = String(req.query.q || '').trim()

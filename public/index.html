@@ -1930,7 +1930,7 @@
             infoEl.textContent = currentLang === 'pt' ? '🛰️ À espera da localização do motorista...' : '🛰️ Waiting for driver location...';
         }
 
-        function updateDriverPosition(lat, lng, bookingId) {
+        async function updateDriverPosition(lat, lng, bookingId) {
             if (!trackingMap) return;
             const driverHtml = '<div style="background:#facc15;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #facc1588"></div>';
             const driverIcon = L.divIcon({ className: '', html: driverHtml, iconSize: [14,14], iconAnchor: [7,7] });
@@ -1942,12 +1942,35 @@
             if (pickupCoords) {
                 const bounds = L.latLngBounds([[lat, lng], [pickupCoords.lat, pickupCoords.lng]]);
                 trackingMap.fitBounds(bounds, { padding: [30, 30] });
-                const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
-                const etaMin = Math.max(1, Math.ceil(dist / 0.5));
                 const infoEl = document.getElementById('tracking-info');
-                infoEl.textContent = currentLang === 'pt'
-                    ? `🚗 O motorista está a ${etaMin} min de distância (${dist.toFixed(1)} km)`
-                    : `🚗 The driver is ${etaMin} min away (${dist.toFixed(1)} km)`;
+                infoEl.textContent = currentLang === 'pt' ? '🔄 A calcular rota...' : '🔄 Calculating route...';
+                try {
+                    const r = await fetch(
+                        `/api/route?from=${lat},${lng}&to=${pickupCoords.lat},${pickupCoords.lng}`
+                    );
+                    const route = await r.json();
+                    if (route && route.etaMin) {
+                        const traffic = route.trafficDelaySec > 60
+                            ? (currentLang === 'pt' ? ` ⚠️ +${Math.round(route.trafficDelaySec/60)}min tráfego` : ` ⚠️ +${Math.round(route.trafficDelaySec/60)}min traffic`)
+                            : '';
+                        infoEl.textContent = currentLang === 'pt'
+                            ? `🚗 O motorista está a ${route.etaMin} min (${route.distanceKm} km)${traffic}`
+                            : `🚗 The driver is ${route.etaMin} min away (${route.distanceKm} km)${traffic}`;
+                    } else {
+                        // fallback haversine
+                        const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
+                        const eta  = Math.max(1, Math.ceil(dist / 0.5));
+                        infoEl.textContent = currentLang === 'pt'
+                            ? `🚗 O motorista está a ${eta} min (${dist.toFixed(1)} km)`
+                            : `🚗 The driver is ${eta} min away (${dist.toFixed(1)} km)`;
+                    }
+                } catch {
+                    const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
+                    const eta  = Math.max(1, Math.ceil(dist / 0.5));
+                    document.getElementById('tracking-info').textContent = currentLang === 'pt'
+                        ? `🚗 O motorista está a ${eta} min (${dist.toFixed(1)} km)`
+                        : `🚗 The driver is ${eta} min away (${dist.toFixed(1)} km)`;
+                }
             } else {
                 trackingMap.setView([lat, lng], 15);
             }
