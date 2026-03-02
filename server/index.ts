@@ -16,12 +16,22 @@ const io = new SocketIOServer(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 })
 
+// --- INICIO DO FIX: ROTA DE HEALTH CHECK PARA CRON-JOB ---
+
+app.get('/health', (req, res) => {
+
+res.status(200).send('OK');
+
+});
+
+// --- FIM DO FIX ---
+
 const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
-const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:admin@691.pt'
+const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:reservas@691.pt'
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
