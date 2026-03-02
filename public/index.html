@@ -2237,18 +2237,17 @@
 
             // Servidor encontrou reserva ativa para este clientId
             socket.on('session_restored', (data) => {
+                const st = data.status || data.booking?.status || 'pending';
+
                 if (data.booking && !currentBooking) {
+                    // Restauração inicial (página nova)
                     currentBooking = data.booking;
-                    const st = data.status || data.booking.status || 'pending';
-                    localStorage.setItem('691_booking', JSON.stringify({ ...data.booking, status: st }));
                     displayBooking(data.booking);
                     updateBookingStatus(st);
                     if (st === 'accepted' || st === 'arrived') {
                         initTrackingMap(data.booking.recolha);
                     }
-                    // Abrir janela automaticamente
                     openBookingWindow();
-                    // Aplicar push status pendente se houver
                     if (pendingPushStatus?.bookingId === data.booking.bookingId) {
                         const pst = pendingPushStatus; pendingPushStatus = null;
                         applyPushStatus(pst.type, pst.bookingId);
@@ -2267,6 +2266,11 @@
                     } else {
                         showNotification('🔄 Reserva ativa restaurada');
                     }
+
+                } else if (data.booking && currentBooking?.bookingId === data.booking.bookingId && st !== currentStatus) {
+                    // Reconexão: sincronizar estado que pode ter mudado durante desligação
+                    updateBookingStatus(st);
+                    if (st === 'accepted' && !trackingMap && currentBooking?.recolha) initTrackingMap(currentBooking.recolha);
                 }
             });
 
@@ -2474,11 +2478,12 @@
             });
         }
 
-        // Update booking status (also persists to localStorage)
+        // Update booking status (persists to localStorage — excepto estados finais)
         function updateBookingStatus(status) {
             currentStatus = status;
-            // Persistir estado actual para sobreviver a refresh
-            if (currentBooking) {
+            // Não persistir estados finais: já foram removidos do localStorage antes desta chamada
+            const isFinal = ['completed','rejected','cancelled'].includes(status);
+            if (currentBooking && !isFinal) {
                 currentBooking.status = status;
                 localStorage.setItem('691_booking', JSON.stringify(currentBooking));
             }

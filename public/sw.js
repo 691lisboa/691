@@ -1,4 +1,4 @@
-const CACHE = '691-v4'
+const CACHE = '691-v5'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
@@ -83,9 +83,10 @@ self.addEventListener('message', (e) => {
 
 // ── Web Push ──────────────────────────────────────────────────────────────────
 self.addEventListener('push', (e) => {
-  const payload = e.data?.json() || {}
-  const title   = payload.title || '691 Lisboa'
-  const type = payload.data?.type || ''
+  let payload = {}
+  try { payload = e.data?.json() ?? {} } catch { payload = { title: '691 Lisboa', body: e.data?.text() || '' } }
+  const title = payload.title || '691 Lisboa'
+  const type  = payload.data?.type || ''
   const options = {
     body:               payload.body || '',
     icon:               '/icon.svg',
