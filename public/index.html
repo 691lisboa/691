@@ -1815,7 +1815,10 @@
                 disconnected: 'Desconectado',
                 noBookings: 'Sem reservas ativas no momento',
                 bookingDetailsTitle: '📋 Detalhes da Reserva',
-                successMessage: '✅ Reserva enviada com sucesso!'
+                successMessage: '✅ Reserva enviada com sucesso!',
+                youLabel: 'Você',
+                errorGeneric: '❌ Erro ao enviar reserva',
+                errorConnection: '❌ Erro de conexão'
             },
             en: {
                 title: '691 Lisboa',
@@ -1847,7 +1850,10 @@
                 disconnected: 'Disconnected',
                 noBookings: 'No active bookings at the moment',
                 bookingDetailsTitle: '📋 Booking Details',
-                successMessage: '✅ Booking sent successfully!'
+                successMessage: '✅ Booking sent successfully!',
+                youLabel: 'You',
+                errorGeneric: '❌ Error sending booking',
+                errorConnection: '❌ Connection error'
             }
         };
 
@@ -2262,18 +2268,24 @@
             updateBookingStatus('pending');
         }
 
-        // Update booking window
+        // Update booking window (safe DOM — no innerHTML with user data)
         function updateBookingWindow(booking) {
             const bookingDetails = document.getElementById('booking-window-details');
-            
-            bookingDetails.innerHTML = `
-                <strong>🆔 ID: ${booking.bookingId}</strong><br>
-                <strong>👤 ${booking.nome}</strong><br>
-                📞 ${booking.telefone}<br>
-                📅 ${booking.data} às ${booking.hora}<br>
-                📍 ${booking.recolha}<br>
-                🎯 ${booking.destino}
-            `;
+            bookingDetails.innerHTML = '';
+            const rows = [
+                { emoji: '🆔', label: 'ID', value: booking.bookingId, bold: true },
+                { emoji: '👤', label: '',   value: booking.nome,      bold: true },
+                { emoji: '📞', label: '',   value: booking.telefone,  bold: false },
+                { emoji: '📅', label: '',   value: `${booking.data} às ${booking.hora}`, bold: false },
+                { emoji: '📍', label: '',   value: booking.recolha,   bold: false },
+                { emoji: '🎯', label: '',   value: booking.destino,   bold: false }
+            ];
+            rows.forEach(({ emoji, label, value, bold }) => {
+                const line = document.createElement(bold ? 'strong' : 'span');
+                line.textContent = `${emoji}${label ? ' ' + label + ':' : ''} ${value}`;
+                bookingDetails.appendChild(line);
+                bookingDetails.appendChild(document.createElement('br'));
+            });
         }
 
         // Update booking status
@@ -2371,12 +2383,19 @@
                     
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `chat-message ${data.type || 'client'}`;
-                    messageDiv.innerHTML = `
-                        <strong>${data.name}</strong>
-                        <div>${data.message}</div>
-                        <div class="time">${new Date().toLocaleTimeString()}</div>
-                    `;
-                    
+
+                    const nameEl = document.createElement('strong');
+                    nameEl.textContent = data.name;
+                    const msgEl  = document.createElement('div');
+                    msgEl.textContent = data.message;
+                    const timeEl = document.createElement('div');
+                    timeEl.className = 'time';
+                    timeEl.textContent = new Date().toLocaleTimeString();
+
+                    messageDiv.appendChild(nameEl);
+                    messageDiv.appendChild(msgEl);
+                    messageDiv.appendChild(timeEl);
+
                     container.appendChild(messageDiv);
                     container.scrollTop = container.scrollHeight;
                 }
@@ -2462,10 +2481,11 @@
                         successMsg.classList.remove('show');
                     }, 3000);
                 } else {
-                    showNotification('❌ Erro ao enviar reserva');
+                    const errData = await response.json().catch(() => ({}))
+                    showNotification(errData.error || translations[currentLang].errorGeneric);
                 }
             } catch (error) {
-                showNotification('❌ Erro de conexão');
+                showNotification(translations[currentLang].errorConnection);
             }
         });
 
@@ -2485,7 +2505,7 @@
             });
             
             displayChatMessage({
-                name: 'Você',
+                name: translations[currentLang].youLabel,
                 message: message,
                 type: 'client'
             });
@@ -2509,7 +2529,7 @@
             });
             
             displayChatMessage({
-                name: 'Você',
+                name: translations[currentLang].youLabel,
                 message: message,
                 type: 'client'
             });
