@@ -135,22 +135,19 @@ async function sendPush(
   }
 }
 
-/** Tradução automática via MyMemory (gratuito, sem chave) */
+/** Tradução automática via Google Translate (sem chave de API) */
 async function translate(text: string, from: string, to: string): Promise<string> {
   if (from === to || !text.trim()) return text
   try {
     const controller = new AbortController()
-    const tid = setTimeout(() => controller.abort(), 4000)
-    const res  = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${from}|${to}`,
-      { signal: controller.signal }
-    )
+    const tid = setTimeout(() => controller.abort(), 5000)
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text.slice(0, 500))}`
+    const res  = await fetch(url, { signal: controller.signal })
     clearTimeout(tid)
-    const json = await res.json() as { responseStatus?: number; responseData?: { translatedText?: string } }
-    if (json.responseStatus === 200 && json.responseData?.translatedText) {
-      const t = json.responseData.translatedText
-      if (!t.startsWith('MYMEMORY WARNING') && t.toLowerCase() !== text.toLowerCase()) return t
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json = await res.json() as any[]
+    const translated = (json?.[0] as any[])?.map((chunk: any[]) => chunk?.[0] ?? '').join('') ?? ''
+    if (translated && translated.toLowerCase() !== text.toLowerCase()) return translated
   } catch { /* timeout ou falha de rede — usa texto original */ }
   return text
 }
