@@ -2107,7 +2107,7 @@
             });
 
             socket.on('driver_arrived', (data) => {
-                if (data.clientId === clientId) {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     showNotification(data.message || translations[currentLang].driverArrived);
                     playSound();
                 }
