@@ -24,6 +24,7 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
 const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:reservas@691.pt'
+const WEBAPP_URL        = process.env.WEBAPP_URL        || ''
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
@@ -185,21 +186,23 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
 /** Inline keyboard com 3 linhas de botões */
 function buildKeyboard(bookingId: string, recolha: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
-  return {
-    inline_keyboard: [
-      [
-        { text: '✅ Aceitar',   callback_data: `accept_${bookingId}`  },
-        { text: '❌ Recusar',   callback_data: `reject_${bookingId}`  }
-      ],
-      [
-        { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
-        { text: '🚀 Waze',     url: wazeUrl                           }
-      ],
-      [
-        { text: '🏁 Concluir', callback_data: `complete_${bookingId}` }
-      ]
+  const rows: Array<Array<Record<string, unknown>>> = [
+    [
+      { text: '✅ Aceitar',   callback_data: `accept_${bookingId}`  },
+      { text: '❌ Recusar',   callback_data: `reject_${bookingId}`  }
+    ],
+    [
+      { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
+      { text: '🚀 Waze',     url: wazeUrl                           }
+    ],
+    [
+      { text: '🏁 Concluir', callback_data: `complete_${bookingId}` }
     ]
+  ]
+  if (WEBAPP_URL) {
+    rows.push([{ text: '🛰️ Tracking GPS', web_app: { url: `${WEBAPP_URL}/driver-track.html?bookingId=${bookingId}` } }])
   }
+  return { inline_keyboard: rows }
 }
 
 /** Edita a mensagem Telegram original com o novo estado — mantém os botões visíveis */
@@ -398,6 +401,18 @@ io.on('connection', (socket) => {
     // Reserva mantida em memória — o cliente pode estar a fazer refresh
   })
 
+  // Motorista envia posição GPS em tempo real
+  socket.on('driver_location_update', (data: { lat: number; lng: number; bookingId: string }) => {
+    const bookingId = sanitize(String(data.bookingId || ''), 20)
+    if (!activeBookings.has(bookingId)) return
+    if (typeof data.lat !== 'number' || typeof data.lng !== 'number') return
+    const lat = Math.max(-90,  Math.min(90,  data.lat))
+    const lng = Math.max(-180, Math.min(180, data.lng))
+    const clientId = clientIdForBooking(bookingId)
+    if (!clientId) return
+    io.to(clientId).emit('tracking_update', { lat, lng, bookingId, ts: Date.now() })
+  })
+
   // Mensagem de chat do cliente para o motorista
   socket.on('message_to_driver', async (data) => {
     const clientId  = sanitize(data.clientId, 64)
@@ -507,6 +522,25 @@ app.post('/api/subscribe', express.json({ limit: '4kb' }), (req: Request, res: R
 
 // ── Ficheiros estáticos ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')))
+
+// ── Geocode (endereço → coordenadas) ─────────────────────────────────────────
+app.get('/api/geocode', async (req: Request, res: Response) => {
+  const q = String(req.query.q || '').trim()
+  if (!q || q.length < 3) return res.json(null)
+  const TOMTOM_KEY = process.env.TOMTOM_API_KEY
+  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return res.json(null)
+  try {
+    const url = `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(q)}.json?key=${TOMTOM_KEY}&limit=1`
+    const r = await fetch(url)
+    if (!r.ok) return res.json(null)
+    const body = await r.json() as { results?: Array<{ position: { lat: number; lon: number } }> }
+    const pos = body.results?.[0]?.position
+    if (!pos) return res.json(null)
+    return res.json({ lat: pos.lat, lng: pos.lon })
+  } catch {
+    return res.json(null)
+  }
+})
 
 // ── Proxy TomTom Search API ───────────────────────────────────────────────────
 app.get('/api/search', async (req: Request, res: Response) => {
