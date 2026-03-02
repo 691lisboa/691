@@ -1,4 +1,4 @@
-const CACHE = '691-v3'
+const CACHE = '691-v4'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
@@ -85,15 +85,17 @@ self.addEventListener('message', (e) => {
 self.addEventListener('push', (e) => {
   const payload = e.data?.json() || {}
   const title   = payload.title || '691 Lisboa'
+  const type = payload.data?.type || ''
   const options = {
-    body:              payload.body  || '',
-    icon:              '/icon.svg',
-    badge:             '/icon.svg',
-    data:              payload.data  || {},
-    vibrate:           [200, 100, 200],
-    requireInteraction: payload.data?.type === 'arrived',
-    tag:               payload.data?.bookingId || '691',
-    renotify:          true
+    body:               payload.body || '',
+    icon:               '/icon.svg',
+    badge:              '/icon.svg',
+    data:               payload.data || {},
+    vibrate:            [200, 100, 200, 100, 200],
+    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed'].includes(type),
+    tag:                payload.data?.bookingId || '691',
+    renotify:           true,
+    silent:             false
   }
   e.waitUntil(self.registration.showNotification(title, options))
 })

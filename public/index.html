@@ -2858,11 +2858,14 @@
                         applicationServerKey: urlBase64ToUint8Array(publicKey)
                     });
                 }
+                // Always re-POST — endpoint can rotate; server must always have the latest
                 await fetch('/api/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clientId, subscription: sub })
                 });
+                // Ensure updated SW is controlling the page
+                if (swReg.waiting) swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
                 console.log('Push notifications registadas');
             } catch (e) {
                 console.warn('Push registration failed:', e);
