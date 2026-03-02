@@ -295,24 +295,27 @@ io.on('connection', (socket) => {
   })
 
   // Cliente cancela reserva
-  socket.on('cancel_booking', (data) => {
+  socket.on('cancel_booking', async (data) => {
     const booking = activeBookings.get(data.bookingId)
-    activeBookings.delete(data.bookingId)
-    clientBookings.delete(data.clientId)
+    const hasMsgId = bookingMessages.has(data.bookingId)
 
-    // Editar mensagem Telegram se existir
-    if (booking) editMsg(data.bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
-
-    // Fallback: nova mensagem se edição falhar ou não houver msgId
-    if (bot && TELEGRAM_CHAT_ID && !bookingMessages.has(data.bookingId)) {
-      bot.api.sendMessage(
+    // Notificar Telegram ANTES de apagar da memória
+    if (booking && hasMsgId) {
+      await editMsg(data.bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
+    } else if (bot && TELEGRAM_CHAT_ID) {
+      // Fallback: sem messageId guardado → envia nova mensagem
+      await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
-        `<b>🚫 RESERVA CANCELADA</b>\n` +
+        `<b>🚫 RESERVA CANCELADA PELO CLIENTE</b>\n` +
         `<b>ID:</b> <code>${esc(data.bookingId)}</code>\n` +
-        `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>`,
+        `<b>👤</b> ${esc(data.name || '—')} — <a href="tel:${esc(data.phone || '')}">${esc(data.phone || '—')}</a>`,
         { parse_mode: 'HTML' }
       ).catch(console.error)
     }
+
+    // Cleanup após notificação enviada
+    activeBookings.delete(data.bookingId)
+    clientBookings.delete(data.clientId)
     bookingMessages.delete(data.bookingId)
 
     socket.emit('booking_cancelled', {
