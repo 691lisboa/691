@@ -625,21 +625,25 @@ app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || null })
 })
 
-app.post('/api/subscribe', express.json({ limit: '4kb' }), (req: Request, res: Response) => {
-  const { clientId, subscription } = req.body || {}
-  if (!clientId || !subscription?.endpoint) {
-    return res.status(400).json({ success: false, error: 'Subscription inválida' })
-  }
-  pushSubscriptions.set(sanitize(clientId, 64), subscription as webpush.PushSubscription)
+app.post('/api/subscribe', express.json({ limit: '50kb' }), (req: Request, res: Response) => {
+  const raw = req.body || {}
+  const clientId = sanitize(String(raw.clientId || ''), 64)
+  const subscription = raw.subscription as webpush.PushSubscription
+  if (!clientId || !subscription) return res.status(400).json({ ok: false })
+  pushSubscriptions.set(clientId, subscription)
   savePushSubs()
-  console.log(`Push subscription registada/actualizada: ${clientId}`)
-  return res.json({ success: true })
+  res.json({ ok: true })
+})
+
+// ── Booking details page (tracking only, no chat) ─────────────────────────────
+app.get('/reserva/:id', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../public/reserva.html'))
 })
 
 // ── Ficheiros estáticos ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')))
 
-// ── Geocode (endereço → coordenadas) ─────────────────────────────────────────
+// ... (rest of the code remains the same)
 app.get('/api/geocode', async (req: Request, res: Response) => {
   const q = String(req.query.q || '').trim()
   if (!q || q.length < 3) return res.json(null)
