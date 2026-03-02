@@ -1,4 +1,4 @@
-const CACHE = '691-v2'
+const CACHE = '691-v3'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
@@ -79,4 +79,34 @@ self.addEventListener('fetch', (e) => {
 // SKIP_WAITING message from app
 self.addEventListener('message', (e) => {
   if (e.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
+
+// ── Web Push ──────────────────────────────────────────────────────────────────
+self.addEventListener('push', (e) => {
+  const payload = e.data?.json() || {}
+  const title   = payload.title || '691 Lisboa'
+  const options = {
+    body:              payload.body  || '',
+    icon:              '/icon.svg',
+    badge:             '/icon.svg',
+    data:              payload.data  || {},
+    vibrate:           [200, 100, 200],
+    requireInteraction: payload.data?.type === 'arrived',
+    tag:               payload.data?.bookingId || '691',
+    renotify:          true
+  }
+  e.waitUntil(self.registration.showNotification(title, options))
+})
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if (client.url.startsWith(self.location.origin) && 'focus' in client)
+          return client.focus()
+      }
+      return clients.openWindow('/')
+    })
+  )
 })
