@@ -16,15 +16,7 @@ const io = new SocketIOServer(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 })
 
-// --- INICIO DO FIX: ROTA DE HEALTH CHECK PARA CRON-JOB ---
-
-app.get('/health', (req, res) => {
-
-res.status(200).send('OK');
-
-});
-
-// --- FIM DO FIX ---
+app.get('/health', (_req: Request, res: Response) => res.send('OK'))
 
 const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
@@ -301,6 +293,8 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'accepted'
         if (clientId) {
           const msg = statusMsg('accepted', lang)
           io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -330,6 +324,8 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(8)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'arrived'
         if (clientId) {
           const msg = statusMsg('arrived', lang)
           io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -389,7 +385,7 @@ io.on('connection', (socket) => {
       if (booking) {
         socket.join(clientId)
         socket.data.clientId = clientId
-        socket.emit('session_restored', { booking })
+        socket.emit('session_restored', { booking, status: booking.status || 'pending' })
         console.log(`Sessão restaurada: ${clientId} → ${bookingId}`)
         return
       }
@@ -545,6 +541,9 @@ app.get('/api/search', async (req: Request, res: Response) => {
   }
 })
 
+// ── Health check ────────────────────────────────────────────────────────────
+app.get('/health', (_req: Request, res: Response) => res.send('OK'))
+
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
 app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
   // Rate limiting por IP
@@ -581,7 +580,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const bookingId  = '691-' + Date.now().toString().slice(-6)
   const bookingData: Record<string, string> = {
     bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
-    _ts: String(Date.now())
+    status: 'pending', _ts: String(Date.now())
   }
 
   activeBookings.set(bookingId, bookingData)

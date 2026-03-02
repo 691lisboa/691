@@ -2114,6 +2114,9 @@
                     currentBooking = data.booking;
                     localStorage.setItem('691_booking', JSON.stringify(data.booking));
                     displayBooking(data.booking);
+                    if (data.status && data.status !== 'pending') {
+                        updateBookingStatus(data.status);
+                    }
                     showNotification('🔄 Reserva ativa restaurada');
                 }
             });
