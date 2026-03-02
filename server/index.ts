@@ -186,7 +186,8 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
 /** Inline keyboard com 3 linhas de botões */
 function buildKeyboard(bookingId: string, recolha: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
-  const rows: Array<Array<Record<string, unknown>>> = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rows: any[][] = [
     [
       { text: '✅ Aceitar',   callback_data: `accept_${bookingId}`  },
       { text: '❌ Recusar',   callback_data: `reject_${bookingId}`  }
@@ -310,15 +311,17 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'rejected'
         await editMsg(bookingId, '❌ RECUSADA')
         if (clientId) {
           const msg = statusMsg('rejected', lang)
           io.to(clientId).emit('booking_rejected', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa', msg, { bookingId, type: 'rejected' }).catch(() => {})
-          activeBookings.delete(bookingId)
-          clientBookings.delete(clientId)
         }
         bookingMessages.delete(bookingId)
+        // Manter em memória 5 min para que restore_session devolva o estado final ao cliente
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId) }, 5 * 60 * 1000)
 
       // ── 📍 Cheguei ─────────────────────────────────────────────────────────
       } else if (data.startsWith('arrived_')) {
@@ -341,15 +344,17 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(9)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'completed'
         await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
         if (clientId) {
           const msg = statusMsg('completed', lang)
           io.to(clientId).emit('booking_completed', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa ✅', msg, { bookingId, type: 'completed' }).catch(() => {})
-          activeBookings.delete(bookingId)
-          clientBookings.delete(clientId)
         }
         bookingMessages.delete(bookingId)
+        // Manter em memória 5 min para que restore_session devolva o estado final ao cliente
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId) }, 5 * 60 * 1000)
       }
     })
 

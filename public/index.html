@@ -2226,13 +2226,27 @@
                     currentBooking = data.booking;
                     localStorage.setItem('691_booking', JSON.stringify(data.booking));
                     displayBooking(data.booking);
-                    if (data.status && data.status !== 'pending') {
-                        updateBookingStatus(data.status);
-                    }
-                    if (data.status === 'accepted' || data.status === 'arrived') {
+                    const st = data.status || 'pending';
+                    if (st !== 'pending') updateBookingStatus(st);
+                    if (st === 'accepted' || st === 'arrived') {
                         initTrackingMap(data.booking.recolha);
                     }
-                    showNotification('🔄 Reserva ativa restaurada');
+                    // Final states — clear localStorage and auto-hide
+                    if (st === 'completed') {
+                        localStorage.removeItem('691_booking');
+                        showNotification(translations[currentLang].bookingCompleted);
+                        setTimeout(() => hideBooking(), 4000);
+                    } else if (st === 'rejected') {
+                        localStorage.removeItem('691_booking');
+                        showNotification(translations[currentLang].bookingRejected);
+                        setTimeout(() => hideBooking(), 4000);
+                    } else if (st === 'cancelled') {
+                        localStorage.removeItem('691_booking');
+                        showNotification(translations[currentLang].bookingCancelled);
+                        setTimeout(() => hideBooking(), 4000);
+                    } else {
+                        showNotification('🔄 Reserva ativa restaurada');
+                    }
                 }
             });
 
@@ -2880,6 +2894,49 @@
                         return registerPush(reg);
                     })
                     .catch(err => console.warn('SW registration failed:', err));
+            });
+
+            // Recebe dados da notificação push quando o utilizador clica nela
+            // (funciona mesmo quando o browser estava fechado)
+            navigator.serviceWorker.addEventListener('message', (e) => {
+                if (e.data?.type !== 'PUSH_STATUS') return;
+                const { type: st, bookingId } = e.data.data || {};
+                if (!st || !bookingId) return;
+                // Se o cliente ainda não carregou a reserva, aguardar o socket restore
+                // Caso já tenha a reserva activa, aplicar o estado imediatamente
+                const apply = () => {
+                    if (!currentBooking || currentBooking.bookingId !== bookingId) return;
+                    if (st === 'completed') {
+                        localStorage.removeItem('691_booking');
+                        updateBookingStatus('completed');
+                        showNotification(translations[currentLang].bookingCompleted);
+                        setTimeout(() => hideBooking(), 4000);
+                    } else if (st === 'rejected') {
+                        localStorage.removeItem('691_booking');
+                        updateBookingStatus('rejected');
+                        showNotification(translations[currentLang].bookingRejected);
+                        setTimeout(() => hideBooking(), 3000);
+                    } else if (st === 'cancelled') {
+                        localStorage.removeItem('691_booking');
+                        updateBookingStatus('cancelled');
+                        showNotification(translations[currentLang].bookingCancelled);
+                        setTimeout(() => hideBooking(), 3000);
+                    } else if (st === 'accepted') {
+                        updateBookingStatus('accepted');
+                        showNotification(translations[currentLang].bookingAccepted);
+                        if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
+                    } else if (st === 'arrived') {
+                        updateBookingStatus('arrived');
+                        showNotification(translations[currentLang].driverArrived);
+                    }
+                };
+                // Tentar aplicar agora; se a reserva ainda não estiver carregada, tentar após socket connect
+                if (currentBooking) {
+                    apply();
+                } else {
+                    const unsub = () => { apply(); socket && socket.off('connect', unsub); };
+                    socket ? socket.once('connect', unsub) : setTimeout(apply, 2000);
+                }
             });
         }
     </script>
