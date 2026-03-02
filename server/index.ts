@@ -234,7 +234,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
             }
             io.to(clientId).emit('message_from_driver', {
               bookingId, message: outMsg,
-              driverName: 'Driver 691',
+              driverName: clientLang === 'en' ? 'Driver 691' : 'Motorista 691',
               timestamp: new Date().toISOString()
             })
             await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
@@ -437,6 +437,9 @@ io.on('connection', (socket) => {
       ).catch(console.error)
     }
 
+    // Ler lang antes de apagar da memória
+    const cancelledLang = activeBookings.get(bookingId)?.lang || 'pt'
+
     // Cleanup após notificação enviada
     activeBookings.delete(bookingId)
     clientBookings.delete(clientId)
@@ -444,7 +447,7 @@ io.on('connection', (socket) => {
 
     socket.emit('booking_cancelled', {
       bookingId,
-      message: `❌ Reserva ${bookingId} cancelada.`,
+      message: statusMsg('cancelled', cancelledLang),
       timestamp: new Date().toISOString()
     })
   })
