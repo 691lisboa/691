@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>691 Lisboa</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="manifest" href="/manifest.json">
@@ -471,29 +471,6 @@
             font-style: italic;
         }
 
-        .booking-cta {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .view-booking-btn {
-            padding: 14px 28px;
-            background: rgba(0,77,0,0.25);
-            color: #ffffff;
-            border: 1px solid rgba(0,77,0,0.6);
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-            backdrop-filter: blur(10px);
-        }
-
-        .view-booking-btn:hover {
-            background: rgba(0,77,0,0.45);
-            transform: translateY(-1px);
-        }
 
         /* Booking Window */
         .booking-window {
@@ -1434,6 +1411,44 @@
                 gap: 8px;
             }
         }
+
+        /* ── Mobile / Touch Globals ──────────────────────────────────────────── */
+        /* Remove 300ms tap delay globally */
+        html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+        button, a, input, select, textarea, label {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Momentum scroll + overscroll containment */
+        .chat-messages, .booking-content, .booking-details-panel {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        /* Prevent iOS input font-size auto-zoom (needs >= 16px) */
+        @media (max-width: 768px) {
+            input, textarea, select { font-size: 16px !important; }
+        }
+        /* Dynamic viewport height — avoids address-bar resize jump */
+        @supports (height: 100dvh) {
+            .booking-window, .chat-popup { height: 100dvh; }
+            @media (max-width: 768px) {
+                .booking-container, .chat-container { height: 100dvh; }
+            }
+        }
+        /* Safe-area insets for iPhone notch / home-bar */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .booking-actions-panel { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+            .chat-input             { padding-bottom: calc(8px  + env(safe-area-inset-bottom)); }
+            body { padding-bottom: env(safe-area-inset-bottom); }
+        }
+        /* Respect system reduced-motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1498,10 +1513,6 @@
 
             <div id="no-bookings" class="no-bookings">
                 <span id="no-bookings-text">Sem reservas ativas</span>
-            </div>
-
-            <div id="booking-cta" class="booking-cta" style="display: none;">
-                <button id="view-booking-btn" class="view-booking-btn">🚕 Ver Reserva Ativa</button>
             </div>
 
             <form id="taxi-form">
@@ -1819,7 +1830,7 @@
                 destinationLabel: 'Destino',
                 submitButton: 'Reservar Táxi',
                 bookingTitle: '🚕 Reserva Ativa',
-                chatTitle: '� Chat com Motorista',
+                chatTitle: '💬 Chat com Motorista',
                 bookingPending: '⏳ Aguardando Confirmação',
                 bookingAccepted: '✅ Reserva Aceite',
                 bookingRejected: '❌ Reserva Recusada',
@@ -1831,7 +1842,7 @@
                 viewBookingButton: '🚕 Ver Reserva Ativa',
                 chatButton: '💬 Chat',
                 cancelButton: '❌ Cancelar Reserva',
-                driverArrived: '� O motorista chegou.',
+                driverArrived: '🚕 O motorista chegou.',
                 newBooking: '🚕 Nova reserva recebida!',
                 messageFromDriver: 'Mensagem do motorista:',
                 connected: 'Conectado',
@@ -1858,7 +1869,7 @@
                 destinationLabel: 'Destination',
                 submitButton: 'Book Taxi',
                 bookingTitle: '🚕 Active Booking',
-                chatTitle: '� Chat with Driver',
+                chatTitle: '💬 Chat with Driver',
                 bookingPending: '⏳ Awaiting Confirmation',
                 bookingAccepted: '✅ Booking Accepted',
                 bookingRejected: '❌ Booking Rejected',
@@ -1870,7 +1881,7 @@
                 viewBookingButton: '🚕 View Active Booking',
                 chatButton: '💬 Chat',
                 cancelButton: '❌ Cancel Booking',
-                driverArrived: '� Driver arrived.',
+                driverArrived: '🚕 Driver arrived.',
                 newBooking: '🚕 New booking received!',
                 messageFromDriver: 'Message from driver:',
                 connected: 'Connected',
@@ -2392,9 +2403,6 @@
             document.getElementById('chat-message').placeholder = t.messagePlaceholder;
             document.getElementById('booking-title').textContent = t.bookingTitle;
             document.getElementById('no-bookings-text').textContent = t.noBookings;
-            const viewBtn = document.getElementById('view-booking-btn');
-            if (viewBtn) viewBtn.textContent = t.viewBookingButton;
-
             // Form input placeholders
             document.getElementById('nome').placeholder      = t.namePlaceholder;
             document.getElementById('telefone').placeholder  = t.phonePlaceholder;
@@ -2444,18 +2452,21 @@
         function displayBooking(booking) {
             currentBooking = booking;
             const bookingInfo = document.getElementById('booking-info');
-            const noBookings = document.getElementById('no-bookings');
-            const bookingCta = document.getElementById('booking-cta');
-            
-            bookingInfo.style.display = 'none';
-            noBookings.style.display = 'none';
-            bookingCta.style.display = 'block';
-            
+            const noBookings  = document.getElementById('no-bookings');
+            const taxiForm    = document.getElementById('taxi-form');
+
+            noBookings.style.display  = 'none';
+            bookingInfo.style.display = 'block';
+            if (taxiForm) taxiForm.style.display = 'none';
+
             updateBookingWindow(booking);
             updateBookingStatus('pending');
 
             // Restaurar histórico de chat após refresh
             if (booking.bookingId) restoreChatHistory(booking.bookingId);
+
+            // Abrir directamente a janela de detalhes
+            openBookingWindow();
         }
 
         // Update booking window (safe DOM — no innerHTML with user data)
@@ -2574,19 +2585,19 @@
 
         // Hide booking
         function hideBooking() {
-            const bookingInfo = document.getElementById('booking-info');
-            const noBookings = document.getElementById('no-bookings');
-            const bookingCta = document.getElementById('booking-cta');
+            const bookingInfo   = document.getElementById('booking-info');
+            const noBookings    = document.getElementById('no-bookings');
             const bookingWindow = document.getElementById('booking-window');
+            const taxiForm      = document.getElementById('taxi-form');
 
             // Limpar historial de chat do localStorage
             if (currentBooking?.bookingId) {
                 localStorage.removeItem('691_chat_' + currentBooking.bookingId);
             }
-            
+
             bookingInfo.style.display = 'none';
-            bookingCta.style.display = 'none';
-            noBookings.style.display = 'block';
+            noBookings.style.display  = 'block';
+            if (taxiForm) taxiForm.style.display = '';
             bookingWindow.classList.remove('show');
             currentBooking = null;
             hideTrackingMap();
@@ -2817,23 +2828,10 @@
                 message: message,
                 type: 'client'
             });
-            
+
             document.getElementById('booking-chat-message').value = '';
         });
 
-        // View booking button
-        document.getElementById('view-booking-btn').addEventListener('click', () => {
-            document.getElementById('booking-window').classList.add('show');
-            // Leaflet precisa de invalidateSize quando o contentor estava oculto
-            if (trackingMap) setTimeout(() => trackingMap.invalidateSize(), 50);
-        });
-
-        // Close booking window
-        document.getElementById('close-booking').addEventListener('click', () => {
-            document.getElementById('booking-window').classList.remove('show');
-        });
-
-        // Window chat button
         document.getElementById('window-chat-btn').addEventListener('click', () => {
             // Focus on the booking chat input
             document.getElementById('booking-chat-message').focus();
