@@ -35,7 +35,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 // ── Estado em memória ────────────────────────────────────────────────────────
 let bot: Bot | null = null
 const connectedClients = new Set<string>()
-const activeBookings   = new Map<string, Record<string, string>>()  // bookingId → dados
+const activeBookings   = new Map<string, Record<string, any>>()  // bookingId → dados + chatHistory
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
 const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
@@ -370,9 +370,17 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
               }
             }
             const driverName = clientLang === 'en' ? 'Driver 691' : 'Motorista 691'
+            const timestamp  = new Date().toISOString()
+            const msgEntry   = { type: 'driver', name: driverName, message: outMsg, timestamp }
+            // Persistir mensagem no histórico da reserva
+            const booking = activeBookings.get(bookingId)
+            if (booking) {
+              if (!booking.chatHistory) booking.chatHistory = []
+              booking.chatHistory.push(msgEntry)
+              saveBookings()
+            }
             io.to(clientId).emit('message_from_driver', {
-              bookingId, message: outMsg, driverName,
-              timestamp: new Date().toISOString()
+              bookingId, message: outMsg, driverName, timestamp
             })
             sendPush(clientId, driverName, outMsg, { bookingId, type: 'message', message: outMsg, driverName }).catch(() => {})
             await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
@@ -490,8 +498,12 @@ io.on('connection', (socket) => {
       if (booking) {
         socket.join(clientId)
         socket.data.clientId = clientId
-        socket.emit('session_restored', { booking, status: booking.status || 'pending' })
-        console.log(`Sessão restaurada: ${clientId} → ${bookingId}`)
+        socket.emit('session_restored', {
+          booking,
+          status: booking.status || 'pending',
+          chatHistory: booking.chatHistory || []  // enviar histórico completo
+        })
+        console.log(`Sessão restaurada: ${clientId} → ${bookingId} (${(booking.chatHistory || []).length} msgs)`)
         return
       }
     }
@@ -770,9 +782,10 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
     return res.status(400).json({ success: false, error: 'Moradas inválidas' })
 
   const bookingId  = '691-' + Date.now().toString().slice(-6)
-  const bookingData: Record<string, string> = {
+  const bookingData: Record<string, any> = {
     bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
-    status: 'pending', _ts: String(Date.now())
+    status: 'pending', _ts: String(Date.now()),
+    chatHistory: []  // array de { type: 'driver'|'client', name: string, message: string, timestamp: string }
   }
 
   activeBookings.set(bookingId, bookingData)

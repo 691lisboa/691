@@ -2422,6 +2422,35 @@
                     currentBooking = data.booking;
                     displayBooking(data.booking);
                     updateBookingStatus(st);
+                    
+                    // Restaurar mensagens do servidor (enviadas enquanto browser estava fechado)
+                    if (data.chatHistory && Array.isArray(data.chatHistory)) {
+                        const localKey = '691_chat_' + data.booking.bookingId;
+                        const localHistory = JSON.parse(localStorage.getItem(localKey) || '[]');
+                        const localTimestamps = new Set(localHistory.map(m => m.timestamp));
+                        
+                        // Adicionar mensagens do servidor que não estão no localStorage
+                        data.chatHistory.forEach(msg => {
+                            if (!localTimestamps.has(msg.timestamp)) {
+                                const entry = {
+                                    name: msg.name,
+                                    message: msg.message,
+                                    type: msg.type,
+                                    time: new Date(msg.timestamp).toLocaleTimeString(),
+                                    timestamp: msg.timestamp
+                                };
+                                localHistory.push(entry);
+                                renderChatMessage(entry);
+                            }
+                        });
+                        
+                        // Salvar histórico completo
+                        if (data.chatHistory.length > 0) {
+                            localStorage.setItem(localKey, JSON.stringify(localHistory));
+                            setTimeout(() => scrollChatsToBottom(), 100);
+                        }
+                    }
+                    
                     if (st === 'accepted' || st === 'arrived') {
                         initTrackingMap(data.booking.recolha);
                     }
@@ -2903,7 +2932,11 @@
 
         // Display chat message in all active chats (and persist)
         function displayChatMessage(data) {
-            const entry = { ...data, time: new Date().toLocaleTimeString() };
+            const entry = { 
+                ...data, 
+                time: new Date().toLocaleTimeString(),
+                timestamp: data.timestamp || new Date().toISOString()
+            };
             saveChatMessage(entry);
             renderChatMessage(entry);
         }
