@@ -17,7 +17,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/addresses.js"></script>
     <style>
         :root {
             --taxi-green: #004d00;
@@ -1403,185 +1402,33 @@
     </div>
 
     <script>
-        // Autocomplete uses addresses.js (loaded externally)
-        // Fallback empty array if addresses.js not loaded
-        const portugueseAddresses = (typeof window.searchAddresses === 'function')
-            ? Object.values(window.portugalAddresses || {}).flat()
-            : ["Aeroporto Humberto Delgado, Lisboa",
-               "Gare do Oriente, Lisboa",
-               "Estação Santa Apolónia, Lisboa",
-               "Praça do Comércio, Lisboa",
-               "Avenida da Liberdade 1, Lisboa",
-            "Avenida da Liberdade 100, Lisboa", 
-            "Avenida da Liberdade 250, Lisboa",
-            "Rua Augusta 10, Lisboa",
-            "Rua Augusta 50, Lisboa",
-            "Rua Augusta 100, Lisboa",
-            "Praça do Comércio 1, Lisboa",
-            "Praça do Comércio 50, Lisboa",
-            "Rua de Santa Catarina 25, Porto",
-            "Rua de Santa Catarina 100, Porto",
-            "Rua de Santa Catarina 200, Porto",
-            "Avenida dos Aliados 50, Porto",
-            "Avenida dos Aliados 100, Porto",
-            "Rua Miguel Bombarda 25, Porto",
-            "Rua Miguel Bombarda 150, Porto",
-            "Praça da República 1, Lisboa",
-            "Praça da República 50, Lisboa",
-            "Avenida de Roma 10, Lisboa",
-            "Avenida de Roma 100, Lisboa",
-            "Rua de O Século 5, Lisboa",
-            "Rua de O Século 25, Lisboa",
-            "Campo de Ourique 25, Lisboa",
-            "Campo de Ourique 100, Lisboa",
-            "Alfama - Rua dos Remédios 10, Lisboa",
-            "Alfama - Largo das Portas do Sol 5, Lisboa",
-            "Baixa Chiado - Rua Garrett 25, Lisboa",
-            "Baixa Chiado - Largo do Chiado 10, Lisboa",
-            "Bairro Alto - Rua da Atalaia 15, Lisboa",
-            "Bairro Alto - Rua Diário de Notícias 50, Lisboa",
-            "Belém - Praça Afonso de Albuquerque 1, Lisboa",
-            "Belém - Rua de Belém 100, Lisboa",
-            "Parque das Nações - Gare do Oriente, Lisboa",
-            "Parque das Nações - Torre Vasco da Gama, Lisboa",
-            "Parque das Nações - Oceanário, Lisboa",
-            "Cascais - Rua Frederico Arouca 10, Cascais",
-            "Cascais - Boca do Inferno, Cascais",
-            "Estoril - Casino Estoril, Estoril",
-            "Estoril - Praia da Poça, Estoril",
-            "Sintra - Palácio da Pena, Sintra",
-            "Sintra - Castelo dos Mouros, Sintra",
-            "Sintra - Centro Histórico 25, Sintra",
-            "Funchal - Avenida do Mar 100, Funchal",
-            "Funchal - Mercado dos Lavradores, Funchal",
-            "Albufeira - Praia dos Pescadores, Albufeira",
-            "Albufeira - Strip do Algarve, Albufeira",
-            "Vilamoura - Marina de Vilamoura, Vilamoura",
-            "Vilamoura - Praia da Falésia, Vilamoura",
-            "Portimão - Praia da Rocha, Portimão",
-            "Portimão - Marina de Portimão, Portimão",
-            "Faro - Aeroporto de Faro, Faro",
-            "Faro - Centro Histórico 50, Faro",
-            "Coimbra - Universidade de Coimbra, Coimbra",
-            "Coimbra - Praça da República 10, Coimbra",
-            "Braga - Bom Jesus do Monte, Braga",
-            "Braga - Sé de Braga, Braga",
-            "Guimarães - Castelo de Guimarães, Guimarães",
-            "Guimarães - Palácio dos Duques de Bragança, Guimarães",
-            "Aveiro - Canal de Aveiro, Aveiro",
-            "Aveiro - Praça da República 25, Aveiro",
-            "Évora - Templo de Diana, Évora",
-            "Évora - Praça do Giraldo 1, Évora",
-            "Viseu - Sé de Viseu, Viseu",
-            "Vila Real - Palácio de Mateus, Vila Real",
-            "Leiria - Castelo de Leiria, Leiria",
-            "Santarém - Jardim Portas do Sol, Santarém",
-            "Fátima - Santuário de Fátima, Fátima",
-            "Nazaré - Praia da Nazaré, Nazaré",
-            "Nazaré - Miradouro do Suberco, Nazaré",
-            "Óbidos - Castelo de Óbidos, Óbidos",
-            "Óbidos - Rua Direita 25, Óbidos",
-            "Tomar - Convento de Cristo, Tomar",
-            "Costa Nova - Praia da Costa Nova, Aveiro",
-            "Barra - Farol de Aveiro, Aveiro",
-            "Vila Nova de Gaia - Cais de Gaia, Vila Nova de Gaia",
-            "Vila Nova de Gaia - Jardim do Morro, Vila Nova de Gaia",
-            "Matosinhos - Mercado Municipal, Matosinhos",
-            "Matosinhos - Praia de Matosinhos, Matosinhos",
-            "Maia - Parque da Maia, Maia",
-            "Gondomar - Parque de São Domingos, Gondomar",
-            "Rio Tinto - Centro Comercial, Rio Tinto",
-            "Valongo - Piscinas Municipais, Valongo",
-            "Póvoa de Varzim - Praia da Póvoa, Póvoa de Varzim",
-            "Vila do Conde - Praia de Vila do Conde, Vila do Conde",
-            "Esposende - Praia de Esposende, Esposende",
-            "Viana do Castelo - Praia do Cabedelo, Viana do Castelo",
-            "Chaves - Praça de Camões, Chaves",
-            "Vila Pouca de Aguiar - Termas, Vila Pouca de Aguiar",
-            "Lamego - Santuário de Nossa Senhora dos Remédios, Lamego",
-            "Guarda - Sé da Guarda, Guarda",
-            "Covilhã - Praça do Município, Covilhã",
-            "Castelo Branco - Jardim do Paço, Castelo Branco",
-            "Portalegre - Praça da República, Portalegre",
-            "Torres Vedras - Castelo de Torres Vedras, Torres Vedras",
-            "Mafra - Palácio Nacional de Mafra, Mafra",
-            "Oeiras - Parque dos Poetas, Oeiras",
-            "Amadora - Centro Comercial Dolce Vita, Amadora",
-            "Odivelas - Jardim Odivelas, Odivelas",
-            "Loures - Centro Histórico de Loures, Loures",
-            "Vila Franca de Xira - Praça da República, Vila Franca de Xira",
-            "Alcochete - Praça 21 de Agosto, Alcochete",
-            "Almada - Cacilhas, Almada",
-            "Almada - Costa da Caparica, Almada",
-            "Barreiro - Praça da República, Barreiro",
-            "Moita - Centro Comercial, Moita",
-            "Montijo - Aeroporto, Montijo",
-            "Palmela - Castelo de Palmela, Palmela",
-            "Seixal - Jardim Municipal, Seixal",
-            "Sesimbra - Praia da Ribeira, Sesimbra",
-            "Setúbal - Praça do Bocage, Setúbal",
-            "Sines - Porto de Sines, Sines",
-            "Grândola - Praça da República, Grândola",
-            "Alcácer do Sal - Castelo de Alcácer do Sal, Alcácer do Sal",
-            "Santiago do Cacém - Praça da República, Santiago do Cacém",
-            "Beja - Praça da República, Beja",
-            "Mértola - Castelo de Mértola, Mértola",
-            "Serpa - Castelo de Serpa, Serpa",
-            "Odemira - Praia de Zambujeira do Mar, Odemira",
-            "Ourique - Praça da República, Ourique",
-            "Aljustrel - Museu, Aljustrel",
-            "Vila Nova de Milfontes - Praia, Vila Nova de Milfontes",
-            "Zambujeira do Mar - Praia, Zambujeira do Mar",
-            "Odeceixe - Praia, Odeceixe",
-            "Lagos - Praia Dona Ana, Lagos",
-            "Lagos - Centro Histórico, Lagos",
-            "Loulé - Mercado Municipal, Loulé",
-            "São Brás de Alportel - Centro, São Brás de Alportel",
-            "Tavira - Praça da República, Tavira",
-            "Tavira - Ilha de Tavira, Tavira",
-            "Olhão - Mercado, Olhão",
-            "Silves - Castelo, Silves",
-            "Alcoutim - Centro, Alcoutim",
-            "Aljezur - Praia da Amoreira, Aljezur",
-            "Monchique - Serra de Monchique, Monchique",
-            "Vila do Bispo - Sagres, Vila do Bispo",
-            "Sagres - Fortaleza de Sagres, Sagres",
-            "Budens - Praia do Burgau, Budens",
-            "Ribeira Grande - Praia, Ribeira Grande",
-            "Ponta Delgada - Portas da Cidade, Ponta Delgada",
-            "Ponta Delgada - Mercado, Ponta Delgada",
-            "Angra do Heroísmo - Centro Histórico, Angra do Heroísmo",
-            "Angra do Heroísmo - Monte Brasil, Angra do Heroísmo",
-            "Horta - Porto da Horta, Horta",
-            "Horta - Jardim Florêncio Terra, Horta",
-            "Madalena - Porto da Madalena, Madalena",
-            "Velas - Porto das Velas, Velas",
-            "Santa Cruz das Flores - Centro, Santa Cruz das Flores",
-            "Vila do Porto - Porto, Vila do Porto",
-            "Hospital de São José, Lisboa",
-            "Hospital de Santa Maria, Lisboa",
-            "Hospital Curry Cabral, Lisboa",
-            "Centro Hospitalar de Lisboa Central, Lisboa",
-            "Hospital de São João, Porto",
-            "Hospital Santo António, Porto",
-            "Centro Hospitalar do Porto, Porto",
-            "Hospital da Universidade de Coimbra, Coimbra",
-            "Hospital Espírito Santo, Évora",
-            "Hospital de Faro, Faro",
+        // ── Lazy-load addresses.js (large file) ─────────────────────────────
+        let _addressesLoading = null;
+        function loadAddressesJs() {
+            if (typeof window.searchAddresses === 'function') return Promise.resolve(true);
+            if (_addressesLoading) return _addressesLoading;
+            _addressesLoading = new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = '/addresses.js';
+                s.async = true;
+                s.onload = () => resolve(true);
+                s.onerror = () => resolve(false);
+                document.head.appendChild(s);
+            });
+            return _addressesLoading;
+        }
+
+        // Minimal local fallback list (keeps autocomplete usable even without addresses.js)
+        const portugueseAddresses = [
             "Aeroporto Humberto Delgado, Lisboa",
-            "Aeroporto Francisco Sá Carneiro, Porto",
-            "Aeroporto de Faro, Faro",
-            "Aeroporto João Paulo II, Ponta Delgada",
             "Gare do Oriente, Lisboa",
-            "Santa Apolónia, Lisboa",
-            "São Bento, Porto",
-            "Campanhã, Porto",
-            "Centro Comercial Colombo, Lisboa",
-            "Centro Comercial Vasco da Gama, Lisboa",
-            "El Corte Inglés, Lisboa",
-            "El Corte Inglés, Porto",
-               "IKEA Loures, Loures"
-            ];
+            "Estação Santa Apolónia, Lisboa",
+            "Avenida da Liberdade, Lisboa",
+            "Praça do Comércio, Lisboa",
+            "Torre de Belém, Lisboa",
+            "Mosteiro dos Jerónimos, Lisboa",
+            "Hospital de Santa Maria, Lisboa"
+        ];
 
         // Translations
         const translations = {
@@ -1782,15 +1629,22 @@
                 }
             } catch { /* ignore */ }
             // fallback: endereços locais
-            if (typeof window.searchAddresses === 'function') {
-                return window.searchAddresses(query);
+            if (typeof window.searchAddresses !== 'function') {
+                // Attempt lazy load once when needed
+                await loadAddressesJs();
             }
-            return [];
+            if (typeof window.searchAddresses === 'function') return window.searchAddresses(query);
+            const q = String(query || '').toLowerCase();
+            return portugueseAddresses.filter(addr => addr.toLowerCase().includes(q)).slice(0, 10);
         }
 
         function setupAddressAutocomplete() {
             const pickupInput = document.getElementById('recolha');
             const destinationInput = document.getElementById('destino');
+
+            // Proactively start loading addresses.js on first interaction
+            if (pickupInput) pickupInput.addEventListener('focus', () => { loadAddressesJs(); }, { once: true });
+            if (destinationInput) destinationInput.addEventListener('focus', () => { loadAddressesJs(); }, { once: true });
 
             [pickupInput, destinationInput].forEach(input => {
                 let currentFocus = -1;
@@ -1911,83 +1765,6 @@
             
             document.getElementById('data').value = dateStr;
             document.getElementById('hora').value = timeStr;
-        }
-
-        // Autocomplete functionality
-        function setupAutocomplete(inputId, listId) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(listId);
-            let currentFocus = -1;
-
-            input.addEventListener('input', function() {
-                const value = this.value.toLowerCase();
-                closeAllLists();
-                
-                if (!value) return;
-                
-                const matches = (typeof window.searchAddresses === 'function')
-                    ? window.searchAddresses(value)
-                    : portugueseAddresses.filter(addr => addr.toLowerCase().includes(value)).slice(0, 10);
-                
-                if (matches.length === 0) return;
-                
-                list.classList.add('show');
-                
-                matches.forEach((match, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'autocomplete-item';
-                    item.textContent = match;
-                    item.addEventListener('click', function() {
-                        input.value = match;
-                        closeAllLists();
-                    });
-                    list.appendChild(item);
-                });
-            });
-
-            input.addEventListener('keydown', function(e) {
-                const items = list.getElementsByClassName('autocomplete-item');
-                if (items.length === 0) return;
-                
-                if (e.keyCode === 40) { // Down
-                    currentFocus++;
-                    addActive(items);
-                } else if (e.keyCode === 38) { // Up
-                    currentFocus--;
-                    addActive(items);
-                } else if (e.keyCode === 13) { // Enter
-                    e.preventDefault();
-                    if (currentFocus > -1) {
-                        items[currentFocus].click();
-                    }
-                }
-            });
-
-            function addActive(items) {
-                if (!items) return false;
-                removeActive(items);
-                if (currentFocus >= items.length) currentFocus = 0;
-                if (currentFocus < 0) currentFocus = items.length - 1;
-                items[currentFocus].classList.add('active');
-            }
-
-            function removeActive(items) {
-                for (let item of items) {
-                    item.classList.remove('active');
-                }
-            }
-
-            function closeAllLists() {
-                list.classList.remove('show');
-                list.innerHTML = '';
-                currentFocus = -1;
-            }
-
-            document.addEventListener('click', function(e) {
-                if (!input.contains(e.target) && !list.contains(e.target)) {
-                    closeAllLists();
-                }
-            });
         }
 
         // Initialize socket connection
@@ -2530,16 +2307,12 @@
                         const { latitude, longitude } = pos.coords;
                         try {
                             const res = await fetch(
-                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=pt`,
-                                { headers: { 'User-Agent': '691-taxi/1.0' } }
+                                `/api/reverse-geocode?lat=${encodeURIComponent(String(latitude))}&lng=${encodeURIComponent(String(longitude))}&lang=${encodeURIComponent(currentLang || 'pt')}`
                             );
-                            const json = await res.json();
-                            const a = json.address || {};
-                            const street = a.road || a.pedestrian || a.footway || '';
-                            const number = a.house_number ? ` ${a.house_number}` : '';
-                            const city   = a.city || a.town || a.village || a.municipality || a.county || '';
-                            const addr   = street ? `${street}${number}${city ? ', ' + city : ''}` : json.display_name;
-                            document.getElementById('recolha').value = addr;
+                            const json = await res.json().catch(() => ({}));
+                            const addr = json?.addr;
+                            if (addr) document.getElementById('recolha').value = addr;
+                            else document.getElementById('recolha').value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
                         } catch {
                             document.getElementById('recolha').value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
                         } finally {

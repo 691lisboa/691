@@ -81,6 +81,20 @@
             startTracking();
         });
 
+        socket.on('connect_error', () => {
+            document.getElementById('dot').classList.remove('active');
+            document.getElementById('status').textContent = '⚠️ Sem ligação ao servidor.';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('dot').classList.remove('active');
+            document.getElementById('status').textContent = '⚠️ Ligação perdida. A tentar reconectar...';
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+        });
+
         function startTracking() {
             if (!('geolocation' in navigator)) {
                 document.getElementById('status').textContent = '❌ GPS não suportado neste dispositivo.';

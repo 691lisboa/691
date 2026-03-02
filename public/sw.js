@@ -1,10 +1,9 @@
-const CACHE = '691-v6'
+const CACHE = '691-v7'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
   '/',
   '/index.html',
-  '/addresses.js',
   '/manifest.json',
   '/favicon.svg',
   '/icon.svg',
@@ -101,7 +100,7 @@ self.addEventListener('push', (e) => {
     badge:              '/icon.svg',
     data:               payload.data || {},
     vibrate:            [200, 100, 200, 100, 200],
-    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed', 'message'].includes(type),
+    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed'].includes(type),
     tag:                payload.data?.bookingId || '691',
     renotify:           true,
     silent:             false
