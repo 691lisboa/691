@@ -737,6 +737,24 @@
             font-weight: 600;
         }
 
+        /* GPS Tracking */
+        .tracking-section { margin-top: 14px; display: none; }
+        .tracking-section.show { display: block; }
+        #tracking-map-container {
+            height: 175px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(0,77,0,0.4);
+            margin-bottom: 8px;
+        }
+        .tracking-info {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.55);
+            padding: 4px 0;
+            min-height: 1.4em;
+        }
+
         .booking-actions-panel {
             padding: 16px 20px;
             border-top: 1px solid rgba(0,77,0,0.2);
@@ -1574,6 +1592,11 @@
                             ⏳ Aguardando confirmação...
                         </div>
                     </div>
+                    <!-- GPS Tracking (visible when accepted/arrived) -->
+                    <div id="tracking-section" class="tracking-section">
+                        <div id="tracking-map-container"></div>
+                        <div id="tracking-info" class="tracking-info"></div>
+                    </div>
                 </div>
                 <div class="booking-chat-panel">
                     <div class="chat-header">
@@ -1871,6 +1894,72 @@
         let currentStatus = 'pending';
         let isConnected = false;
 
+        // GPS Tracking state
+        let trackingMap = null;
+        let driverMarker = null;
+        let pickupMarker = null;
+        let pickupCoords = null;
+
+        function haversine(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 +
+                      Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        async function initTrackingMap(recolha) {
+            const section = document.getElementById('tracking-section');
+            section.classList.add('show');
+            if (!trackingMap) {
+                trackingMap = L.map('tracking-map-container', { zoomControl: false, attributionControl: false });
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(trackingMap);
+            }
+            try {
+                const r = await fetch('/api/geocode?q=' + encodeURIComponent(recolha));
+                const pos = await r.json();
+                if (pos && pos.lat) {
+                    pickupCoords = pos;
+                    const icon = L.divIcon({ className: '', html: '<div style="background:#10b981;width:12px;height:12px;border-radius:50%;border:2px solid #fff"></div>', iconSize: [12,12], iconAnchor: [6,6] });
+                    pickupMarker = L.marker([pos.lat, pos.lng], { icon }).addTo(trackingMap);
+                    trackingMap.setView([pos.lat, pos.lng], 14);
+                }
+            } catch {}
+            const infoEl = document.getElementById('tracking-info');
+            infoEl.textContent = currentLang === 'pt' ? '🛰️ À espera da localização do motorista...' : '🛰️ Waiting for driver location...';
+        }
+
+        function updateDriverPosition(lat, lng, bookingId) {
+            if (!trackingMap) return;
+            const driverHtml = '<div style="background:#facc15;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #facc1588"></div>';
+            const driverIcon = L.divIcon({ className: '', html: driverHtml, iconSize: [14,14], iconAnchor: [7,7] });
+            if (driverMarker) {
+                driverMarker.setLatLng([lat, lng]);
+            } else {
+                driverMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(trackingMap);
+            }
+            if (pickupCoords) {
+                const bounds = L.latLngBounds([[lat, lng], [pickupCoords.lat, pickupCoords.lng]]);
+                trackingMap.fitBounds(bounds, { padding: [30, 30] });
+                const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
+                const etaMin = Math.max(1, Math.ceil(dist / 0.5));
+                const infoEl = document.getElementById('tracking-info');
+                infoEl.textContent = currentLang === 'pt'
+                    ? `🚗 O motorista está a ${etaMin} min de distância (${dist.toFixed(1)} km)`
+                    : `🚗 The driver is ${etaMin} min away (${dist.toFixed(1)} km)`;
+            } else {
+                trackingMap.setView([lat, lng], 15);
+            }
+        }
+
+        function hideTrackingMap() {
+            const section = document.getElementById('tracking-section');
+            if (section) section.classList.remove('show');
+            if (trackingMap) { trackingMap.remove(); trackingMap = null; }
+            driverMarker = null; pickupMarker = null; pickupCoords = null;
+        }
+
         // clientId persiste no localStorage para sobreviver a refreshes
         let clientId = localStorage.getItem('691_clientId');
         if (!clientId) {
@@ -2117,7 +2206,16 @@
                     if (data.status && data.status !== 'pending') {
                         updateBookingStatus(data.status);
                     }
+                    if (data.status === 'accepted' || data.status === 'arrived') {
+                        initTrackingMap(data.booking.recolha);
+                    }
                     showNotification('🔄 Reserva ativa restaurada');
+                }
+            });
+
+            socket.on('tracking_update', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    updateDriverPosition(data.lat, data.lng, data.bookingId);
                 }
             });
 
@@ -2160,6 +2258,7 @@
                     updateBookingStatus('accepted');
                     showNotification(translations[currentLang].bookingAccepted);
                     playSound();
+                    if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
                 }
             });
 
@@ -2364,6 +2463,7 @@
             noBookings.style.display = 'block';
             bookingWindow.classList.remove('show');
             currentBooking = null;
+            hideTrackingMap();
             
             // Clear chat messages
             clearAllChats();

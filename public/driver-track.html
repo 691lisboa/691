@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>691 – GPS Tracking</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0f0f1a;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 20px;
+            padding: 28px;
+            text-align: center;
+        }
+        .dot {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: background 0.4s;
+        }
+        .dot.active { background: #10b981; animation: pulse 1.8s infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+            50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+        }
+        .status { font-size: 1.05rem; font-weight: 500; }
+        .coords { font-size: 0.78rem; opacity: 0.45; font-family: monospace; }
+        .booking-badge {
+            font-size: 0.72rem;
+            opacity: 0.35;
+            background: rgba(255,255,255,0.06);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .counter {
+            font-size: 0.78rem;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="dot" id="dot">🛰️</div>
+    <div class="status" id="status">A aguardar GPS...</div>
+    <div class="coords" id="coords">—</div>
+    <div class="counter" id="counter"></div>
+    <div class="booking-badge" id="badge"></div>
+
+    <script>
+        if (window.Telegram?.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        }
+
+        const params   = new URLSearchParams(window.location.search);
+        const bookingId = params.get('bookingId') || '';
+        document.getElementById('badge').textContent = bookingId ? `Reserva: ${bookingId}` : 'Sem reserva';
+
+        const socket = io();
+        let sentCount = 0;
+        let watchId   = null;
+
+        socket.on('connect', () => {
+            if (!bookingId) {
+                document.getElementById('status').textContent = '⚠️ ID de reserva em falta.';
+                return;
+            }
+            startTracking();
+        });
+
+        function startTracking() {
+            if (!('geolocation' in navigator)) {
+                document.getElementById('status').textContent = '❌ GPS não suportado neste dispositivo.';
+                return;
+            }
+            document.getElementById('status').textContent = 'A obter localização...';
+            watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 15000
+            });
+        }
+
+        let lastEmit = 0;
+        function onPosition(pos) {
+            const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+            document.getElementById('dot').classList.add('active');
+            document.getElementById('status').textContent = '✅ A transmitir localização';
+            document.getElementById('coords').textContent =
+                `${lat.toFixed(5)}, ${lng.toFixed(5)}  ±${Math.round(accuracy)}m`;
+
+            const now = Date.now();
+            if (now - lastEmit >= 10000) {
+                socket.emit('driver_location_update', { lat, lng, bookingId });
+                lastEmit = now;
+                sentCount++;
+                document.getElementById('counter').textContent = `${sentCount} atualização${sentCount !== 1 ? 'ões' : ''} enviada${sentCount !== 1 ? 's' : ''}`;
+            }
+        }
+
+        function onError(err) {
+            document.getElementById('dot').classList.remove('active');
+            document.getElementById('status').textContent = '❌ Erro GPS: ' + err.message;
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        });
+    </script>
+</body>
+</html>
