@@ -601,7 +601,7 @@ app.post('/api/subscribe', express.json({ limit: '50kb' }), (req: Request, res: 
   res.json({ ok: true })
 })
 
-// ── Booking details page (tracking only, no chat) ─────────────────────────────
+// ── Booking details page (tracking only) ─────────────────────────────────────
 app.get('/reserva/:id', (_req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../public/reserva.html'))
 })

@@ -19,7 +19,6 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
 ### 🚗 Funcionalidades Principais
 - **Reserva instantânea** com cálculo automático de preço
 - **GPS automático** para preenchimento de endereços
-- **Chat em tempo real** com tradução automática
 - **Acompanhamento** em tempo real da viagem
 
 ### 🤖 Integração Telegram
@@ -28,7 +27,6 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
   - 📍 Cheguei (com alerta sonoro no cliente)
   - 🚀 Waze (abre rota)
   - 🏁 Concluir
-  - 💬 Chat
 
 ### 💰 Sistema de Preços
 - **Base**: €3.25
@@ -38,18 +36,14 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
 ## 🛠️ Stack Tecnológico
 
 ### Frontend
-- **React 18** + **TypeScript**
-- **Vite** para build rápido
-- **TailwindCSS** com classes customizadas
+- **HTML** + **JavaScript** (arquivos estáticos em `public/`)
 - **Socket.io Client** para comunicação real-time
-- **TomTom Maps SDK**
 
 ### Backend
 - **Node.js** + **Express**
 - **TypeScript**
 - **Socket.io** para real-time
 - **Telegram Bot API**
-- **Drizzle ORM** + **PostgreSQL**
 
 ### PWA
 - **Service Worker** com cache strategies
@@ -60,7 +54,6 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
 
 ### Pré-requisitos
 - Node.js 18+
-- PostgreSQL 14+
 - npm ou yarn
 
 ### 1. Clonar o projeto
@@ -81,38 +74,29 @@ cp .env.example .env
 
 Editar `.env` com suas credenciais:
 ```env
-# Database
-DATABASE_URL=postgresql://username:password@localhost:5432/691_taxi
-
-# TomTom Maps API
-VITE_TOMTOM_API_KEY=your_tomtom_api_key_here
+# TomTom Maps API (autocomplete/rotas)
+TOMTOM_API_KEY=your_tomtom_api_key_here
 
 # Telegram Bot
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 TELEGRAM_CHAT_ID=your_telegram_chat_id_here
 
-# Session Secret
-SESSION_SECRET=your_session_secret_here
+# Web Push (opcional)
+VAPID_PUBLIC_KEY=your_vapid_public_key_here
+VAPID_PRIVATE_KEY=your_vapid_private_key_here
+VAPID_EMAIL=mailto:reservas@691.pt
 
-# OpenAI (opcional, para tradução avançada)
-OPENAI_API_KEY=your_openai_api_key_here
+# App Configuration
+PORT=5000
+NODE_ENV=production
 ```
 
-### 4. Configurar banco de dados
-```bash
-# Criar banco de dados
-createdb 691_taxi
-
-# Rodar migrations
-npm run db:push
-```
-
-### 5. Iniciar desenvolvimento
+### 4. Iniciar desenvolvimento
 ```bash
 npm run dev
 ```
 
-A aplicação estará disponível em `http://localhost:5173`
+A aplicação estará disponível em `http://localhost:5000`
 
 ## 📱 Configuração do Telegram Bot
 
@@ -122,7 +106,7 @@ A aplicação estará disponível em `http://localhost:5173`
 3. Siga as instruções
 4. Copie o token recebido
 
-### 2. Obter Chat ID
+### 2. Obter ID
 1. Fale com [@userinfobot](https://t.me/userinfobot)
 2. Envie qualquer mensagem para seu bot
 3. Copie o ID recebido
@@ -143,7 +127,7 @@ TELEGRAM_CHAT_ID=123456789
 
 ### 2. Configurar Variável
 ```env
-VITE_TOMTOM_API_KEY=your_tomtom_api_key_here
+TOMTOM_API_KEY=your_tomtom_api_key_here
 ```
 
 ## 🚀 Deploy (Produção)
@@ -157,35 +141,23 @@ VITE_TOMTOM_API_KEY=your_tomtom_api_key_here
 ```env
 NODE_ENV=production
 PORT=5000
-DATABASE_URL=postgresql://user:pass@host:5432/db
 TELEGRAM_BOT_TOKEN=seu_token
 TELEGRAM_CHAT_ID=seu_chat_id
-VITE_TOMTOM_API_KEY=sua_api_key
+TOMTOM_API_KEY=sua_api_key
+VAPID_PUBLIC_KEY=sua_vapid_public_key
+VAPID_PRIVATE_KEY=sua_vapid_private_key
+VAPID_EMAIL=mailto:reservas@691.pt
 ```
 
 ## 📁 Estrutura do Projeto
 
 ```
 691/
-├── client/                 # Frontend React
-│   ├── src/
-│   │   ├── components/    # Componentes React
-│   │   ├── App.tsx       # App principal
-│   │   └── main.tsx      # Entry point
-│   └── index.html        # HTML com PWA
 ├── server/               # Backend Node.js
 │   ├── index.ts         # Servidor principal
-│   ├── routes.ts        # Rotas API
-│   ├── telegram.ts      # Bot Telegram
-│   └── services/
-│       └── routing.ts   # Serviço de rotas
-├── shared/              # Código compartilhado
-│   └── schema.ts       # Schema do banco
 ├── public/              # Arquivos estáticos
 │   ├── manifest.json    # PWA manifest
 │   └── sw.js           # Service worker
-└── script/             # Scripts de build
-    └── build.ts       # Build configuration
 ```
 
 ## 🎯 Funcionalidades Detalhadas
@@ -193,7 +165,6 @@ VITE_TOMTOM_API_KEY=sua_api_key
 ### Real-time Communication
 - **Socket.io** para comunicação bidirecional
 - **Status updates** instantâneos
-- **Chat messages** com tradução automática
 - **Driver location** tracking
 
 ### Telegram Integration
@@ -209,22 +180,8 @@ VITE_TOMTOM_API_KEY=sua_api_key
 - **App-like experience** no mobile
 
 ### Security
-- **Input validation** com Zod
-- **SQL injection protection** com Drizzle
 - **XSS protection** no frontend
 - **Rate limiting** (implementar)
-
-## 🧪 Testes
-
-### Testes Unitários
-```bash
-npm run test
-```
-
-### Testes E2E
-```bash
-npm run test:e2e
-```
 
 ## 📈 Monitoramento
 
@@ -245,20 +202,13 @@ npm run test:e2e
 # Update dependencies
 npm update
 
-# Database migrations
-npm run db:push
-
 # Build production
 npm run build
 ```
 
 ### Backup
 ```bash
-# Database backup
-pg_dump 691_taxi > backup.sql
-
-# Restore backup
-psql 691_taxi < backup.sql
+# (Opcional) Faça backup do diretório `data/` (estado runtime) e das variáveis `.env` em local seguro.
 ```
 
 ## 🤝 Contribuição
