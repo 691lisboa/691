@@ -149,7 +149,7 @@ async function translate(text: string, from: string, to: string): Promise<string
     const json = await res.json() as { responseStatus?: number; responseData?: { translatedText?: string } }
     if (json.responseStatus === 200 && json.responseData?.translatedText) {
       const t = json.responseData.translatedText
-      if (t.toLowerCase() !== text.toLowerCase()) return t
+      if (!t.startsWith('MYMEMORY WARNING') && t.toLowerCase() !== text.toLowerCase()) return t
     }
   } catch { /* timeout ou falha de rede — usa texto original */ }
   return text
@@ -330,7 +330,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         } else {
           console.warn(`accept_: clientId não encontrado para ${bookingId}`)
         }
-        await editMsg(bookingId, '🚀 VIAGEM EM CURSO')
+        await editMsg(bookingId, '✅ RESERVA ACEITE')
 
       // ── ❌ Recusar ─────────────────────────────────────────────────────────
       } else if (data.startsWith('reject_')) {
