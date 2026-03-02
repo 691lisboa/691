@@ -24,6 +24,14 @@ const connectedClients = new Set<string>()
 const activeBookings   = new Map<string, Record<string, string>>()  // bookingId → dados
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
+const rateLimit        = new Map<string, { count: number; ts: number }>()  // IP → contador
+
+// Limpar rate limit expirado a cada 15 min
+setInterval(() => {
+  const cutoff = Date.now() - 10 * 60 * 1000
+  for (const [ip, entry] of Array.from(rateLimit.entries()))
+    if (entry.ts < cutoff) rateLimit.delete(ip)
+}, 15 * 60 * 1000)
 
 // Limpar reservas expiradas (> 4h) a cada 30 min
 setInterval(() => {
@@ -42,6 +50,25 @@ setInterval(() => {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function clientIdForBooking(bookingId: string): string | undefined {
   return Array.from(clientBookings.entries()).find(([, bid]) => bid === bookingId)?.[0]
+}
+
+/** Sanitiza input: converte para string, remove espaços extremos, limita tamanho */
+function sanitize(s: unknown, max = 200): string {
+  return String(s ?? '').trim().slice(0, max)
+}
+
+/** Verifica rate limit por IP: máx 5 reservas por 10 min */
+function checkRateLimit(ip: string): boolean {
+  const now    = Date.now()
+  const window = 10 * 60 * 1000
+  const entry  = rateLimit.get(ip)
+  if (!entry || now - entry.ts > window) {
+    rateLimit.set(ip, { count: 1, ts: now })
+    return true
+  }
+  if (entry.count >= 5) return false
+  entry.count++
+  return true
 }
 
 /** Escapa caracteres especiais para HTML do Telegram */
@@ -256,18 +283,22 @@ io.on('connection', (socket) => {
   connectedClients.add(socket.id)
 
   socket.on('register_client', (data: { clientId: string }) => {
-    socket.join(data.clientId)
-    console.log(`Cliente registado: ${data.clientId}`)
+    const clientId = sanitize(data.clientId, 64)
+    socket.join(clientId)
+    socket.data.clientId = clientId
+    console.log(`Cliente registado: ${clientId}`)
   })
 
   socket.on('restore_session', (data: { clientId: string }) => {
-    const bookingId = clientBookings.get(data.clientId)
+    const clientId  = sanitize(data.clientId, 64)
+    const bookingId = clientBookings.get(clientId)
     if (bookingId) {
       const booking = activeBookings.get(bookingId)
       if (booking) {
-        socket.join(data.clientId)
+        socket.join(clientId)
+        socket.data.clientId = clientId
         socket.emit('session_restored', { booking })
-        console.log(`Sessão restaurada: ${data.clientId} → ${bookingId}`)
+        console.log(`Sessão restaurada: ${clientId} → ${bookingId}`)
         return
       }
     }
@@ -281,14 +312,24 @@ io.on('connection', (socket) => {
 
   // Mensagem de chat do cliente para o motorista
   socket.on('message_to_driver', (data) => {
+    const clientId   = sanitize(data.clientId, 64)
+    const bookingId  = sanitize(data.bookingId, 20)
+    const message    = sanitize(data.message, 500)
+
+    // Verificar que o socket é o dono desta reserva
+    if (clientId !== socket.data.clientId) return
+    const owned = clientBookings.get(clientId)
+    if (!owned || owned !== bookingId) return
+    if (!message) return
+
     if (bot && TELEGRAM_CHAT_ID) {
       bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         `<b>💬 Mensagem do cliente</b>\n` +
-        `<b>ID:</b> <code>${esc(data.bookingId)}</code>\n` +
+        `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
         `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>\n\n` +
-        `${esc(data.message)}\n\n` +
-        `<i>Responder: /r ${esc(data.bookingId)} &lt;mensagem&gt;</i>`,
+        `${esc(message)}\n\n` +
+        `<i>Responder: /r ${esc(bookingId)} &lt;mensagem&gt;</i>`,
         { parse_mode: 'HTML' }
       ).catch(console.error)
     }
@@ -296,31 +337,44 @@ io.on('connection', (socket) => {
 
   // Cliente cancela reserva
   socket.on('cancel_booking', async (data) => {
-    const booking = activeBookings.get(data.bookingId)
-    const hasMsgId = bookingMessages.has(data.bookingId)
+    const clientId  = sanitize(data.clientId, 64)
+    const bookingId = sanitize(data.bookingId, 20)
+
+    // Verificar que o socket é o dono desta reserva
+    if (clientId !== socket.data.clientId) {
+      console.warn(`cancel_booking: clientId mismatch (socket=${socket.data.clientId}, payload=${clientId})`)
+      return
+    }
+    const ownedBookingId = clientBookings.get(clientId)
+    if (!ownedBookingId || ownedBookingId !== bookingId) {
+      console.warn(`cancel_booking: bookingId mismatch para ${clientId}`)
+      return
+    }
+
+    const booking = activeBookings.get(bookingId)
+    const hasMsgId = bookingMessages.has(bookingId)
 
     // Notificar Telegram ANTES de apagar da memória
     if (booking && hasMsgId) {
-      await editMsg(data.bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
+      await editMsg(bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
     } else if (bot && TELEGRAM_CHAT_ID) {
-      // Fallback: sem messageId guardado → envia nova mensagem
       await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         `<b>🚫 RESERVA CANCELADA PELO CLIENTE</b>\n` +
-        `<b>ID:</b> <code>${esc(data.bookingId)}</code>\n` +
+        `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
         `<b>👤</b> ${esc(data.name || '—')} — <a href="tel:${esc(data.phone || '')}">${esc(data.phone || '—')}</a>`,
         { parse_mode: 'HTML' }
       ).catch(console.error)
     }
 
     // Cleanup após notificação enviada
-    activeBookings.delete(data.bookingId)
-    clientBookings.delete(data.clientId)
-    bookingMessages.delete(data.bookingId)
+    activeBookings.delete(bookingId)
+    clientBookings.delete(clientId)
+    bookingMessages.delete(bookingId)
 
     socket.emit('booking_cancelled', {
-      bookingId: data.bookingId,
-      message: `❌ Reserva ${data.bookingId} cancelada.`,
+      bookingId,
+      message: `❌ Reserva ${bookingId} cancelada.`,
       timestamp: new Date().toISOString()
     })
   })
@@ -363,8 +417,37 @@ app.get('/api/search', async (req: Request, res: Response) => {
 })
 
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
-app.post('/api/reserva', express.json(), async (req: Request, res: Response) => {
-  const { nome, telefone, data, hora, recolha, destino, clientId } = req.body
+app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
+  // Rate limiting por IP
+  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
+    || req.socket.remoteAddress || 'unknown'
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ success: false, error: 'Demasiados pedidos. Tente novamente em 10 minutos.' })
+  }
+
+  const raw = req.body || {}
+
+  // Validação: campos obrigatórios
+  if (!raw.nome || !raw.telefone || !raw.data || !raw.hora || !raw.recolha || !raw.destino || !raw.clientId) {
+    return res.status(400).json({ success: false, error: 'Campos obrigatórios em falta' })
+  }
+
+  // Sanitização
+  const nome     = sanitize(raw.nome, 100)
+  const telefone = sanitize(raw.telefone, 30)
+  const data     = sanitize(raw.data, 20)
+  const hora     = sanitize(raw.hora, 10)
+  const recolha  = sanitize(raw.recolha, 300)
+  const destino  = sanitize(raw.destino, 300)
+  const clientId = sanitize(raw.clientId, 64)
+
+  if (nome.length < 2)
+    return res.status(400).json({ success: false, error: 'Nome inválido' })
+  if (!/^[+\d\s()\-]{7,30}$/.test(telefone))
+    return res.status(400).json({ success: false, error: 'Telefone inválido' })
+  if (recolha.length < 3 || destino.length < 3)
+    return res.status(400).json({ success: false, error: 'Moradas inválidas' })
+
   const bookingId  = '691-' + Date.now().toString().slice(-6)
   const bookingData: Record<string, string> = {
     bookingId, nome, telefone, data, hora, recolha, destino, clientId,
