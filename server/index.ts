@@ -11,211 +11,255 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const server = createServer(app)
 const io = new SocketIOServer(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: '*', methods: ['GET', 'POST'] }
 })
 
-// Variáveis de ambiente
-const PORT = process.env.PORT || 5000
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+const PORT          = process.env.PORT || 5000
+const TELEGRAM_TOKEN  = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 
-// Estado em memória
+// ── Estado em memória ────────────────────────────────────────────────────────
 let bot: Bot | null = null
 const connectedClients = new Set<string>()
-const activeBookings = new Map<string, Record<string, string>>()
-const clientBookings = new Map<string, string>() // clientId → bookingId
+const activeBookings   = new Map<string, Record<string, string>>()  // bookingId → dados
+const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
+const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
 
-// Limpar reservas abandonadas com mais de 4 horas
+// Limpar reservas expiradas (> 4h) a cada 30 min
 setInterval(() => {
   const cutoff = Date.now() - 4 * 60 * 60 * 1000
-  for (const [bookingId, booking] of activeBookings) {
+  for (const [bookingId, booking] of Array.from(activeBookings.entries())) {
     if (Number(booking._ts || 0) < cutoff) {
-      for (const [cid, bid] of clientBookings) {
+      for (const [cid, bid] of Array.from(clientBookings.entries()))
         if (bid === bookingId) clientBookings.delete(cid)
-      }
       activeBookings.delete(bookingId)
+      bookingMessages.delete(bookingId)
       console.log(`Reserva expirada removida: ${bookingId}`)
     }
   }
 }, 30 * 60 * 1000)
 
-// Helper para encontrar clientId de uma reserva
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function clientIdForBooking(bookingId: string): string | undefined {
   return Array.from(clientBookings.entries()).find(([, bid]) => bid === bookingId)?.[0]
 }
 
+/** Escapa caracteres especiais para HTML do Telegram */
+function esc(s: string): string {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/** Constrói a mensagem rica em HTML para o Telegram */
+function buildMessage(b: Record<string, string>, statusLine = ''): string {
+  const now = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+  let dateStr = `${esc(b.data)} às ${esc(b.hora)}`
+  try {
+    dateStr = new Date(`${b.data}T${b.hora}`).toLocaleString('pt-PT', {
+      weekday: 'short', day: '2-digit', month: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    })
+  } catch { /* mantém fallback */ }
+
+  const header = statusLine
+    ? `<b>🚖 NOVA RESERVA — 691.PT</b>\n<b>${statusLine}</b>`
+    : `<b>🚖 NOVA RESERVA — 691.PT</b>`
+
+  return (
+    `${header}\n` +
+    `━━━━━━━━━━━━━━━━━━━━━\n` +
+    `<b>👤 Nome:</b> ${esc(b.nome)}\n` +
+    `<b>📞 Tel:</b> <a href="tel:${esc(b.telefone)}">${esc(b.telefone)}</a>\n` +
+    `━━━━━━━━━━━━━━━━━━━━━\n` +
+    `<b>📍 DE:</b>  ${esc(b.recolha)}\n` +
+    `<b>🏁 PARA:</b> ${esc(b.destino)}\n` +
+    `━━━━━━━━━━━━━━━━━━━━━\n` +
+    `<b>📅 Data/Hora:</b> ${dateStr}\n` +
+    `<b>🕐 Pedido às:</b> ${now}\n` +
+    `<b>🔑 ID:</b> <code>${esc(b.bookingId)}</code>`
+  )
+}
+
+/** Inline keyboard com 3 linhas de botões */
+function buildKeyboard(bookingId: string, recolha: string) {
+  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
+  return {
+    inline_keyboard: [
+      [
+        { text: '✅ Aceitar',   callback_data: `accept_${bookingId}`  },
+        { text: '❌ Recusar',   callback_data: `reject_${bookingId}`  }
+      ],
+      [
+        { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
+        { text: '🚀 Waze',     url: wazeUrl                           }
+      ],
+      [
+        { text: '🏁 Concluir', callback_data: `complete_${bookingId}` }
+      ]
+    ]
+  }
+}
+
+/** Edita a mensagem Telegram original com o novo estado */
+async function editMsg(bookingId: string, statusLine: string): Promise<void> {
+  const msgId   = bookingMessages.get(bookingId)
+  const booking = activeBookings.get(bookingId)
+  if (!bot || !TELEGRAM_CHAT_ID || !msgId || !booking) return
+  try {
+    await bot.api.editMessageText(
+      Number(TELEGRAM_CHAT_ID), msgId,
+      buildMessage(booking, statusLine),
+      { parse_mode: 'HTML' }
+    )
+  } catch (e) {
+    console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
+  }
+}
+
+// ── Bot Telegram ─────────────────────────────────────────────────────────────
 if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new Bot(TELEGRAM_TOKEN)
 
-    // Mensagens de texto
+    // Comandos de texto
     bot.on('message', async (ctx) => {
-      const chatId = ctx.chat.id
-      const text = ctx.message.text
-
-      console.log(`Mensagem recebida: ${text}`)
+      const text = ctx.message.text || ''
 
       if (text === '/start') {
         await ctx.reply(
-          '🚕 *691 Lisboa - Motorista*\n\n' +
-          'Comandos:\n' +
-          '/start - Este menu\n' +
-          '/status - Ver status\n\n' +
-          'Aguarde novas reservas para aceitar/recusar.',
-          { parse_mode: 'Markdown' }
+          '<b>🚕 691 Lisboa — Central de Comando</b>\n\n' +
+          '/start — Este menu\n' +
+          '/status — Reservas ativas\n' +
+          '/r [ID] [msg] — Enviar mensagem ao cliente\n\n' +
+          'Aguarde novas reservas.',
+          { parse_mode: 'HTML' }
         )
+
       } else if (text === '/status') {
+        const bookingList = activeBookings.size === 0
+          ? 'Nenhuma reserva ativa.'
+          : Array.from(activeBookings.values())
+              .map(b => `• <code>${b.bookingId}</code> — ${esc(b.nome)} (${esc(b.recolha)})`)
+              .join('\n')
         await ctx.reply(
-          `📊 *Status*\n\n` +
-          `👥 Clientes: ${connectedClients.size}\n` +
-          `🚕 Reservas: ${activeBookings.size}\n` +
-          `🤖 Bot: ✅ Ativo`,
-          { parse_mode: 'Markdown' }
+          `<b>📊 Status 691.pt</b>\n\n` +
+          `👥 Clientes online: <b>${connectedClients.size}</b>\n` +
+          `🚕 Reservas ativas: <b>${activeBookings.size}</b>\n` +
+          `🤖 Bot: ✅ Ativo\n\n${bookingList}`,
+          { parse_mode: 'HTML' }
         )
-      } else if (text?.startsWith('/r ')) {
-        // Resposta rápida: /r BOOKING_ID mensagem
+
+      } else if (text.startsWith('/r ')) {
         const parts = text.split(' ')
         if (parts.length >= 3) {
           const bookingId = parts[1]
-          const message = parts.slice(2).join(' ')
-          const clientId = clientIdForBooking(bookingId)
+          const message   = parts.slice(2).join(' ')
+          const clientId  = clientIdForBooking(bookingId)
           if (clientId) {
             io.to(clientId).emit('message_from_driver', {
-              bookingId,
-              message,
+              bookingId, message,
               driverName: 'Motorista 691',
               timestamp: new Date().toISOString()
             })
+            await ctx.reply(`✅ Mensagem enviada ao cliente <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
+          } else {
+            await ctx.reply(`❌ Cliente não encontrado para <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
           }
-          await ctx.reply(`✅ Mensagem enviada para ${bookingId}`)
         }
-      } else if (text?.startsWith('/complete ')) {
-        // Completar viagem: /complete BOOKING_ID
-        const bookingId = text.replace('/complete ', '').trim()
-        const clientId = clientIdForBooking(bookingId)
-        if (clientId) {
-          io.to(clientId).emit('booking_completed', {
-            bookingId,
-            message: '✅ Viagem concluída! Obrigado pela preferência.',
-            timestamp: new Date().toISOString()
-          })
-          activeBookings.delete(bookingId)
-          clientBookings.delete(clientId)
-        }
-        await ctx.reply(`✅ ${bookingId} - VIAGEM CONCLUÍDA`)
       }
     })
 
-    // Callback queries (botões inline) - handler único consolidado
+    // Botões inline — um handler limpo por ação
     bot.on('callback_query', async (ctx) => {
-      const chatId = ctx.callbackQuery.message?.chat.id
-      const data = ctx.callbackQuery.data
+      const data = ctx.callbackQuery.data || ''
+      await ctx.answerCallbackQuery()
 
-      if (data?.startsWith('accept_')) {
-        const bookingId = data.replace('accept_', '')
-        const clientId = clientIdForBooking(bookingId)
+      // ── ✅ Aceitar ─────────────────────────────────────────────────────────
+      if (data.startsWith('accept_')) {
+        const bookingId = data.slice(7)
+        const clientId  = clientIdForBooking(bookingId)
         if (clientId) {
           io.to(clientId).emit('booking_accepted', {
             bookingId,
-            message: '✅ Reserva aceite!',
+            message: '✅ Reserva aceite! Motorista a caminho.',
             timestamp: new Date().toISOString()
           })
+        } else {
+          console.warn(`accept_: clientId não encontrado para ${bookingId}`)
         }
-        await ctx.answerCallbackQuery()
-        if (chatId) await bot!.api.sendMessage(chatId, `✅ ${bookingId} - ACEITA`)
+        await editMsg(bookingId, '🚀 VIAGEM EM CURSO')
 
-      } else if (data?.startsWith('reject_')) {
-        const bookingId = data.replace('reject_', '')
-        const clientId = clientIdForBooking(bookingId)
+      // ── ❌ Recusar ─────────────────────────────────────────────────────────
+      } else if (data.startsWith('reject_')) {
+        const bookingId = data.slice(7)
+        const clientId  = clientIdForBooking(bookingId)
+        await editMsg(bookingId, '❌ RECUSADA')
         if (clientId) {
           io.to(clientId).emit('booking_rejected', {
             bookingId,
-            message: '❌ Reserva recusada. Tente novamente.',
+            message: '❌ Reserva recusada. Por favor tente novamente.',
             timestamp: new Date().toISOString()
           })
           activeBookings.delete(bookingId)
           clientBookings.delete(clientId)
         }
-        await ctx.answerCallbackQuery()
-        if (chatId) await bot!.api.sendMessage(chatId, `❌ ${bookingId} - RECUSADA`)
+        bookingMessages.delete(bookingId)
 
-      } else if (data?.startsWith('reply_')) {
-        const parts = data.split('_')
-        const bookingId = parts[1]
-        const replyType = parts[2]
-        const messages: Record<string, string> = {
-          '5min':    'Estou a 5 minutos de distância',
-          '10min':   'Estou a 10 minutos de distância',
-          'cheguei': 'Acabei de chegar! Por favor, saia.'
+      // ── 📍 Cheguei ─────────────────────────────────────────────────────────
+      } else if (data.startsWith('arrived_')) {
+        const bookingId = data.slice(8)
+        const clientId  = clientIdForBooking(bookingId)
+        if (clientId) {
+          io.to(clientId).emit('driver_arrived', {
+            bookingId,
+            message: '📍 O motorista chegou! Por favor, aguarde.',
+            timestamp: new Date().toISOString()
+          })
+        } else {
+          console.warn(`arrived_: clientId não encontrado para ${bookingId}`)
         }
-        const message = messages[replyType]
-        if (message) {
-          const clientId = clientIdForBooking(bookingId)
-          if (clientId) {
-            io.to(clientId).emit('message_from_driver', {
-              bookingId,
-              message,
-              driverName: 'Motorista 691',
-              timestamp: new Date().toISOString()
-            })
-          }
-          await ctx.answerCallbackQuery()
-          if (chatId) await bot!.api.sendMessage(chatId, `✅ Enviado para ${bookingId}: "${message}"`)
-        }
+        await editMsg(bookingId, '📍 MOTORISTA NO LOCAL')
 
-      } else if (data?.startsWith('complete_')) {
-        const bookingId = data.replace('complete_', '')
-        const clientId = clientIdForBooking(bookingId)
+      // ── 🏁 Concluir ────────────────────────────────────────────────────────
+      } else if (data.startsWith('complete_')) {
+        const bookingId = data.slice(9)
+        const clientId  = clientIdForBooking(bookingId)
+        await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
         if (clientId) {
           io.to(clientId).emit('booking_completed', {
             bookingId,
-            message: '✅ Viagem concluída! Obrigado pela preferência.',
+            message: '✅ Viagem concluída! Obrigado pela preferência. 🙏',
             timestamp: new Date().toISOString()
           })
           activeBookings.delete(bookingId)
           clientBookings.delete(clientId)
         }
-        await ctx.answerCallbackQuery()
-        if (chatId) await bot!.api.sendMessage(chatId, `✅ ${bookingId} - VIAGEM CONCLUÍDA`)
+        bookingMessages.delete(bookingId)
       }
     })
 
     bot.catch((err) => {
-      const msg = String(err)
-      if (msg.includes('409')) {
-        console.log('Bot já está rodando em outra instância - ignorando conflito')
-      } else {
+      if (!String(err).includes('409'))
         console.error('Erro no bot Telegram:', err)
-      }
     })
 
-    // Iniciar polling em background (não bloqueia o servidor)
-    bot.start().catch((err) => {
-      console.error('Erro ao iniciar polling:', err)
-    })
-
-    console.log('Bot Telegram inicializado com sucesso (grammy)')
+    bot.start().catch((err) => console.error('Erro ao iniciar polling:', err))
+    console.log('Bot Telegram inicializado (grammy)')
   } catch (error: unknown) {
     console.error('Erro ao inicializar bot Telegram:', error)
   }
 } else {
-  console.log('TELEGRAM_BOT_TOKEN não configurado - bot não estará ativo')
+  console.log('TELEGRAM_BOT_TOKEN não configurado — bot inativo')
 }
 
-// Socket.io
+// ── Socket.io ────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
-  console.log(`Cliente conectado: ${socket.id}`)
   connectedClients.add(socket.id)
 
   socket.on('register_client', (data: { clientId: string }) => {
-    console.log(`Cliente ${socket.id} registrado: ${data.clientId}`)
     socket.join(data.clientId)
+    console.log(`Cliente registado: ${data.clientId}`)
   })
 
-  // Restaurar sessão após refresh — reenvia dados da reserva ativa se existir
   socket.on('restore_session', (data: { clientId: string }) => {
     const bookingId = clientBookings.get(data.clientId)
     if (bookingId) {
@@ -231,152 +275,132 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    console.log(`Cliente desconectado: ${socket.id}`)
     connectedClients.delete(socket.id)
-    // Não apagar reserva: cliente pode estar a fazer refresh
-    // As reservas são limpas pelo intervalo de expiração (4h)
+    // Reserva mantida em memória — o cliente pode estar a fazer refresh
   })
 
-  // Cliente envia mensagem para o motorista
+  // Mensagem de chat do cliente para o motorista
   socket.on('message_to_driver', (data) => {
-    console.log('Mensagem para motorista:', data)
     if (bot && TELEGRAM_CHAT_ID) {
       bot.api.sendMessage(
-        TELEGRAM_CHAT_ID,
-        `💬 *${data.bookingId}*\n\n` +
-        `👤 ${data.name}\n` +
-        `📞 ${data.phone}\n` +
-        `💭 ${data.message}\n\n` +
-        `_Responda: /r ${data.bookingId} <mensagem>_`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [[
-              { text: '📍 5 min',  callback_data: `reply_${data.bookingId}_5min` },
-              { text: '📍 10 min', callback_data: `reply_${data.bookingId}_10min` }
-            ], [
-              { text: '📍 Cheguei', callback_data: `reply_${data.bookingId}_cheguei` },
-              { text: '✅ Concluir', callback_data: `complete_${data.bookingId}` }
-            ], [
-              { text: '❌ Cancelar', callback_data: `reject_${data.bookingId}` }
-            ]]
-          }
-        }
+        Number(TELEGRAM_CHAT_ID),
+        `<b>💬 Mensagem do cliente</b>\n` +
+        `<b>ID:</b> <code>${esc(data.bookingId)}</code>\n` +
+        `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>\n\n` +
+        `${esc(data.message)}\n\n` +
+        `<i>Responder: /r ${esc(data.bookingId)} &lt;mensagem&gt;</i>`,
+        { parse_mode: 'HTML' }
       ).catch(console.error)
     }
   })
 
   // Cliente cancela reserva
   socket.on('cancel_booking', (data) => {
-    console.log('Reserva cancelada:', data)
+    const booking = activeBookings.get(data.bookingId)
     activeBookings.delete(data.bookingId)
     clientBookings.delete(data.clientId)
-    if (bot && TELEGRAM_CHAT_ID) {
+
+    // Editar mensagem Telegram se existir
+    if (booking) editMsg(data.bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
+
+    // Fallback: nova mensagem se edição falhar ou não houver msgId
+    if (bot && TELEGRAM_CHAT_ID && !bookingMessages.has(data.bookingId)) {
       bot.api.sendMessage(
-        TELEGRAM_CHAT_ID,
-        `❌ *${data.bookingId} - CANCELADA*\n\n` +
-        `👤 ${data.name}\n` +
-        `📞 ${data.phone}`,
-        { parse_mode: 'Markdown' }
+        Number(TELEGRAM_CHAT_ID),
+        `<b>🚫 RESERVA CANCELADA</b>\n` +
+        `<b>ID:</b> <code>${esc(data.bookingId)}</code>\n` +
+        `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>`,
+        { parse_mode: 'HTML' }
       ).catch(console.error)
     }
+    bookingMessages.delete(data.bookingId)
+
     socket.emit('booking_cancelled', {
       bookingId: data.bookingId,
-      message: `❌ Reserva ${data.bookingId} cancelada`,
+      message: `❌ Reserva ${data.bookingId} cancelada.`,
       timestamp: new Date().toISOString()
     })
   })
 })
 
-// Servir arquivos estáticos
+// ── Ficheiros estáticos ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')))
 
-// Proxy TomTom Search API (mantém a chave no servidor)
+// ── Proxy TomTom Search API ───────────────────────────────────────────────────
 app.get('/api/search', async (req: Request, res: Response) => {
   const q = String(req.query.q || '').trim()
   if (!q || q.length < 2) return res.json([])
 
   const TOMTOM_KEY = process.env.TOMTOM_API_KEY
-  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') {
-    return res.json([]) // sem chave → cliente usa fallback local
-  }
+  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return res.json([])
 
   try {
-    const url = `https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json` +
+    const url =
+      `https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json` +
       `?key=${TOMTOM_KEY}&language=pt-PT&countrySet=PT&limit=8&typeahead=true` +
       `&lat=38.7169&lon=-9.1399&radius=60000`
     const r = await fetch(url)
     if (!r.ok) return res.json([])
-    const data = await r.json() as { results?: Array<Record<string, unknown>> }
-    const results = (data.results || []).map((item: Record<string, unknown>) => {
-      const a = (item.address || {}) as Record<string, string>
+    const body = await r.json() as { results?: Array<Record<string, unknown>> }
+    const results = (body.results || []).map((item: Record<string, unknown>) => {
+      const a   = (item.address || {}) as Record<string, string>
       const poi = (item.poi as Record<string, string> | undefined)?.name
       const street = a.streetName || ''
       const num    = a.streetNumber ? ` ${a.streetNumber}` : ''
       const city   = a.municipality || a.municipalitySubdivision || ''
-      if (poi) return `${poi}${street ? ' – ' + street + num : ''}${city ? ', ' + city : ''}`
+      if (poi)    return `${poi}${street ? ' – ' + street + num : ''}${city ? ', ' + city : ''}`
       if (street) return `${street}${num}${city ? ', ' + city : ''}`
       return a.freeformAddress || ''
     }).filter(Boolean)
-    return res.json([...new Set(results)])
+    return res.json(Array.from(new Set(results)))
   } catch (err) {
     console.error('TomTom search error:', err)
     return res.json([])
   }
 })
 
-// Rota API para receber reservas
-app.post('/api/reserva', express.json(), (req: Request, res: Response) => {
+// ── POST /api/reserva ─────────────────────────────────────────────────────────
+app.post('/api/reserva', express.json(), async (req: Request, res: Response) => {
   const { nome, telefone, data, hora, recolha, destino, clientId } = req.body
-  const bookingId = '691-' + Date.now().toString().slice(-6)
-  const bookingData = { bookingId, nome, telefone, data, hora, recolha, destino, clientId, _ts: String(Date.now()) }
+  const bookingId  = '691-' + Date.now().toString().slice(-6)
+  const bookingData: Record<string, string> = {
+    bookingId, nome, telefone, data, hora, recolha, destino, clientId,
+    _ts: String(Date.now())
+  }
 
-  console.log('Nova reserva:', bookingData)
   activeBookings.set(bookingId, bookingData)
   clientBookings.set(clientId, bookingId)
+  console.log('Nova reserva:', bookingId, nome, recolha, '→', destino)
 
+  // Notificar cliente via socket
   io.to(clientId).emit('new_booking', {
     ...bookingData,
-    message: `🚕 Nova reserva de ${nome}!`,
+    message: `🚕 Reserva ${bookingId} recebida!`,
     timestamp: new Date().toISOString()
   })
 
+  // Enviar para Telegram
   if (bot && TELEGRAM_CHAT_ID) {
-    bot.api.sendMessage(
-      TELEGRAM_CHAT_ID,
-      `🚕 *NOVA RESERVA - ${bookingId}*\n\n` +
-      `👤 ${nome}\n` +
-      `📞 ${telefone}\n` +
-      `📅 ${data} às ${hora}\n` +
-      `📍 ${recolha}\n` +
-      `🎯 ${destino}`,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: {
-          inline_keyboard: [[
-            { text: '✅ ACEITAR', callback_data: `accept_${bookingId}` },
-            { text: '❌ RECUSAR', callback_data: `reject_${bookingId}` }
-          ]]
-        }
-      }
-    ).catch((error: unknown) => {
+    try {
+      const sent = await bot.api.sendMessage(
+        Number(TELEGRAM_CHAT_ID),
+        buildMessage(bookingData),
+        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha) }
+      )
+      bookingMessages.set(bookingId, sent.message_id)
+    } catch (error: unknown) {
       console.error('Erro ao enviar para Telegram:', error)
-    })
+      // Fallback: registar no log — reserva continua ativa no sistema
+    }
   } else {
-    console.log('Telegram não configurado - reserva apenas no sistema')
+    console.log('Telegram não configurado — reserva registada apenas no sistema')
   }
 
-  res.json({
-    success: true,
-    message: 'Reserva recebida com sucesso!',
-    bookingId,
-    clientsConnected: connectedClients.size
-  })
+  res.json({ success: true, bookingId, clientsConnected: connectedClients.size })
 })
 
-// Start server
+// ── Start ─────────────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`)
-  console.log(`Site: http://localhost:${PORT}`)
-  console.log(`Bot Telegram: ${bot ? 'Ativo (grammy)' : 'Inativo'}`)
+  console.log(`Servidor na porta ${PORT}`)
+  console.log(`Bot Telegram: ${bot ? 'Ativo' : 'Inativo'}`)
 })
