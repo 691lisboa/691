@@ -651,23 +651,50 @@ app.get('/api/route', async (req: Request, res: Response) => {
   const from = String(req.query.from || '').trim()  // "lat,lng"
   const to   = String(req.query.to   || '').trim()  // "lat,lng"
   if (!from || !to) return res.json(null)
+
   const TOMTOM_KEY = process.env.TOMTOM_API_KEY
-  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return res.json(null)
+  if (TOMTOM_KEY && TOMTOM_KEY !== 'your_tomtom_api_key_here') {
+    try {
+      const url =
+        `https://api.tomtom.com/routing/1/calculateRoute/${encodeURIComponent(from)}:${encodeURIComponent(to)}/json` +
+        `?key=${TOMTOM_KEY}&traffic=true&travelMode=car`
+      const r = await fetch(url)
+      if (r.ok) {
+        const body = await r.json() as {
+          routes?: Array<{ summary: { lengthInMeters: number; travelTimeInSeconds: number; trafficDelayInSeconds: number } }>
+        }
+        const s = body.routes?.[0]?.summary
+        if (s) {
+          return res.json({
+            distanceKm:      (s.lengthInMeters / 1000).toFixed(1),
+            etaMin:          Math.max(1, Math.ceil(s.travelTimeInSeconds / 60)),
+            trafficDelaySec: s.trafficDelayInSeconds ?? 0
+          })
+        }
+      }
+    } catch { /* fall through to OSRM */ }
+  }
+
+  // OSRM fallback — free, no key, real road routing
   try {
-    const url =
-      `https://api.tomtom.com/routing/1/calculateRoute/${encodeURIComponent(from)}:${encodeURIComponent(to)}/json` +
-      `?key=${TOMTOM_KEY}&traffic=true&travelMode=car`
-    const r = await fetch(url)
+    const [fromLat, fromLng] = from.split(',').map(Number)
+    const [toLat,   toLng]   = to.split(',').map(Number)
+    if ([fromLat, fromLng, toLat, toLng].some(isNaN)) return res.json(null)
+    const osrmUrl =
+      `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}` +
+      `?overview=full&geometries=geojson`
+    const r = await fetch(osrmUrl, { signal: AbortSignal.timeout(8000) })
     if (!r.ok) return res.json(null)
     const body = await r.json() as {
-      routes?: Array<{ summary: { lengthInMeters: number; travelTimeInSeconds: number; trafficDelayInSeconds: number } }>
+      routes?: Array<{ distance: number; duration: number; geometry: { type: string; coordinates: number[][] } }>
     }
-    const s = body.routes?.[0]?.summary
-    if (!s) return res.json(null)
+    const route = body.routes?.[0]
+    if (!route) return res.json(null)
     return res.json({
-      distanceKm:      (s.lengthInMeters / 1000).toFixed(1),
-      etaMin:          Math.max(1, Math.ceil(s.travelTimeInSeconds / 60)),
-      trafficDelaySec: s.trafficDelayInSeconds ?? 0
+      distanceKm:      (route.distance / 1000).toFixed(1),
+      etaMin:          Math.max(1, Math.ceil(route.duration / 60)),
+      trafficDelaySec: 0,
+      geometry:        route.geometry
     })
   } catch {
     return res.json(null)
