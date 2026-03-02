@@ -71,6 +71,45 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
+/** Tradução automática via MyMemory (gratuito, sem chave) */
+async function translate(text: string, from: string, to: string): Promise<string> {
+  if (from === to || !text.trim()) return text
+  try {
+    const controller = new AbortController()
+    const tid = setTimeout(() => controller.abort(), 4000)
+    const res  = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${from}|${to}`,
+      { signal: controller.signal }
+    )
+    clearTimeout(tid)
+    const json = await res.json() as { responseStatus?: number; responseData?: { translatedText?: string } }
+    if (json.responseStatus === 200 && json.responseData?.translatedText) {
+      const t = json.responseData.translatedText
+      if (t.toLowerCase() !== text.toLowerCase()) return t
+    }
+  } catch { /* timeout ou falha de rede — usa texto original */ }
+  return text
+}
+
+/** Mensagens de estado localizadas */
+function statusMsg(event: string, lang: string): string {
+  const en: Record<string, string> = {
+    accepted:  '✅ Booking accepted! Driver on the way.',
+    rejected:  '❌ Booking rejected. Please try again.',
+    arrived:   '📍 Driver has arrived! Please come out.',
+    completed: '✅ Trip completed! Thank you. 🙏',
+    cancelled: '❌ Booking cancelled.'
+  }
+  const pt: Record<string, string> = {
+    accepted:  '✅ Reserva aceite! Motorista a caminho.',
+    rejected:  '❌ Reserva recusada. Por favor tente novamente.',
+    arrived:   '📍 O motorista chegou! Por favor, aguarde.',
+    completed: '✅ Viagem concluída! Obrigado pela preferência. 🙏',
+    cancelled: '❌ Reserva cancelada.'
+  }
+  return (lang === 'en' ? en[event] : pt[event]) ?? pt[event] ?? ''
+}
+
 /** Escapa caracteres especiais para HTML do Telegram */
 function esc(s: string): string {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -176,18 +215,29 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         )
 
       } else if (text.startsWith('/r ')) {
-        const parts = text.split(' ')
+        const parts    = text.split(' ')
         if (parts.length >= 3) {
-          const bookingId = parts[1]
-          const message   = parts.slice(2).join(' ')
-          const clientId  = clientIdForBooking(bookingId)
+          const bookingId  = parts[1]
+          const message    = parts.slice(2).join(' ')
+          const clientId   = clientIdForBooking(bookingId)
+          const clientLang = activeBookings.get(bookingId)?.lang || 'pt'
           if (clientId) {
+            // Traduzir PT → EN se o cliente estiver em inglês
+            let outMsg = message
+            let note   = ''
+            if (clientLang === 'en') {
+              const translated = await translate(message, 'pt', 'en')
+              if (translated !== message) {
+                outMsg = translated
+                note   = ` <i>(🇵🇹 original: "${esc(message)}")</i>`
+              }
+            }
             io.to(clientId).emit('message_from_driver', {
-              bookingId, message,
-              driverName: 'Motorista 691',
+              bookingId, message: outMsg,
+              driverName: 'Driver 691',
               timestamp: new Date().toISOString()
             })
-            await ctx.reply(`✅ Mensagem enviada ao cliente <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
+            await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
           } else {
             await ctx.reply(`❌ Cliente não encontrado para <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
           }
@@ -204,10 +254,11 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       if (data.startsWith('accept_')) {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
+        const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         if (clientId) {
           io.to(clientId).emit('booking_accepted', {
             bookingId,
-            message: '✅ Reserva aceite! Motorista a caminho.',
+            message: statusMsg('accepted', lang),
             timestamp: new Date().toISOString()
           })
         } else {
@@ -219,11 +270,12 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       } else if (data.startsWith('reject_')) {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
+        const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         await editMsg(bookingId, '❌ RECUSADA')
         if (clientId) {
           io.to(clientId).emit('booking_rejected', {
             bookingId,
-            message: '❌ Reserva recusada. Por favor tente novamente.',
+            message: statusMsg('rejected', lang),
             timestamp: new Date().toISOString()
           })
           activeBookings.delete(bookingId)
@@ -235,10 +287,11 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       } else if (data.startsWith('arrived_')) {
         const bookingId = data.slice(8)
         const clientId  = clientIdForBooking(bookingId)
+        const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         if (clientId) {
           io.to(clientId).emit('driver_arrived', {
             bookingId,
-            message: '📍 O motorista chegou! Por favor, aguarde.',
+            message: statusMsg('arrived', lang),
             timestamp: new Date().toISOString()
           })
         } else {
@@ -250,11 +303,12 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       } else if (data.startsWith('complete_')) {
         const bookingId = data.slice(9)
         const clientId  = clientIdForBooking(bookingId)
+        const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
         if (clientId) {
           io.to(clientId).emit('booking_completed', {
             bookingId,
-            message: '✅ Viagem concluída! Obrigado pela preferência. 🙏',
+            message: statusMsg('completed', lang),
             timestamp: new Date().toISOString()
           })
           activeBookings.delete(bookingId)
@@ -311,10 +365,11 @@ io.on('connection', (socket) => {
   })
 
   // Mensagem de chat do cliente para o motorista
-  socket.on('message_to_driver', (data) => {
-    const clientId   = sanitize(data.clientId, 64)
-    const bookingId  = sanitize(data.bookingId, 20)
-    const message    = sanitize(data.message, 500)
+  socket.on('message_to_driver', async (data) => {
+    const clientId  = sanitize(data.clientId, 64)
+    const bookingId = sanitize(data.bookingId, 20)
+    const message   = sanitize(data.message, 500)
+    const lang      = (data.lang === 'en') ? 'en' : 'pt'
 
     // Verificar que o socket é o dono desta reserva
     if (clientId !== socket.data.clientId) return
@@ -322,13 +377,28 @@ io.on('connection', (socket) => {
     if (!owned || owned !== bookingId) return
     if (!message) return
 
+    // Guardar língua do cliente na reserva (para respostas futuras)
+    const booking = activeBookings.get(bookingId)
+    if (booking) booking.lang = lang
+
     if (bot && TELEGRAM_CHAT_ID) {
+      // Traduzir EN → PT para o motorista se cliente estiver em inglês
+      let telegramMsg = message
+      let translationNote = ''
+      if (lang === 'en') {
+        const translated = await translate(message, 'en', 'pt')
+        if (translated !== message) {
+          telegramMsg = translated
+          translationNote = `\n<i>🇬🇧 Original: "${esc(message)}"</i>`
+        }
+      }
+      const langFlag = lang === 'en' ? ' 🇬🇧→🇵🇹' : ''
       bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
-        `<b>💬 Mensagem do cliente</b>\n` +
+        `<b>💬 Mensagem do cliente${langFlag}</b>\n` +
         `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
         `<b>👤</b> ${esc(data.name)} — <a href="tel:${esc(data.phone)}">${esc(data.phone)}</a>\n\n` +
-        `${esc(message)}\n\n` +
+        `${esc(telegramMsg)}${translationNote}\n\n` +
         `<i>Responder: /r ${esc(bookingId)} &lt;mensagem&gt;</i>`,
         { parse_mode: 'HTML' }
       ).catch(console.error)
@@ -440,6 +510,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const recolha  = sanitize(raw.recolha, 300)
   const destino  = sanitize(raw.destino, 300)
   const clientId = sanitize(raw.clientId, 64)
+  const lang     = (raw.lang === 'en') ? 'en' : 'pt'
 
   if (nome.length < 2)
     return res.status(400).json({ success: false, error: 'Nome inválido' })
@@ -450,7 +521,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   const bookingId  = '691-' + Date.now().toString().slice(-6)
   const bookingData: Record<string, string> = {
-    bookingId, nome, telefone, data, hora, recolha, destino, clientId,
+    bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
     _ts: String(Date.now())
   }
 
