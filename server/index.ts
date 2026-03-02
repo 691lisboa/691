@@ -99,7 +99,7 @@ function buildKeyboard(bookingId: string, recolha: string) {
   }
 }
 
-/** Edita a mensagem Telegram original com o novo estado */
+/** Edita a mensagem Telegram original com o novo estado — mantém os botões visíveis */
 async function editMsg(bookingId: string, statusLine: string): Promise<void> {
   const msgId   = bookingMessages.get(bookingId)
   const booking = activeBookings.get(bookingId)
@@ -108,7 +108,7 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML' }
+      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha) }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
