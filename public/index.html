@@ -1869,6 +1869,7 @@
         let socket = null;
         let currentBooking = null;
         let currentStatus = 'pending';
+        let isConnected = false;
 
         // clientId persiste no localStorage para sobreviver a refreshes
         let clientId = localStorage.getItem('691_clientId');
@@ -2101,7 +2102,7 @@
             socket = io();
 
             socket.on('connect', () => {
-                updateStatus('Conectado');
+                updateStatus(true);
                 socket.emit('register_client', { clientId });
                 // Tentar restaurar sessão após refresh
                 socket.emit('restore_session', { clientId });
@@ -2131,7 +2132,7 @@
             });
 
             socket.on('disconnect', () => {
-                updateStatus('Desconectado');
+                updateStatus(false);
                 showNotification('🔴 Desconectado do servidor');
             });
 
@@ -2264,6 +2265,9 @@
 
             // Re-render booking status badge in the new language
             if (currentBooking) updateBookingStatus(currentStatus);
+            
+            // Re-render connection status in the new language
+            updateStatus(isConnected);
         }
 
         // Display booking info
@@ -2457,7 +2461,10 @@
         }
 
         // Update status
-        function updateStatus(text) {
+        function updateStatus(connected) {
+            isConnected = connected;
+            const t = translations[currentLang];
+            const text = connected ? t.connected : t.disconnected;
             document.getElementById('status-text').textContent = text;
         }
 
