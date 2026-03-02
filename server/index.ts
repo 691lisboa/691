@@ -39,8 +39,10 @@ const activeBookings   = new Map<string, Record<string, string>>()  // bookingId
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
 const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
-// Push subscriptions persistidas em ficheiro para sobreviver a reinicios
-const PUSH_SUBS_FILE = path.join(__dirname, '../data/push-subscriptions.json')
+// Dados persistidos em ficheiro para sobreviver a reinicios
+const PUSH_SUBS_FILE     = path.join(__dirname, '../data/push-subscriptions.json')
+const CLIENT_BOOK_FILE   = path.join(__dirname, '../data/client-bookings.json')
+const ACTIVE_BOOK_FILE   = path.join(__dirname, '../data/active-bookings.json')
 
 function loadPushSubs(): Map<string, webpush.PushSubscription> {
   try {
@@ -65,6 +67,48 @@ function savePushSubs(): void {
 
 const pushSubscriptions = loadPushSubs()       // clientId → sub
 
+// ── Persistência de reservas ─────────────────────────────────────────────────
+function persist(file: string, data: unknown): void {
+  try {
+    const dir = path.dirname(file)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(file, JSON.stringify(data))
+  } catch (e) { console.warn(`Erro ao guardar ${path.basename(file)}:`, e) }
+}
+
+function loadClientBookings(): Map<string, string> {
+  try {
+    const obj = JSON.parse(fs.readFileSync(CLIENT_BOOK_FILE, 'utf-8')) as Record<string, string>
+    const m = new Map<string, string>()
+    for (const [k, v] of Object.entries(obj)) m.set(k, v)
+    console.log(`${m.size} clientBooking(s) carregado(s) do disco`)
+    return m
+  } catch { return new Map() }
+}
+
+function loadActiveBookings(): Map<string, Record<string, string>> {
+  try {
+    const obj = JSON.parse(fs.readFileSync(ACTIVE_BOOK_FILE, 'utf-8')) as Record<string, Record<string, string>>
+    const m = new Map<string, Record<string, string>>()
+    for (const [k, v] of Object.entries(obj)) m.set(k, v)
+    console.log(`${m.size} activeBooking(s) carregado(s) do disco`)
+    return m
+  } catch { return new Map() }
+}
+
+function saveBookings(): void {
+  const cbObj: Record<string, string> = {}
+  for (const [k, v] of Array.from(clientBookings.entries())) cbObj[k] = v
+  persist(CLIENT_BOOK_FILE, cbObj)
+  const abObj: Record<string, Record<string, string>> = {}
+  for (const [k, v] of Array.from(activeBookings.entries())) abObj[k] = v
+  persist(ACTIVE_BOOK_FILE, abObj)
+}
+
+// Inicializar a partir de disco (antes de iniciar o bot e sockets)
+for (const [k, v] of loadActiveBookings()) activeBookings.set(k, v)
+for (const [k, v] of loadClientBookings()) clientBookings.set(k, v)
+
 // Limpar rate limit expirado a cada 15 min
 setInterval(() => {
   const cutoff = Date.now() - 10 * 60 * 1000
@@ -75,6 +119,7 @@ setInterval(() => {
 // Limpar reservas expiradas (> 4h) a cada 30 min
 setInterval(() => {
   const cutoff = Date.now() - 4 * 60 * 60 * 1000
+  let changed = false
   for (const [bookingId, booking] of Array.from(activeBookings.entries())) {
     if (Number(booking._ts || 0) < cutoff) {
       for (const [cid, bid] of Array.from(clientBookings.entries()))
@@ -82,8 +127,10 @@ setInterval(() => {
       activeBookings.delete(bookingId)
       bookingMessages.delete(bookingId)
       console.log(`Reserva expirada removida: ${bookingId}`)
+      changed = true
     }
   }
+  if (changed) saveBookings()
 }, 30 * 60 * 1000)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -135,20 +182,48 @@ async function sendPush(
   }
 }
 
-/** Tradução automática via Google Translate (sem chave de API) */
+/** Tradução automática — tenta Google, fallback Lingva */
 async function translate(text: string, from: string, to: string): Promise<string> {
   if (from === to || !text.trim()) return text
+  const q = encodeURIComponent(text.slice(0, 500))
+
+  // Tentativa 1: Google Translate (não oficial, sem chave)
   try {
-    const controller = new AbortController()
-    const tid = setTimeout(() => controller.abort(), 5000)
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text.slice(0, 500))}`
-    const res  = await fetch(url, { signal: controller.signal })
+    const ctrl = new AbortController()
+    const tid  = setTimeout(() => ctrl.abort(), 5000)
+    const res  = await fetch(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${q}`,
+      { signal: ctrl.signal }
+    )
     clearTimeout(tid)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json = await res.json() as any[]
-    const translated = (json?.[0] as any[])?.map((chunk: any[]) => chunk?.[0] ?? '').join('') ?? ''
-    if (translated && translated.toLowerCase() !== text.toLowerCase()) return translated
-  } catch { /* timeout ou falha de rede — usa texto original */ }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const t1 = (json?.[0] as any[])?.map((c: any[]) => c?.[0] ?? '').join('') ?? ''
+    if (t1 && t1.toLowerCase() !== text.toLowerCase()) {
+      console.log(`[translate] ${from}→${to} (Google): "${text.slice(0,30)}" → "${t1.slice(0,30)}"`)
+      return t1
+    }
+  } catch (e) { console.warn(`[translate] Google falhou: ${String(e).slice(0, 80)}`) }
+
+  // Tentativa 2: Lingva Translate (open-source, sem limites)
+  try {
+    const ctrl2 = new AbortController()
+    const tid2  = setTimeout(() => ctrl2.abort(), 5000)
+    const res2  = await fetch(
+      `https://lingva.ml/api/v1/${from}/${to}/${q}`,
+      { signal: ctrl2.signal }
+    )
+    clearTimeout(tid2)
+    const json2 = await res2.json() as { translation?: string }
+    const t2 = json2?.translation ?? ''
+    if (t2 && t2.toLowerCase() !== text.toLowerCase()) {
+      console.log(`[translate] ${from}→${to} (Lingva): "${text.slice(0,30)}" → "${t2.slice(0,30)}"`)
+      return t2
+    }
+  } catch (e) { console.warn(`[translate] Lingva falhou: ${String(e).slice(0, 80)}`) }
+
+  console.warn(`[translate] ${from}→${to}: ambas as APIs falharam — texto original devolvido`)
   return text
 }
 
@@ -299,7 +374,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
               bookingId, message: outMsg, driverName,
               timestamp: new Date().toISOString()
             })
-            sendPush(clientId, driverName, outMsg, { bookingId, type: 'message' }).catch(() => {})
+            sendPush(clientId, driverName, outMsg, { bookingId, type: 'message', message: outMsg, driverName }).catch(() => {})
             await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
           } else {
             await ctx.reply(`❌ Cliente não encontrado para <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
@@ -336,6 +411,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'rejected'
+        saveBookings()
         await editMsg(bookingId, '❌ RECUSADA')
         if (clientId) {
           const msg = statusMsg('rejected', lang)
@@ -343,8 +419,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           sendPush(clientId, '691 Lisboa', msg, { bookingId, type: 'rejected' }).catch(() => {})
         }
         bookingMessages.delete(bookingId)
-        // Manter em memória 5 min para que restore_session devolva o estado final ao cliente
-        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId) }, 5 * 60 * 1000)
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
 
       // ── 📍 Cheguei ─────────────────────────────────────────────────────────
       } else if (data.startsWith('arrived_')) {
@@ -353,6 +428,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'arrived'
+        saveBookings()
         if (clientId) {
           const msg = statusMsg('arrived', lang)
           io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -369,6 +445,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'completed'
+        saveBookings()
         await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
         if (clientId) {
           const msg = statusMsg('completed', lang)
@@ -376,8 +453,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           sendPush(clientId, '691 Lisboa ✅', msg, { bookingId, type: 'completed' }).catch(() => {})
         }
         bookingMessages.delete(bookingId)
-        // Manter em memória 5 min para que restore_session devolva o estado final ao cliente
-        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId) }, 5 * 60 * 1000)
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
       }
     })
 
@@ -523,11 +599,12 @@ io.on('connection', (socket) => {
     const cancelMsg     = statusMsg('cancelled', cancelledLang)
     const bkCancel      = activeBookings.get(bookingId)
     if (bkCancel) bkCancel.status = 'cancelled'
+    saveBookings()
 
     bookingMessages.delete(bookingId)
     socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
     // Manter em memória 5 min (consistente com reject/complete)
-    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId) }, 5 * 60 * 1000)
+    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
   })
 })
 
@@ -673,6 +750,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   activeBookings.set(bookingId, bookingData)
   clientBookings.set(clientId, bookingId)
+  saveBookings()
   console.log('Nova reserva:', bookingId, nome, recolha, '→', destino)
 
   // Notificar cliente via socket
