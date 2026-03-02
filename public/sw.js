@@ -101,14 +101,20 @@ self.addEventListener('push', (e) => {
 })
 
 self.addEventListener('notificationclick', (e) => {
+  const pushData = e.notification.data || {}
   e.notification.close()
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const client of list) {
-        if (client.url.startsWith(self.location.origin) && 'focus' in client)
-          return client.focus()
+      const existing = list.find(c => c.url.startsWith(self.location.origin))
+      if (existing && 'focus' in existing) {
+        existing.focus()
+        existing.postMessage({ type: 'PUSH_STATUS', data: pushData })
+        return
       }
-      return clients.openWindow('/')
+      return clients.openWindow('/').then(w => {
+        // Window just opened — postMessage after a brief delay for app to initialise
+        if (w) setTimeout(() => w.postMessage({ type: 'PUSH_STATUS', data: pushData }), 1500)
+      })
     })
   )
 })
