@@ -357,35 +357,38 @@
             scrollToBottom();
         }
         
-        // Send message
-        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+        // Send message (Socket.IO → server → Telegram)
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const input = document.getElementById('chat-message');
             const message = input.value.trim();
             if (!message) return;
-            
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookingId, message, clientId })
-                });
-                
-                if (response.ok) {
-                    displayMessage({
-                        name: t.you,
-                        message,
-                        type: 'client'
-                    });
-                    input.value = '';
-                } else {
-                    alert(t.error);
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert(t.error);
+
+            if (!currentBooking || !clientId || !bookingId) {
+                alert(t.noBooking);
+                return;
             }
+
+            // Emit to server (server validates ownership via socket.data.clientId)
+            socket.emit('message_to_driver', {
+                name: currentBooking.nome,
+                phone: currentBooking.telefone,
+                bookingId: currentBooking.bookingId,
+                message,
+                clientId,
+                lang
+            });
+
+            // Optimistic UI
+            displayMessage({
+                name: t.you,
+                message,
+                type: 'client',
+                timestamp: new Date().toISOString()
+            });
+
+            input.value = '';
         });
         
         // Scroll to bottom
