@@ -1818,7 +1818,11 @@
                 successMessage: '✅ Reserva enviada com sucesso!',
                 youLabel: 'Você',
                 errorGeneric: '❌ Erro ao enviar reserva',
-                errorConnection: '❌ Erro de conexão'
+                errorConnection: '❌ Erro de conexão',
+                namePlaceholder: 'Seu nome',
+                phonePlaceholder: 'Seu telefone',
+                pickupPlaceholder: 'Endereço de recolha',
+                destPlaceholder: 'Endereço de destino'
             },
             en: {
                 title: '691 Lisboa',
@@ -1853,7 +1857,11 @@
                 successMessage: '✅ Booking sent successfully!',
                 youLabel: 'You',
                 errorGeneric: '❌ Error sending booking',
-                errorConnection: '❌ Connection error'
+                errorConnection: '❌ Connection error',
+                namePlaceholder: 'Your name',
+                phonePlaceholder: 'Your phone',
+                pickupPlaceholder: 'Pickup address',
+                destPlaceholder: 'Destination address'
             }
         };
 
@@ -2216,6 +2224,12 @@
             document.getElementById('no-bookings-text').textContent = t.noBookings;
             const viewBtn = document.getElementById('view-booking-btn');
             if (viewBtn) viewBtn.textContent = t.viewBookingButton;
+
+            // Form input placeholders
+            document.getElementById('nome').placeholder      = t.namePlaceholder;
+            document.getElementById('telefone').placeholder  = t.phonePlaceholder;
+            document.getElementById('recolha').placeholder   = t.pickupPlaceholder;
+            document.getElementById('destino').placeholder   = t.destPlaceholder;
 
             // Booking window
             const bwTitle = document.getElementById('booking-window-title');
