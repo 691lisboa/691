@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>691 Lisboa</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="691">
+    <link rel="apple-touch-icon" href="/icon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1778,16 +1784,38 @@
         let currentLang = 'pt';
         let socket = null;
         let currentBooking = null;
-        let clientId = 'client-' + Math.random().toString(36).substr(2, 9);
 
-        // Autocomplete para endereços
+        // clientId persiste no localStorage para sobreviver a refreshes
+        let clientId = localStorage.getItem('691_clientId');
+        if (!clientId) {
+            clientId = 'client-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('691_clientId', clientId);
+        }
+
+        // Autocomplete: TomTom Search API (proxy /api/search) com fallback local
+        let _acTimer = null;
+        async function fetchSuggestions(query) {
+            try {
+                const res = await fetch('/api/search?q=' + encodeURIComponent(query));
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) return data;
+                }
+            } catch { /* ignore */ }
+            // fallback: endereços locais
+            if (typeof window.searchAddresses === 'function') {
+                return window.searchAddresses(query);
+            }
+            return [];
+        }
+
         function setupAddressAutocomplete() {
             const pickupInput = document.getElementById('recolha');
             const destinationInput = document.getElementById('destino');
-            
+
             [pickupInput, destinationInput].forEach(input => {
                 let currentFocus = -1;
-                
+
                 // Create autocomplete container
                 const autocompleteContainer = document.createElement('div');
                 autocompleteContainer.className = 'autocomplete-items';
@@ -1799,54 +1827,57 @@
                 autocompleteContainer.style.border = '2px solid var(--primary-color)';
                 autocompleteContainer.style.borderTop = 'none';
                 autocompleteContainer.style.borderRadius = '0 0 15px 15px';
-                autocompleteContainer.style.maxHeight = '200px';
+                autocompleteContainer.style.maxHeight = '220px';
                 autocompleteContainer.style.overflowY = 'auto';
                 autocompleteContainer.style.zIndex = '9999';
                 autocompleteContainer.style.display = 'none';
-                
+
                 input.parentElement.style.position = 'relative';
                 input.parentElement.appendChild(autocompleteContainer);
-                
+
                 input.addEventListener('input', function() {
                     const value = this.value.trim();
-                    if (!value) {
+                    if (!value || value.length < 2) {
                         autocompleteContainer.style.display = 'none';
                         return;
                     }
-                    
-                    const suggestions = searchAddresses(value);
-                    if (suggestions.length === 0) {
-                        autocompleteContainer.style.display = 'none';
-                        return;
-                    }
-                    
-                    autocompleteContainer.innerHTML = '';
-                    suggestions.forEach(suggestion => {
-                        const item = document.createElement('div');
-                        item.style.padding = '12px 15px';
-                        item.style.cursor = 'pointer';
-                        item.style.borderBottom = '1px solid var(--border-color)';
-                        item.style.color = 'var(--text-light)';
-                        item.style.fontSize = '0.9rem';
-                        item.innerHTML = `<strong>${suggestion.substring(0, value.length)}</strong>${suggestion.substring(value.length)}`;
-                        
-                        item.addEventListener('click', function() {
-                            input.value = suggestion;
+
+                    clearTimeout(_acTimer);
+                    _acTimer = setTimeout(async () => {
+                        const suggestions = await fetchSuggestions(value);
+                        if (suggestions.length === 0) {
                             autocompleteContainer.style.display = 'none';
+                            return;
+                        }
+
+                        autocompleteContainer.innerHTML = '';
+                        suggestions.forEach(suggestion => {
+                            const item = document.createElement('div');
+                            item.style.padding = '12px 15px';
+                            item.style.cursor = 'pointer';
+                            item.style.borderBottom = '1px solid var(--border-color)';
+                            item.style.color = 'var(--text-light)';
+                            item.style.fontSize = '0.9rem';
+                            item.innerHTML = `<strong>${suggestion.substring(0, value.length)}</strong>${suggestion.substring(value.length)}`;
+
+                            item.addEventListener('click', function() {
+                                input.value = suggestion;
+                                autocompleteContainer.style.display = 'none';
+                            });
+
+                            item.addEventListener('mouseenter', function() {
+                                this.style.background = 'var(--background-light)';
+                            });
+
+                            item.addEventListener('mouseleave', function() {
+                                this.style.background = 'transparent';
+                            });
+
+                            autocompleteContainer.appendChild(item);
                         });
-                        
-                        item.addEventListener('mouseenter', function() {
-                            this.style.background = 'var(--background-light)';
-                        });
-                        
-                        item.addEventListener('mouseleave', function() {
-                            this.style.background = 'transparent';
-                        });
-                        
-                        autocompleteContainer.appendChild(item);
-                    });
-                    
-                    autocompleteContainer.style.display = 'block';
+
+                        autocompleteContainer.style.display = 'block';
+                    }, 300);
                 });
                 
                 input.addEventListener('keydown', function(e) {
@@ -1983,12 +2014,37 @@
         // Initialize socket connection
         function initSocket() {
             socket = io();
-            
+
             socket.on('connect', () => {
                 updateStatus('Conectado');
-                showNotification('🟢 Conectado ao servidor 691 Lisboa!');
-                // Registrar APÓS ligação estabelecida
-                socket.emit('register_client', { clientId: clientId });
+                socket.emit('register_client', { clientId });
+                // Tentar restaurar sessão após refresh
+                socket.emit('restore_session', { clientId });
+            });
+
+            // Servidor encontrou reserva ativa para este clientId
+            socket.on('session_restored', (data) => {
+                if (data.booking && !currentBooking) {
+                    currentBooking = data.booking;
+                    localStorage.setItem('691_booking', JSON.stringify(data.booking));
+                    displayBooking(data.booking);
+                    showNotification('🔄 Reserva ativa restaurada');
+                }
+            });
+
+            // Servidor não tem a reserva (ex: reinício) — tentar localStorage
+            socket.on('session_not_found', () => {
+                const saved = localStorage.getItem('691_booking');
+                if (saved && !currentBooking) {
+                    try {
+                        const booking = JSON.parse(saved);
+                        currentBooking = booking;
+                        displayBooking(booking);
+                        showNotification('⚠️ Reserva anterior restaurada (servidor reiniciou)');
+                    } catch { localStorage.removeItem('691_booking'); }
+                } else if (!saved) {
+                    showNotification('🟢 Conectado ao servidor 691 Lisboa!');
+                }
             });
 
             socket.on('disconnect', () => {
@@ -2021,17 +2077,17 @@
 
             socket.on('booking_rejected', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    localStorage.removeItem('691_booking');
                     updateBookingStatus('rejected');
                     showNotification(data.message);
                     playSound();
-                    setTimeout(() => {
-                        hideBooking();
-                    }, 3000);
+                    setTimeout(() => { hideBooking(); }, 3000);
                 }
             });
 
             socket.on('booking_cancelled', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    localStorage.removeItem('691_booking');
                     showNotification(data.message);
                     hideBooking();
                     playSound();
@@ -2040,12 +2096,11 @@
 
             socket.on('booking_completed', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    localStorage.removeItem('691_booking');
                     updateBookingStatus('completed');
                     showNotification(data.message);
                     playSound();
-                    setTimeout(() => {
-                        hideBooking();
-                    }, 5000);
+                    setTimeout(() => { hideBooking(); }, 5000);
                 }
             });
 
@@ -2289,12 +2344,12 @@
 
                 if (response.ok) {
                     const result = await response.json();
+                    const bookingData = { ...data, bookingId: result.bookingId };
                     const successMsg = document.getElementById('success-message');
                     successMsg.classList.add('show');
-                    displayBooking({
-                        ...data,
-                        bookingId: result.bookingId
-                    });
+                    displayBooking(bookingData);
+                    // Persistir no localStorage
+                    localStorage.setItem('691_booking', JSON.stringify(bookingData));
                     e.target.reset();
                     setTimeout(() => {
                         successMsg.classList.remove('show');
@@ -2380,11 +2435,9 @@
                     phone: currentBooking.telefone,
                     clientId: clientId
                 });
-                
+                localStorage.removeItem('691_booking');
                 updateBookingStatus('cancelled');
-                setTimeout(() => {
-                    hideBooking();
-                }, 2000);
+                setTimeout(() => { hideBooking(); }, 2000);
             }
         });
 
@@ -2407,11 +2460,9 @@
                     phone: currentBooking.telefone,
                     clientId: clientId
                 });
-                
+                localStorage.removeItem('691_booking');
                 updateBookingStatus('cancelled');
-                setTimeout(() => {
-                    hideBooking();
-                }, 2000);
+                setTimeout(() => { hideBooking(); }, 2000);
             }
         });
 
@@ -2473,6 +2524,17 @@
                 if (ptBtn) ptBtn.classList.remove('active');
             });
         });
+    </script>
+
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.warn('SW registration failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
