@@ -2127,8 +2127,6 @@
                         displayBooking(booking);
                         showNotification('⚠️ Reserva anterior restaurada (servidor reiniciou)');
                     } catch { localStorage.removeItem('691_booking'); }
-                } else if (!saved) {
-                    showNotification('🟢 Conectado ao servidor 691 Lisboa!');
                 }
             });
 
