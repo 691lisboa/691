@@ -2428,17 +2428,17 @@
             currentBooking = booking;
             const bookingInfo = document.getElementById('booking-info');
             const noBookings = document.getElementById('no-bookings');
-            const bookingDetails = document.getElementById('booking-details');
             const bookingCta = document.getElementById('booking-cta');
             
-            // Mostrar CTA e esconder formulário antigo
             bookingInfo.style.display = 'none';
             noBookings.style.display = 'none';
             bookingCta.style.display = 'block';
             
-            // Atualizar detalhes na janela
             updateBookingWindow(booking);
             updateBookingStatus('pending');
+
+            // Restaurar histórico de chat após refresh
+            if (booking.bookingId) restoreChatHistory(booking.bookingId);
         }
 
         // Update booking window (safe DOM — no innerHTML with user data)
@@ -2508,6 +2508,11 @@
             const noBookings = document.getElementById('no-bookings');
             const bookingCta = document.getElementById('booking-cta');
             const bookingWindow = document.getElementById('booking-window');
+
+            // Limpar historial de chat do localStorage
+            if (currentBooking?.bookingId) {
+                localStorage.removeItem('691_chat_' + currentBooking.bookingId);
+            }
             
             bookingInfo.style.display = 'none';
             bookingCta.style.display = 'none';
@@ -2515,8 +2520,6 @@
             bookingWindow.classList.remove('show');
             currentBooking = null;
             hideTrackingMap();
-            
-            // Clear chat messages
             clearAllChats();
         }
 
@@ -2539,42 +2542,60 @@
             });
         }
 
-        // Display chat message in all active chats
-        function displayChatMessage(data) {
+        // Persist chat message to localStorage
+        function saveChatMessage(entry) {
+            if (!currentBooking) return;
+            const key = '691_chat_' + currentBooking.bookingId;
+            try {
+                const history = JSON.parse(localStorage.getItem(key) || '[]');
+                history.push(entry);
+                localStorage.setItem(key, JSON.stringify(history));
+            } catch {}
+        }
+
+        // Restore chat from localStorage after refresh
+        function restoreChatHistory(bookingId) {
+            const key = '691_chat_' + bookingId;
+            try {
+                const history = JSON.parse(localStorage.getItem(key) || '[]');
+                history.forEach(entry => renderChatMessage(entry));
+            } catch {}
+        }
+
+        // Render a single message bubble into both chat containers
+        function renderChatMessage(data) {
             const chatContainers = [
                 { id: 'chat-messages', placeholderId: 'chat-placeholder' },
                 { id: 'booking-chat-messages', placeholderId: 'booking-chat-placeholder' }
             ];
-            
             chatContainers.forEach(({ id, placeholderId }) => {
                 const container = document.getElementById(id);
+                if (!container) return;
                 const placeholder = document.getElementById(placeholderId);
-                
-                if (container) {
-                    // Remove placeholder if exists
-                    if (placeholder) {
-                        placeholder.remove();
-                    }
-                    
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `chat-message ${data.type || 'client'}`;
+                if (placeholder) placeholder.remove();
 
-                    const nameEl = document.createElement('strong');
-                    nameEl.textContent = data.name;
-                    const msgEl  = document.createElement('div');
-                    msgEl.textContent = data.message;
-                    const timeEl = document.createElement('div');
-                    timeEl.className = 'time';
-                    timeEl.textContent = new Date().toLocaleTimeString();
-
-                    messageDiv.appendChild(nameEl);
-                    messageDiv.appendChild(msgEl);
-                    messageDiv.appendChild(timeEl);
-
-                    container.appendChild(messageDiv);
-                    container.scrollTop = container.scrollHeight;
-                }
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-message ${data.type || 'client'}`;
+                const nameEl = document.createElement('strong');
+                nameEl.textContent = data.name;
+                const msgEl  = document.createElement('div');
+                msgEl.textContent = data.message;
+                const timeEl = document.createElement('div');
+                timeEl.className = 'time';
+                timeEl.textContent = data.time || new Date().toLocaleTimeString();
+                messageDiv.appendChild(nameEl);
+                messageDiv.appendChild(msgEl);
+                messageDiv.appendChild(timeEl);
+                container.appendChild(messageDiv);
+                container.scrollTop = container.scrollHeight;
             });
+        }
+
+        // Display chat message in all active chats (and persist)
+        function displayChatMessage(data) {
+            const entry = { ...data, time: new Date().toLocaleTimeString() };
+            saveChatMessage(entry);
+            renderChatMessage(entry);
         }
 
         // Show notification (toast)
