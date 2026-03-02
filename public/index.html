@@ -698,13 +698,13 @@
             padding: 18px;
             margin-bottom: 16px;
             font-size: 0.875rem;
-            line-height: 1.75;
+            line-height: 1.8;
             color: rgba(255,255,255,0.85);
         }
 
         .booking-info-card h4 {
             color: #ffffff;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             font-size: 0.9rem;
             font-weight: 600;
         }
@@ -714,21 +714,32 @@
             font-weight: 600;
         }
 
+        #booking-window-details {
+            margin-bottom: 16px;
+        }
+
+        #booking-window-status {
+            margin-bottom: 10px;
+        }
+
         /* GPS Tracking */
-        .tracking-section { margin-top: 14px; display: none; }
+        .tracking-section { margin-top: 16px; display: none; }
         .tracking-section.show { display: block; }
         #tracking-map-container {
-            height: 175px;
+            height: 200px;
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid rgba(0,77,0,0.4);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .tracking-info {
             text-align: center;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.55);
-            padding: 4px 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            background: rgba(0,0,0,0.35);
+            border-radius: 8px;
+            padding: 7px 10px;
             min-height: 1.4em;
         }
 
@@ -1832,10 +1843,10 @@
                 bookingTitle: '🚕 Reserva Ativa',
                 chatTitle: '💬 Chat com Motorista',
                 bookingPending: '⏳ Aguardando Confirmação',
-                bookingAccepted: '✅ Reserva Aceite',
-                bookingRejected: '❌ Reserva Recusada',
-                bookingCancelled: '❌ Reserva Cancelada',
-                bookingCompleted: '✅ Viagem Concluída',
+                bookingAccepted: '✅ Reserva aceite.',
+                bookingRejected: '❌ Reserva recusada.',
+                bookingCancelled: '❌ Reserva cancelada.',
+                bookingCompleted: '✅ Viagem concluída.',
                 chatPlaceholder: 'Nenhuma mensagem ainda. Inicie a conversa!',
                 messagePlaceholder: 'Digite sua mensagem...',
                 sendButton: 'Enviar',
@@ -1845,14 +1856,14 @@
                 driverArrived: '🚕 O motorista chegou.',
                 newBooking: '🚕 Nova reserva recebida!',
                 messageFromDriver: 'Mensagem do motorista:',
-                connected: 'Conectado',
-                disconnected: 'Desconectado',
+                connected: 'Conectado.',
+                disconnected: 'Desconectado.',
                 noBookings: 'Sem reservas ativas no momento',
                 bookingDetailsTitle: '📋 Detalhes da Reserva',
                 successMessage: '✅ Reserva enviada com sucesso!',
                 youLabel: 'Você',
-                errorGeneric: '❌ Erro ao enviar reserva',
-                errorConnection: '❌ Erro de conexão',
+                errorGeneric: '❌ Erro ao enviar reserva.',
+                errorConnection: '❌ Erro de conexão.',
                 namePlaceholder: 'Seu nome',
                 phonePlaceholder: 'Seu telefone',
                 pickupPlaceholder: 'Endereço de recolha',
@@ -1871,10 +1882,10 @@
                 bookingTitle: '🚕 Active Booking',
                 chatTitle: '💬 Chat with Driver',
                 bookingPending: '⏳ Awaiting Confirmation',
-                bookingAccepted: '✅ Booking Accepted',
-                bookingRejected: '❌ Booking Rejected',
-                bookingCancelled: '❌ Booking Cancelled',
-                bookingCompleted: '✅ Trip Completed',
+                bookingAccepted: '✅ Booking accepted.',
+                bookingRejected: '❌ Booking rejected.',
+                bookingCancelled: '❌ Booking cancelled.',
+                bookingCompleted: '✅ Trip completed.',
                 chatPlaceholder: 'No messages yet. Start the conversation!',
                 messagePlaceholder: 'Type your message...',
                 sendButton: 'Send',
@@ -1884,14 +1895,14 @@
                 driverArrived: '🚕 Driver arrived.',
                 newBooking: '🚕 New booking received!',
                 messageFromDriver: 'Message from driver:',
-                connected: 'Connected',
-                disconnected: 'Disconnected',
+                connected: 'Connected.',
+                disconnected: 'Disconnected.',
                 noBookings: 'No active bookings at the moment',
                 bookingDetailsTitle: '📋 Booking Details',
                 successMessage: '✅ Booking sent successfully!',
                 youLabel: 'You',
-                errorGeneric: '❌ Error sending booking',
-                errorConnection: '❌ Connection error',
+                errorGeneric: '❌ Error sending booking.',
+                errorConnection: '❌ Connection error.',
                 namePlaceholder: 'Your name',
                 phonePlaceholder: 'Your phone',
                 pickupPlaceholder: 'Pickup address',
@@ -1911,6 +1922,7 @@
         let driverMarker = null;
         let pickupMarker = null;
         let pickupCoords = null;
+        let routePolyline = null;
 
         function haversine(lat1, lng1, lat2, lng2) {
             const R = 6371;
@@ -1953,7 +1965,7 @@
             }
             if (pickupCoords) {
                 const bounds = L.latLngBounds([[lat, lng], [pickupCoords.lat, pickupCoords.lng]]);
-                trackingMap.fitBounds(bounds, { padding: [30, 30] });
+                trackingMap.fitBounds(bounds, { padding: [40, 40] });
                 const infoEl = document.getElementById('tracking-info');
                 infoEl.textContent = currentLang === 'pt' ? '🔄 A calcular rota...' : '🔄 Calculating route...';
                 try {
@@ -1962,26 +1974,38 @@
                     );
                     const route = await r.json();
                     if (route && route.etaMin) {
+                        // Draw / update route polyline
+                        if (route.geometry && route.geometry.coordinates) {
+                            const latlngs = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+                            if (routePolyline) {
+                                routePolyline.setLatLngs(latlngs);
+                            } else {
+                                routePolyline = L.polyline(latlngs, {
+                                    color: '#facc15', weight: 4, opacity: 0.75, dashArray: '8 5'
+                                }).addTo(trackingMap);
+                            }
+                            trackingMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
+                        }
                         const traffic = route.trafficDelaySec > 60
-                            ? (currentLang === 'pt' ? ` ⚠️ +${Math.round(route.trafficDelaySec/60)}min tráfego` : ` ⚠️ +${Math.round(route.trafficDelaySec/60)}min traffic`)
+                            ? (currentLang === 'pt' ? ` ⚠️ +${Math.round(route.trafficDelaySec/60)} min tráfego` : ` ⚠️ +${Math.round(route.trafficDelaySec/60)} min traffic`)
                             : '';
                         infoEl.textContent = currentLang === 'pt'
-                            ? `🚗 O motorista está a ${route.etaMin} min (${route.distanceKm} km)${traffic}`
-                            : `🚗 The driver is ${route.etaMin} min away (${route.distanceKm} km)${traffic}`;
+                            ? `🚗 ${route.etaMin} min · ${route.distanceKm} km${traffic}`
+                            : `🚗 ${route.etaMin} min · ${route.distanceKm} km${traffic}`;
                     } else {
                         // fallback haversine
                         const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
                         const eta  = Math.max(1, Math.ceil(dist / 0.5));
                         infoEl.textContent = currentLang === 'pt'
-                            ? `🚗 O motorista está a ${eta} min (${dist.toFixed(1)} km)`
-                            : `🚗 The driver is ${eta} min away (${dist.toFixed(1)} km)`;
+                            ? `🚗 ~${eta} min · ~${dist.toFixed(1)} km`
+                            : `🚗 ~${eta} min · ~${dist.toFixed(1)} km`;
                     }
                 } catch {
                     const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
                     const eta  = Math.max(1, Math.ceil(dist / 0.5));
                     document.getElementById('tracking-info').textContent = currentLang === 'pt'
-                        ? `🚗 O motorista está a ${eta} min (${dist.toFixed(1)} km)`
-                        : `🚗 The driver is ${eta} min away (${dist.toFixed(1)} km)`;
+                        ? `🚗 ~${eta} min · ~${dist.toFixed(1)} km`
+                        : `🚗 ~${eta} min · ~${dist.toFixed(1)} km`;
                 }
             } else {
                 trackingMap.setView([lat, lng], 15);
@@ -1992,7 +2016,7 @@
             const section = document.getElementById('tracking-section');
             if (section) section.classList.remove('show');
             if (trackingMap) { trackingMap.remove(); trackingMap = null; }
-            driverMarker = null; pickupMarker = null; pickupCoords = null;
+            driverMarker = null; pickupMarker = null; pickupCoords = null; routePolyline = null;
         }
 
         // clientId persiste no localStorage para sobreviver a refreshes
@@ -2275,7 +2299,7 @@
                         showNotification(translations[currentLang].bookingCancelled);
                         setTimeout(() => hideBooking(), 4000);
                     } else {
-                        showNotification('🔄 Reserva ativa restaurada');
+                        showNotification('🔄 Reserva ativa restaurada.');
                     }
 
                 } else if (data.booking && currentBooking?.bookingId === data.booking.bookingId && st !== currentStatus) {
