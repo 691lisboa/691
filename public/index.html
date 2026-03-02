@@ -6,6 +6,7 @@
     <title>691 Lisboa</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -54,9 +55,27 @@
             padding: 20px;
         }
 
+        /* Map background */
+        #map-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.55;
+        }
+        #map-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
         .container {
             width: 100%;
             max-width: 440px;
+            position: relative;
+            z-index: 1;
         }
 
         .form-card {
@@ -1387,6 +1406,9 @@
     </style>
 </head>
 <body>
+    <!-- Map Background -->
+    <div id="map-bg"></div>
+
     <!-- Splash Screen -->
     <div id="splash">
         <span class="splash-logo">691</span>
@@ -2568,6 +2590,33 @@
                 }
             }, 1300);
         });
+
+        // Map background — Lisbon, CartoDB Dark Matter
+        (() => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPaA=';
+            script.crossOrigin = '';
+            script.onload = () => {
+                const map = L.map('map-bg', {
+                    center: [38.7169, -9.1399],
+                    zoom: 14,
+                    zoomControl: false,
+                    dragging: false,
+                    touchZoom: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    boxZoom: false,
+                    keyboard: false,
+                    attributionControl: false
+                });
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(map);
+            };
+            document.head.appendChild(script);
+        })();
 
         // Service Worker registration
         if ('serviceWorker' in navigator) {
