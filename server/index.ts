@@ -25,6 +25,53 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
 const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:reservas@691.pt'
 const WEBAPP_URL        = process.env.WEBAPP_URL        || ''
 
+// ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
+// Key: "lat,lng" rounded; Value: { addr, ts }
+const reverseGeocodeCache = new Map<string, { addr: string; ts: number }>()
+const REVERSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000
+
+// ── Reverse Geocode (browser-safe; uses server-side fetch) ───────────────────
+app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
+  const lat = Number(req.query.lat)
+  const lng = Number(req.query.lng)
+  const lang = String(req.query.lang || 'pt').toLowerCase().startsWith('en') ? 'en' : 'pt'
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return res.status(400).json({ ok: false })
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return res.status(400).json({ ok: false })
+
+  // Cache key rounded to reduce cardinality
+  const key = `${lat.toFixed(5)},${lng.toFixed(5)}`
+  const cached = reverseGeocodeCache.get(key)
+  if (cached && (Date.now() - cached.ts) < REVERSE_CACHE_TTL_MS) {
+    return res.json({ ok: true, addr: cached.addr })
+  }
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lng))}&accept-language=${lang}`
+    const r = await fetch(url, {
+      headers: {
+        // Nominatim usage policy: identify application
+        'User-Agent': '691.pt/1.0 (reservas@691.pt)',
+        'Accept': 'application/json'
+      }
+    })
+    if (!r.ok) return res.status(502).json({ ok: false })
+
+    const json = await r.json() as { address?: Record<string, string>; display_name?: string }
+    const a = json.address || {}
+    const street = a.road || a.pedestrian || a.footway || ''
+    const number = a.house_number ? ` ${a.house_number}` : ''
+    const city   = a.city || a.town || a.village || a.municipality || a.county || ''
+    const addr   = street ? `${street}${number}${city ? ', ' + city : ''}` : (json.display_name || '')
+    if (!addr) return res.status(502).json({ ok: false })
+
+    reverseGeocodeCache.set(key, { addr, ts: Date.now() })
+    return res.json({ ok: true, addr })
+  } catch {
+    return res.status(502).json({ ok: false })
+  }
+})
+
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
   console.log('Web Push (VAPID) configurado')
