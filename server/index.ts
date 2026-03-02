@@ -194,14 +194,12 @@ function buildKeyboard(bookingId: string, recolha: string) {
     [
       { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
       { text: '🚀 Waze',     url: wazeUrl                           }
-    ],
-    [
-      { text: '🏁 Concluir', callback_data: `complete_${bookingId}` }
     ]
   ]
   if (WEBAPP_URL) {
     rows.push([{ text: '🛰️ Tracking GPS', web_app: { url: `${WEBAPP_URL}/driver-track.html?bookingId=${bookingId}` } }])
   }
+  rows.push([{ text: '🏁 Concluir', callback_data: `complete_${bookingId}` }])
   return { inline_keyboard: rows }
 }
 
