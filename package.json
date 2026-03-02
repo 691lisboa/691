@@ -4,8 +4,8 @@
   "description": "691 Taxi - Minimalist Taxi Service",
   "main": "server/index.ts",
   "scripts": {
-    "start": "tsx server/index.ts",
-    "dev": "tsx server/index.ts",
+    "start": "tsx --env-file=.env server/index.ts",
+    "dev": "tsx --env-file=.env server/index.ts",
     "build": "echo 'No build step required'"
   },
   "dependencies": {
