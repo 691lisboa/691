@@ -1893,6 +1893,7 @@
         let currentBooking = null;
         let currentStatus = 'pending';
         let isConnected = false;
+        let pendingPushStatus = null; // armazena push recebido antes de session_restored
 
         // GPS Tracking state
         let trackingMap = null;
@@ -2238,15 +2239,20 @@
             socket.on('session_restored', (data) => {
                 if (data.booking && !currentBooking) {
                     currentBooking = data.booking;
-                    localStorage.setItem('691_booking', JSON.stringify(data.booking));
+                    const st = data.status || data.booking.status || 'pending';
+                    localStorage.setItem('691_booking', JSON.stringify({ ...data.booking, status: st }));
                     displayBooking(data.booking);
-                    const st = data.status || 'pending';
-                    if (st !== 'pending') updateBookingStatus(st);
+                    updateBookingStatus(st);
                     if (st === 'accepted' || st === 'arrived') {
                         initTrackingMap(data.booking.recolha);
                     }
-                    // Final states — clear localStorage and auto-hide
-                    if (st === 'completed') {
+                    // Abrir janela automaticamente
+                    openBookingWindow();
+                    // Aplicar push status pendente se houver
+                    if (pendingPushStatus?.bookingId === data.booking.bookingId) {
+                        const pst = pendingPushStatus; pendingPushStatus = null;
+                        applyPushStatus(pst.type, pst.bookingId);
+                    } else if (st === 'completed') {
                         localStorage.removeItem('691_booking');
                         showNotification(translations[currentLang].bookingCompleted);
                         setTimeout(() => hideBooking(), 4000);
@@ -2276,9 +2282,16 @@
                 if (saved && !currentBooking) {
                     try {
                         const booking = JSON.parse(saved);
+                        // Não restaurar estados finais guardados
+                        if (['completed','rejected','cancelled'].includes(booking.status)) {
+                            localStorage.removeItem('691_booking');
+                            return;
+                        }
                         currentBooking = booking;
                         displayBooking(booking);
-                        showNotification('⚠️ Reserva anterior restaurada (servidor reiniciou)');
+                        if (booking.status && booking.status !== 'pending') updateBookingStatus(booking.status);
+                        openBookingWindow();
+                        showNotification('⚠️ A aguardar confirmação do servidor...');
                     } catch { localStorage.removeItem('691_booking'); }
                 }
             });
@@ -2461,21 +2474,23 @@
             });
         }
 
-        // Update booking status
+        // Update booking status (also persists to localStorage)
         function updateBookingStatus(status) {
             currentStatus = status;
+            // Persistir estado actual para sobreviver a refresh
+            if (currentBooking) {
+                currentBooking.status = status;
+                localStorage.setItem('691_booking', JSON.stringify(currentBooking));
+            }
             const statusElement = document.getElementById('booking-status');
             const windowStatusElement = document.getElementById('booking-window-status');
             const t = translations[currentLang];
-            
             const statusClass = 'booking-status ' + status;
             const statusText = getStatusText(status, t);
-            
             if (statusElement) {
                 statusElement.className = statusClass;
                 statusElement.textContent = statusText;
             }
-            
             if (windowStatusElement) {
                 windowStatusElement.className = statusClass;
                 windowStatusElement.textContent = statusText;
@@ -2499,6 +2514,47 @@
                     return t.bookingCompleted;
                 default:
                     return '';
+            }
+        }
+
+        // Abrir janela de reserva programaticamente
+        function openBookingWindow() {
+            const bw = document.getElementById('booking-window');
+            if (bw) bw.classList.add('show');
+            if (trackingMap) setTimeout(() => trackingMap.invalidateSize(), 50);
+        }
+
+        // Aplicar estado recebido via push (PUSH_STATUS ou session_restored)
+        function applyPushStatus(st, bookingId) {
+            if (!currentBooking || currentBooking.bookingId !== bookingId) return;
+            openBookingWindow();
+            if (st === 'completed') {
+                localStorage.removeItem('691_booking');
+                updateBookingStatus('completed');
+                showNotification(translations[currentLang].bookingCompleted);
+                playSound();
+                setTimeout(() => hideBooking(), 5000);
+            } else if (st === 'rejected') {
+                localStorage.removeItem('691_booking');
+                updateBookingStatus('rejected');
+                showNotification(translations[currentLang].bookingRejected);
+                playSound();
+                setTimeout(() => hideBooking(), 3000);
+            } else if (st === 'cancelled') {
+                localStorage.removeItem('691_booking');
+                updateBookingStatus('cancelled');
+                showNotification(translations[currentLang].bookingCancelled);
+                playSound();
+                setTimeout(() => hideBooking(), 3000);
+            } else if (st === 'accepted') {
+                updateBookingStatus('accepted');
+                showNotification(translations[currentLang].bookingAccepted);
+                playSound();
+                if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
+            } else if (st === 'arrived') {
+                updateBookingStatus('arrived');
+                showNotification(translations[currentLang].driverArrived);
+                playSound();
             }
         }
 
@@ -2939,41 +2995,13 @@
                 if (e.data?.type !== 'PUSH_STATUS') return;
                 const { type: st, bookingId } = e.data.data || {};
                 if (!st || !bookingId) return;
-                // Se o cliente ainda não carregou a reserva, aguardar o socket restore
-                // Caso já tenha a reserva activa, aplicar o estado imediatamente
-                const apply = () => {
-                    if (!currentBooking || currentBooking.bookingId !== bookingId) return;
-                    if (st === 'completed') {
-                        localStorage.removeItem('691_booking');
-                        updateBookingStatus('completed');
-                        showNotification(translations[currentLang].bookingCompleted);
-                        setTimeout(() => hideBooking(), 4000);
-                    } else if (st === 'rejected') {
-                        localStorage.removeItem('691_booking');
-                        updateBookingStatus('rejected');
-                        showNotification(translations[currentLang].bookingRejected);
-                        setTimeout(() => hideBooking(), 3000);
-                    } else if (st === 'cancelled') {
-                        localStorage.removeItem('691_booking');
-                        updateBookingStatus('cancelled');
-                        showNotification(translations[currentLang].bookingCancelled);
-                        setTimeout(() => hideBooking(), 3000);
-                    } else if (st === 'accepted') {
-                        updateBookingStatus('accepted');
-                        showNotification(translations[currentLang].bookingAccepted);
-                        if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
-                    } else if (st === 'arrived') {
-                        updateBookingStatus('arrived');
-                        showNotification(translations[currentLang].driverArrived);
-                    }
-                };
-                // Tentar aplicar agora; se a reserva ainda não estiver carregada, tentar após socket connect
-                if (currentBooking) {
-                    apply();
-                } else {
-                    const unsub = () => { apply(); socket && socket.off('connect', unsub); };
-                    socket ? socket.once('connect', unsub) : setTimeout(apply, 2000);
+                // Guardar estado pendente — será aplicado em session_restored se necessário
+                pendingPushStatus = { type: st, bookingId };
+                if (currentBooking?.bookingId === bookingId) {
+                    applyPushStatus(st, bookingId);
+                    pendingPushStatus = null;
                 }
+                // else: session_restored vai aplicar quando chegar
             });
         }
     </script>
