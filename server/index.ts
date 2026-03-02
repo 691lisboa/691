@@ -453,14 +453,20 @@ io.on('connection', (socket) => {
     const hasMsgId = bookingMessages.has(bookingId)
 
     // Notificar Telegram ANTES de apagar da memória
+    // Editar mensagem original (marca como cancelada no histórico)
     if (booking && hasMsgId) {
       await editMsg(bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
-    } else if (bot && TELEGRAM_CHAT_ID) {
+    }
+    // Enviar SEMPRE uma nova mensagem — edições não geram notificação no Telegram
+    if (bot && TELEGRAM_CHAT_ID) {
       await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         `<b>🚫 RESERVA CANCELADA PELO CLIENTE</b>\n` +
         `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
-        `<b>👤</b> ${esc(data.name || '—')} — <a href="tel:${esc(data.phone || '')}">${esc(data.phone || '—')}</a>`,
+        `<b>👤</b> ${esc(booking?.nome || data.name || '—')} — ` +
+        `<a href="tel:${esc(booking?.telefone || data.phone || '')}">${esc(booking?.telefone || data.phone || '—')}</a>\n` +
+        `<b>📍</b> ${esc(booking?.recolha || '—')}\n` +
+        `<b>🎯</b> ${esc(booking?.destino || '—')}`,
         { parse_mode: 'HTML' }
       ).catch(console.error)
     }
