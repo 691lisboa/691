@@ -116,7 +116,7 @@
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
             color: #ffffff;
             font-size: 0.95rem;
             font-family: 'Inter', sans-serif;
@@ -154,7 +154,7 @@
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
-            transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+            transition: filter 0.3s, transform 0.2s, box-shadow 0.3s;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             box-shadow: 0 4px 24px rgba(0, 77, 0, 0.45);
@@ -173,6 +173,50 @@
             filter: brightness(0.95);
             animation: none;
         }
+
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #splash.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .splash-logo {
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: #00cc44;
+            letter-spacing: -4px;
+            font-family: 'Inter', -apple-system, sans-serif;
+            text-shadow: 0 0 80px rgba(0,204,68,0.25);
+            animation: splashIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        @keyframes splashIn {
+            0%   { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 20px 16px 16px;
+            color: rgba(255,255,255,0.35);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        .page-footer:hover { opacity: 0.85; }
 
         /* GPS button inside pickup input */
         .input-with-icon {
@@ -197,7 +241,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s;
+            transition: color 0.3s;
             line-height: 0;
         }
 
@@ -318,7 +362,7 @@
             cursor: pointer;
             font-size: 1.1rem;
             opacity: 0.45;
-            transition: opacity 0.2s, transform 0.15s;
+            transition: opacity 0.3s, transform 0.2s;
             padding: 2px;
             line-height: 1;
         }
@@ -1208,7 +1252,7 @@
             border-radius: 50%;
             color: rgba(255,255,255,0.55);
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.3s;
             backdrop-filter: blur(10px);
         }
 
@@ -1337,6 +1381,11 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div id="splash">
+        <span class="splash-logo">691</span>
+    </div>
+
     <!-- Language Toggle (top-left, flags only) -->
     <div class="language-toggle">
         <button id="pt-btn" class="active" title="Português">🇵🇹</button>
@@ -1443,6 +1492,8 @@
             </div>
         </div>
     </div>
+
+    <footer class="page-footer">&copy; 2026 691 Lisboa&nbsp;&bull;&nbsp;Servi&ccedil;o de T&aacute;xi</footer>
 
 
     <!-- Chat Popup -->
@@ -2501,6 +2552,17 @@
     </script>
 
     <script>
+        // Splash screen auto-dismiss
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash');
+                if (splash) {
+                    splash.classList.add('hidden');
+                    setTimeout(() => splash.remove(), 650);
+                }
+            }, 1300);
+        });
+
         // Service Worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
