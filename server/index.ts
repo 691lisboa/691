@@ -5,6 +5,7 @@ import { Server as SocketIOServer } from 'socket.io'
 import { Bot } from 'grammy'
 import webpush from 'web-push'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -15,8 +16,6 @@ const server = createServer(app)
 const io = new SocketIOServer(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 })
-
-app.get('/health', (_req: Request, res: Response) => res.send('OK'))
 
 const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
@@ -40,7 +39,31 @@ const activeBookings   = new Map<string, Record<string, string>>()  // bookingId
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
 const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
-const pushSubscriptions   = new Map<string, webpush.PushSubscription>()       // clientId → sub
+// Push subscriptions persistidas em ficheiro para sobreviver a reinicios
+const PUSH_SUBS_FILE = path.join(__dirname, '../data/push-subscriptions.json')
+
+function loadPushSubs(): Map<string, webpush.PushSubscription> {
+  try {
+    const raw = fs.readFileSync(PUSH_SUBS_FILE, 'utf-8')
+    const obj = JSON.parse(raw) as Record<string, webpush.PushSubscription>
+    const m   = new Map<string, webpush.PushSubscription>()
+    for (const [k, v] of Object.entries(obj)) m.set(k, v)
+    console.log(`${m.size} push subscription(ões) carregada(s) do disco`)
+    return m
+  } catch { return new Map() }
+}
+
+function savePushSubs(): void {
+  try {
+    const dir = path.dirname(PUSH_SUBS_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    const obj: Record<string, webpush.PushSubscription> = {}
+    for (const [k, v] of Array.from(pushSubscriptions.entries())) obj[k] = v
+    fs.writeFileSync(PUSH_SUBS_FILE, JSON.stringify(obj))
+  } catch (e) { console.warn('Erro ao guardar push subscriptions:', e) }
+}
+
+const pushSubscriptions = loadPushSubs()       // clientId → sub
 
 // Limpar rate limit expirado a cada 15 min
 setInterval(() => {
@@ -95,16 +118,19 @@ async function sendPush(
   data: Record<string, unknown> = {}
 ): Promise<void> {
   const sub = pushSubscriptions.get(clientId)
-  if (!sub || !VAPID_PUBLIC_KEY) return
+  if (!sub) { console.warn(`sendPush: sem subscrição para ${clientId}`); return }
+  if (!VAPID_PUBLIC_KEY) { console.warn('sendPush: VAPID não configurado'); return }
   try {
     await webpush.sendNotification(sub, JSON.stringify({ title, body, data }))
+    console.log(`Push enviado [${data.type || '?'}] → ${clientId.slice(0, 12)}…`)
   } catch (e: unknown) {
     const status = (e as { statusCode?: number }).statusCode
     if (status === 410 || status === 404) {
       pushSubscriptions.delete(clientId)
-      console.log(`Push subscription expirada removida: ${clientId}`)
+      savePushSubs()
+      console.warn(`Push subscription expirada (${status}) removida: ${clientId}`)
     } else {
-      console.warn('sendPush error:', String(e).slice(0, 80))
+      console.error(`sendPush error [${status}]: ${String(e).slice(0, 120)}`)
     }
   }
 }
@@ -380,7 +406,7 @@ io.on('connection', (socket) => {
     const clientId = sanitize(data.clientId, 64)
     socket.join(clientId)
     socket.data.clientId = clientId
-    console.log(`Cliente registado: ${clientId}`)
+    console.log(`Cliente registado: ${clientId} (push: ${pushSubscriptions.has(clientId) ? '✓' : '✗'})`)
   })
 
   socket.on('restore_session', (data: { clientId: string }) => {
@@ -495,16 +521,16 @@ io.on('connection', (socket) => {
       ).catch(console.error)
     }
 
-    // Ler lang antes de apagar da memória
+    // Ler lang antes de alterar estado
     const cancelledLang = activeBookings.get(bookingId)?.lang || 'pt'
     const cancelMsg     = statusMsg('cancelled', cancelledLang)
+    const bkCancel      = activeBookings.get(bookingId)
+    if (bkCancel) bkCancel.status = 'cancelled'
 
-    // Cleanup após notificação enviada
-    activeBookings.delete(bookingId)
-    clientBookings.delete(clientId)
     bookingMessages.delete(bookingId)
-
     socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
+    // Manter em memória 5 min (consistente com reject/complete)
+    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId) }, 5 * 60 * 1000)
   })
 })
 
@@ -519,7 +545,8 @@ app.post('/api/subscribe', express.json({ limit: '4kb' }), (req: Request, res: R
     return res.status(400).json({ success: false, error: 'Subscription inválida' })
   }
   pushSubscriptions.set(sanitize(clientId, 64), subscription as webpush.PushSubscription)
-  console.log(`Push subscription registada: ${clientId}`)
+  savePushSubs()
+  console.log(`Push subscription registada/actualizada: ${clientId}`)
   return res.json({ success: true })
 })
 
@@ -606,7 +633,6 @@ app.get('/api/search', async (req: Request, res: Response) => {
   }
 })
 
-// ── Health check ────────────────────────────────────────────────────────────
 app.get('/health', (_req: Request, res: Response) => res.send('OK'))
 
 // ── POST /api/reserva ─────────────────────────────────────────────────────────

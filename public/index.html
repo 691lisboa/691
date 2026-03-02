@@ -2218,6 +2218,20 @@
                 socket.emit('register_client', { clientId });
                 // Tentar restaurar sessão após refresh
                 socket.emit('restore_session', { clientId });
+                // Re-enviar push subscription ao servidor (pode ter reiniciado e perdido a sub)
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.ready.then(reg =>
+                        reg.pushManager.getSubscription()
+                    ).then(sub => {
+                        if (sub) {
+                            fetch('/api/subscribe', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ clientId, subscription: sub })
+                            }).catch(() => {});
+                        }
+                    }).catch(() => {});
+                }
             });
 
             // Servidor encontrou reserva ativa para este clientId
@@ -2707,6 +2721,8 @@
         // View booking button
         document.getElementById('view-booking-btn').addEventListener('click', () => {
             document.getElementById('booking-window').classList.add('show');
+            // Leaflet precisa de invalidateSize quando o contentor estava oculto
+            if (trackingMap) setTimeout(() => trackingMap.invalidateSize(), 50);
         });
 
         // Close booking window
