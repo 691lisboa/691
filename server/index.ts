@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
 import { Bot } from 'grammy'
+import webpush from 'web-push'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -14,9 +15,19 @@ const io = new SocketIOServer(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 })
 
-const PORT          = process.env.PORT || 5000
-const TELEGRAM_TOKEN  = process.env.TELEGRAM_BOT_TOKEN
+const PORT             = process.env.PORT || 5000
+const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
+const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
+const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:admin@691.pt'
+
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+  console.log('Web Push (VAPID) configurado')
+} else {
+  console.log('VAPID keys não configuradas — Web Push inativo')
+}
 
 // ── Estado em memória ────────────────────────────────────────────────────────
 let bot: Bot | null = null
@@ -24,7 +35,8 @@ const connectedClients = new Set<string>()
 const activeBookings   = new Map<string, Record<string, string>>()  // bookingId → dados
 const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
 const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
-const rateLimit        = new Map<string, { count: number; ts: number }>()  // IP → contador
+const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
+const pushSubscriptions   = new Map<string, webpush.PushSubscription>()       // clientId → sub
 
 // Limpar rate limit expirado a cada 15 min
 setInterval(() => {
@@ -69,6 +81,28 @@ function checkRateLimit(ip: string): boolean {
   if (entry.count >= 5) return false
   entry.count++
   return true
+}
+
+/** Envia Web Push para um cliente específico */
+async function sendPush(
+  clientId: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown> = {}
+): Promise<void> {
+  const sub = pushSubscriptions.get(clientId)
+  if (!sub || !VAPID_PUBLIC_KEY) return
+  try {
+    await webpush.sendNotification(sub, JSON.stringify({ title, body, data }))
+  } catch (e: unknown) {
+    const status = (e as { statusCode?: number }).statusCode
+    if (status === 410 || status === 404) {
+      pushSubscriptions.delete(clientId)
+      console.log(`Push subscription expirada removida: ${clientId}`)
+    } else {
+      console.warn('sendPush error:', String(e).slice(0, 80))
+    }
+  }
 }
 
 /** Tradução automática via MyMemory (gratuito, sem chave) */
@@ -232,11 +266,12 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
                 note   = ` <i>(🇵🇹 original: "${esc(message)}")</i>`
               }
             }
+            const driverName = clientLang === 'en' ? 'Driver 691' : 'Motorista 691'
             io.to(clientId).emit('message_from_driver', {
-              bookingId, message: outMsg,
-              driverName: clientLang === 'en' ? 'Driver 691' : 'Motorista 691',
+              bookingId, message: outMsg, driverName,
               timestamp: new Date().toISOString()
             })
+            sendPush(clientId, driverName, outMsg, { bookingId, type: 'message' }).catch(() => {})
             await ctx.reply(`✅ Enviado a <code>${bookingId}</code>${note}`, { parse_mode: 'HTML' })
           } else {
             await ctx.reply(`❌ Cliente não encontrado para <code>${bookingId}</code>.`, { parse_mode: 'HTML' })
@@ -256,11 +291,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         if (clientId) {
-          io.to(clientId).emit('booking_accepted', {
-            bookingId,
-            message: statusMsg('accepted', lang),
-            timestamp: new Date().toISOString()
-          })
+          const msg = statusMsg('accepted', lang)
+          io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'accepted' }).catch(() => {})
         } else {
           console.warn(`accept_: clientId não encontrado para ${bookingId}`)
         }
@@ -273,11 +306,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         await editMsg(bookingId, '❌ RECUSADA')
         if (clientId) {
-          io.to(clientId).emit('booking_rejected', {
-            bookingId,
-            message: statusMsg('rejected', lang),
-            timestamp: new Date().toISOString()
-          })
+          const msg = statusMsg('rejected', lang)
+          io.to(clientId).emit('booking_rejected', { bookingId, message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa', msg, { bookingId, type: 'rejected' }).catch(() => {})
           activeBookings.delete(bookingId)
           clientBookings.delete(clientId)
         }
@@ -289,11 +320,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         if (clientId) {
-          io.to(clientId).emit('driver_arrived', {
-            bookingId,
-            message: statusMsg('arrived', lang),
-            timestamp: new Date().toISOString()
-          })
+          const msg = statusMsg('arrived', lang)
+          io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa 📍', msg, { bookingId, type: 'arrived' }).catch(() => {})
         } else {
           console.warn(`arrived_: clientId não encontrado para ${bookingId}`)
         }
@@ -306,11 +335,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
         if (clientId) {
-          io.to(clientId).emit('booking_completed', {
-            bookingId,
-            message: statusMsg('completed', lang),
-            timestamp: new Date().toISOString()
-          })
+          const msg = statusMsg('completed', lang)
+          io.to(clientId).emit('booking_completed', { bookingId, message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa ✅', msg, { bookingId, type: 'completed' }).catch(() => {})
           activeBookings.delete(bookingId)
           clientBookings.delete(clientId)
         }
@@ -439,18 +466,30 @@ io.on('connection', (socket) => {
 
     // Ler lang antes de apagar da memória
     const cancelledLang = activeBookings.get(bookingId)?.lang || 'pt'
+    const cancelMsg     = statusMsg('cancelled', cancelledLang)
 
     // Cleanup após notificação enviada
     activeBookings.delete(bookingId)
     clientBookings.delete(clientId)
     bookingMessages.delete(bookingId)
 
-    socket.emit('booking_cancelled', {
-      bookingId,
-      message: statusMsg('cancelled', cancelledLang),
-      timestamp: new Date().toISOString()
-    })
+    socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
   })
+})
+
+// ── Web Push endpoints ────────────────────────────────────────────────────────
+app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
+  res.json({ publicKey: VAPID_PUBLIC_KEY || null })
+})
+
+app.post('/api/subscribe', express.json({ limit: '4kb' }), (req: Request, res: Response) => {
+  const { clientId, subscription } = req.body || {}
+  if (!clientId || !subscription?.endpoint) {
+    return res.status(400).json({ success: false, error: 'Subscription inválida' })
+  }
+  pushSubscriptions.set(sanitize(clientId, 64), subscription as webpush.PushSubscription)
+  console.log(`Push subscription registada: ${clientId}`)
+  return res.json({ success: true })
 })
 
 // ── Ficheiros estáticos ───────────────────────────────────────────────────────

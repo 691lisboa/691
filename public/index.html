@@ -2702,11 +2702,44 @@
             }).addTo(map);
         }
 
-        // Service Worker registration
-        if ('serviceWorker' in navigator) {
+        // ── Web Push ─────────────────────────────────────────────────────────
+        function urlBase64ToUint8Array(b64) {
+            const pad  = '='.repeat((4 - b64.length % 4) % 4);
+            const raw  = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+            return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+        }
+
+        async function registerPush(swReg) {
+            try {
+                const keyRes = await fetch('/api/vapid-public-key');
+                const { publicKey } = await keyRes.json();
+                if (!publicKey) return;
+
+                let sub = await swReg.pushManager.getSubscription();
+                if (!sub) {
+                    sub = await swReg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(publicKey)
+                    });
+                }
+                await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clientId, subscription: sub })
+                });
+                console.log('Push notifications registadas');
+            } catch (e) {
+                console.warn('Push registration failed:', e);
+            }
+        }
+
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered:', reg.scope))
+                    .then(reg => {
+                        console.log('SW registered:', reg.scope);
+                        return registerPush(reg);
+                    })
                     .catch(err => console.warn('SW registration failed:', err));
             });
         }
