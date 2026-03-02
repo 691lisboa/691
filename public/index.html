@@ -1636,26 +1636,26 @@
                     </div>
                 </div>
             </div>
-            <!-- Action buttons always visible at bottom -->
-            <div class="booking-actions-panel">
-                <div class="booking-actions-row">
-                    <!-- Contact buttons matching main page style -->
-                    <a href="tel:+351928158158" class="contact-icon-btn" title="+351 928 158 158">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
-                    </a>
-                    <a href="https://signal.me/#p/+351928158158" target="_blank" class="contact-icon-btn" title="Signal: fernandes.79">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.124 1.535 5.853L.053 23.09a.5.5 0 0 0 .633.633l5.237-1.482A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 2c5.523 0 10 4.477 10 10S17.523 22 12 22a9.944 9.944 0 0 1-4.912-1.287l-.35-.21-3.625 1.026 1.026-3.625-.21-.35A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2z"/></svg>
-                    </a>
-                    <a href="mailto:reservas@691.pt" class="contact-icon-btn" title="reservas@691.pt">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Floating Chat Button (discreet, round) -->
-    <button id="floating-chat-btn" class="floating-chat-btn" title="💬 Chat">
+    <!-- Contact Icons for Booking Page (bottom-right, horizontal) -->
+    <div id="booking-contact-fab" class="contact-fab" style="display: none;">
+        <a href="tel:+351928158158" class="contact-icon-btn" title="+351 928 158 158">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
+        </a>
+        <a href="https://signal.me/#p/+351928158158" target="_blank" class="contact-icon-btn" title="Signal: fernandes.79">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.124 1.535 5.853L.053 23.09a.5.5 0 0 0 .633.633l5.237-1.482A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 2c5.523 0 10 4.477 10 10S17.523 22 12 22a9.944 9.944 0 0 1-4.912-1.287l-.35-.21-3.625 1.026 1.026-3.625-.21-.35A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2z"/></svg>
+        </a>
+        <a href="mailto:reservas@691.pt" class="contact-icon-btn" title="reservas@691.pt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </a>
+    </div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Button (discreet, round) - only visible on booking page -->
+    <button id="floating-chat-btn" class="floating-chat-btn" title="💬 Chat" style="display: none;">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
     </button>
 
@@ -2652,6 +2652,11 @@
         function openBookingWindow() {
             const bw = document.getElementById('booking-window');
             if (bw) bw.classList.add('show');
+            
+            // Show floating chat button and contact buttons when booking is open
+            document.getElementById('floating-chat-btn').style.display = 'flex';
+            document.getElementById('booking-contact-fab').style.display = 'flex';
+            
             if (trackingMap) setTimeout(() => trackingMap.invalidateSize(), 50);
         }
 
@@ -2712,32 +2717,17 @@
 
             bookingInfo.style.display = 'none';
             noBookings.style.display  = 'block';
-            if (taxiForm) taxiForm.style.display = '';
+            taxiForm.style.display = 'block';
             bookingWindow.classList.remove('show');
+
+            // Hide floating chat button and contact buttons when booking is closed
+            document.getElementById('floating-chat-btn').style.display = 'none';
+            document.getElementById('booking-contact-fab').style.display = 'none';
+
             currentBooking = null;
+            currentStatus = 'pending';
             hideTrackingMap();
-            clearAllChats();
         }
-
-        // Clear all chats
-        function clearAllChats() {
-            const chatContainers = [
-                'chat-messages',
-                'booking-chat-messages'
-            ];
-            
-            chatContainers.forEach(containerId => {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.innerHTML = `
-                        <div style="text-align: center; color: #4a7c59; font-style: italic; padding: 20px;">
-                            <span class="chat-placeholder">${translations[currentLang].chatPlaceholder}</span>
-                        </div>
-                    `;
-                }
-            });
-        }
-
         // Persist chat message to localStorage
         function saveChatMessage(entry) {
             if (!currentBooking) return;
