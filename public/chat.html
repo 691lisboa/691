@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>💬 Chat - 691 Lisboa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --background: #0a0a0a;
+            --background-light: #1a1a1a;
+            --primary: #004d00;
+            --primary-light: #00cc44;
+            --text: #ffffff;
+            --text-muted: rgba(255,255,255,0.6);
+            --border: rgba(255,255,255,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: var(--background-light);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .chat-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--background);
+        }
+
+        .chat-message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            animation: slideInUp 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .chat-message.client {
+            align-self: flex-end;
+            background: var(--primary);
+            color: var(--text);
+            border-bottom-right-radius: 6px;
+        }
+
+        .chat-message.driver {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-bottom-left-radius: 6px;
+        }
+
+        .chat-message strong {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        .chat-message.client strong {
+            color: var(--text);
+        }
+
+        .chat-message.driver strong {
+            color: var(--primary-light);
+        }
+
+        .chat-message .time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 6px;
+            text-align: right;
+        }
+
+        .chat-input {
+            padding: 16px 20px;
+            background: var(--background-light);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chat-input form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            background: var(--background);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .chat-input input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background: var(--primary);
+            color: var(--text);
+            border: none;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input button:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .chat-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 40px 20px;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            .chat-header { padding: 12px 16px; }
+            .chat-messages { padding: 12px; gap: 10px; }
+            .chat-message { padding: 10px 14px; }
+            .chat-input { padding: 12px 16px; }
+            .chat-input form { gap: 8px; }
+            .chat-input input { padding: 10px 14px; font-size: 0.85rem; }
+            .chat-input button { padding: 10px 16px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <h1 class="chat-title" id="chat-title">💬 Chat com Motorista</h1>
+        <button class="close-btn" onclick="window.close()">×</button>
+    </div>
+    
+    <div id="chat-messages" class="chat-messages">
+        <div class="chat-placeholder" id="chat-placeholder">A carregar mensagens...</div>
+    </div>
+    
+    <div class="chat-input">
+        <form id="chat-form">
+            <input type="text" id="chat-message" placeholder="Digite sua mensagem..." required autocomplete="off">
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('bookingId');
+        const lang = urlParams.get('lang') || 'pt';
+        
+        // Translations
+        const translations = {
+            pt: {
+                chatTitle: '💬 Chat com Motorista',
+                placeholder: 'Digite sua mensagem...',
+                send: 'Enviar',
+                you: 'Você',
+                driver: 'Motorista 691',
+                loading: 'A carregar mensagens...',
+                noBooking: 'Nenhuma reserva encontrada',
+                error: 'Erro de conexão'
+            },
+            en: {
+                chatTitle: '💬 Chat with Driver',
+                placeholder: 'Type your message...',
+                send: 'Send',
+                you: 'You',
+                driver: 'Driver 691',
+                loading: 'Loading messages...',
+                noBooking: 'No booking found',
+                error: 'Connection error'
+            }
+        };
+        
+        const t = translations[lang] || translations.pt;
+        
+        // Update UI language
+        document.getElementById('chat-title').textContent = t.chatTitle;
+        document.getElementById('chat-message').placeholder = t.placeholder;
+        document.querySelector('.chat-input button').textContent = t.send;
+        
+        // Socket connection
+        const socket = io();
+        let currentBooking = null;
+        
+        // Restore clientId from localStorage (shared with main window)
+        let clientId = localStorage.getItem('691_clientId');
+        if (!clientId) {
+            document.getElementById('chat-messages').innerHTML = `<div class="chat-placeholder">${t.noBooking}</div>`;
+            return;
+        }
+        
+        // Connect and restore session
+        socket.on('connect', () => {
+            socket.emit('restore_session', { clientId });
+        });
+        
+        socket.on('session_restored', (data) => {
+            if (data.booking && data.booking.bookingId === bookingId) {
+                currentBooking = data.booking;
+                loadChatHistory(data.chatHistory || []);
+            } else {
+                document.getElementById('chat-messages').innerHTML = `<div class="chat-placeholder">${t.noBooking}</div>`;
+            }
+        });
+        
+        socket.on('session_not_found', () => {
+            document.getElementById('chat-messages').innerHTML = `<div class="chat-placeholder">${t.noBooking}</div>`;
+        });
+        
+        // Listen for new messages
+        socket.on('message_from_driver', (data) => {
+            if (data.bookingId === bookingId) {
+                displayMessage({
+                    name: data.driverName,
+                    message: data.message,
+                    type: 'driver',
+                    timestamp: data.timestamp
+                });
+            }
+        });
+        
+        // Load chat history
+        function loadChatHistory(history) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            
+            if (history.length === 0) {
+                container.innerHTML = `<div class="chat-placeholder">${t.loading}</div>`;
+                return;
+            }
+            
+            history.forEach(msg => {
+                displayMessage(msg, false);
+            });
+            scrollToBottom();
+        }
+        
+        // Display message
+        function displayMessage(data, save = true) {
+            const container = document.getElementById('chat-messages');
+            const placeholder = document.getElementById('chat-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${data.type || 'client'}`;
+            
+            const nameEl = document.createElement('strong');
+            nameEl.textContent = data.name || (data.type === 'driver' ? t.driver : t.you);
+            
+            const msgEl = document.createElement('div');
+            msgEl.textContent = data.message;
+            
+            const timeEl = document.createElement('div');
+            timeEl.className = 'time';
+            timeEl.textContent = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+            
+            messageDiv.appendChild(nameEl);
+            messageDiv.appendChild(msgEl);
+            messageDiv.appendChild(timeEl);
+            container.appendChild(messageDiv);
+            
+            if (save) {
+                // Save to localStorage for persistence
+                const key = `691_chat_${bookingId}`;
+                const history = JSON.parse(localStorage.getItem(key) || '[]');
+                history.push({
+                    ...data,
+                    time: timeEl.textContent,
+                    timestamp: data.timestamp || new Date().toISOString()
+                });
+                localStorage.setItem(key, JSON.stringify(history));
+            }
+            
+            scrollToBottom();
+        }
+        
+        // Send message
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const input = document.getElementById('chat-message');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId, message, clientId })
+                });
+                
+                if (response.ok) {
+                    displayMessage({
+                        name: t.you,
+                        message,
+                        type: 'client'
+                    });
+                    input.value = '';
+                } else {
+                    alert(t.error);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert(t.error);
+            }
+        });
+        
+        // Scroll to bottom
+        function scrollToBottom() {
+            const container = document.getElementById('chat-messages');
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Auto-focus input
+        document.getElementById('chat-message').focus();
+    </script>
+</body>
+</html>
