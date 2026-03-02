@@ -2305,7 +2305,6 @@
                         currentBooking = booking;
                         displayBooking(booking);
                         if (booking.status && booking.status !== 'pending') updateBookingStatus(booking.status);
-                        openBookingWindow();
                         showNotification('⚠️ A aguardar confirmação do servidor...');
                     } catch { localStorage.removeItem('691_booking'); }
                 }
