@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express, { Request, Response } from 'express'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
