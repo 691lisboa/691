@@ -84,7 +84,7 @@ TELEGRAM_CHAT_ID=your_telegram_chat_id_here
 # Web Push (opcional)
 VAPID_PUBLIC_KEY=your_vapid_public_key_here
 VAPID_PRIVATE_KEY=your_vapid_private_key_here
-VAPID_EMAIL=mailto:reservas@691.pt
+VAPID_EMAIL=mailto:booking@691.pt
 
 # App Configuration
 PORT=5000
@@ -146,7 +146,7 @@ TELEGRAM_CHAT_ID=seu_chat_id
 TOMTOM_API_KEY=sua_api_key
 VAPID_PUBLIC_KEY=sua_vapid_public_key
 VAPID_PRIVATE_KEY=sua_vapid_private_key
-VAPID_EMAIL=mailto:reservas@691.pt
+VAPID_EMAIL=mailto:booking@691.pt
 ```
 
 ## 📁 Estrutura do Projeto

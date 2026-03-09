@@ -22,7 +22,7 @@ const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
-const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:reservas@691.pt'
+const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:booking@691.pt'
 const WEBAPP_URL        = process.env.WEBAPP_URL        || ''
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
@@ -51,7 +51,7 @@ app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
     const r = await fetch(url, {
       headers: {
         // Nominatim usage policy: identify application
-        'User-Agent': '691.pt/1.0 (reservas@691.pt)',
+        'User-Agent': '691.pt/1.0 (booking@691.pt)',
         'Accept': 'application/json'
       }
     })
