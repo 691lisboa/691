@@ -341,7 +341,7 @@ function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
     ],
     [
       { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
-      whatsappUrl ? { text: '📱 WhatsApp', url: whatsappUrl } : { text: '🚀 Waze', url: wazeUrl }
+      whatsappUrl ? { text: '� WhatsApp', url: whatsappUrl } : { text: '🚀 Waze', url: wazeUrl }
     ]
   ]
   
