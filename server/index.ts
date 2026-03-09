@@ -379,6 +379,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           '<b>🚕 691 Lisboa — Central de Comando</b>\n\n' +
           '/start — Este menu\n' +
           '/status — Reservas ativas\n' +
+          '/whatsapp — Contactar clientes via WhatsApp\n' +
           'Aguarde novas reservas.',
           { parse_mode: 'HTML' }
         )
@@ -396,6 +397,35 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           `🤖 Bot: ✅ Ativo\n\n${bookingList}`,
           { parse_mode: 'HTML' }
         )
+
+      } else if (text === '/whatsapp') {
+        if (activeBookings.size === 0) {
+          await ctx.reply(
+            '<b>💬 WhatsApp Clientes</b>\n\n' +
+            '❌ Nenhuma reserva ativa para contactar.',
+            { parse_mode: 'HTML' }
+          )
+        } else {
+          const rows = Array.from(activeBookings.values()).map(booking => {
+            const whatsappUrl = `https://wa.me/351${booking.telefone.replace(/\D/g, '')}`
+            return [
+              {
+                text: `💬 ${esc(booking.nome)} (${esc(booking.telefone)})`,
+                url: whatsappUrl
+              }
+            ]
+          })
+          
+          await ctx.reply(
+            '<b>💬 WhatsApp Clientes</b>\n\n' +
+            `📱 <b>${activeBookings.size}</b> reserva(s) ativa(s):\n\n` +
+            'Clique nos botões para abrir WhatsApp:',
+            {
+              parse_mode: 'HTML',
+              reply_markup: { inline_keyboard: rows }
+            }
+          )
+        }
       }
     })
 
