@@ -1019,9 +1019,9 @@
             width: 36px;
             height: 36px;
             background: rgba(0,0,0,0.8);
-            border: 1px solid rgba(0,77,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 50%;
-            color: rgba(255,255,255,0.55);
+            color: rgba(255,255,255,0.8);
             text-decoration: none;
             transition: all 0.3s;
             backdrop-filter: blur(10px);
@@ -1029,11 +1029,46 @@
 
         .contact-icon-btn svg { width: 15px; height: 15px; }
 
-        .contact-icon-btn:hover {
-            background: rgba(0,77,0,0.3);
-            border-color: rgba(0,204,68,0.55);
-            color: #fff;
-            transform: scale(1.1);
+        /* Phone button - Green */
+        .contact-icon-btn[href^="tel:"] {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            border-color: #25d366;
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .contact-icon-btn[href^="tel:"]:hover {
+            background: linear-gradient(135deg, #128c7e, #075e54);
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.5);
+        }
+
+        /* WhatsApp button - Official WhatsApp green */
+        .contact-icon-btn[href*="wa.me"] {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            border-color: #25d366;
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .contact-icon-btn[href*="wa.me"]:hover {
+            background: linear-gradient(135deg, #128c7e, #075e54);
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.5);
+        }
+
+        /* Email button - Blue */
+        .contact-icon-btn[href^="mailto:"] {
+            background: linear-gradient(135deg, #4285f4, #1a73e8);
+            border-color: #4285f4;
+            color: white;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        .contact-icon-btn[href^="mailto:"]:hover {
+            background: linear-gradient(135deg, #1a73e8, #1557b0);
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.5);
         }
 
         .booking-banner-contacts .contact-icon-btn {
