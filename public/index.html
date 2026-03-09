@@ -327,44 +327,6 @@
             transform: translateY(-1px);
         }
 
-        .notification {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-120px);
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: #ffffff;
-            padding: 16px 28px;
-            border-radius: 50px;
-            border: 1px solid rgba(0, 77, 0, 0.7);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(0,77,0,0.25);
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
-            z-index: 9999;
-            max-width: 420px;
-            width: 90%;
-            font-weight: 500;
-            font-size: 0.9rem;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            opacity: 0;
-        }
-
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        .notification.driver-arrived {
-            border-color: #00cc44;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 30px rgba(0,204,68,0.4);
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
         .language-toggle {
             position: fixed;
             top: 18px;
@@ -1271,11 +1233,6 @@
         <span id="status-text">Conectado</span>
     </div>
 
-    <!-- Notification -->
-    <div id="notification" class="notification">
-        <div id="notification-text">Conectando...</div>
-    </div>
-
     <!-- Main Container -->
     <div class="container">
         <div class="form-card">
@@ -1807,12 +1764,9 @@
                     if (['completed','rejected','cancelled'].includes(st)) {
                         localStorage.removeItem('691_booking');
                         if (st === 'completed') {
-                            showNotification(translations[currentLang].bookingCompleted);
-                        } else if (st === 'rejected') {
-                            showNotification(translations[currentLang].bookingRejected);
-                        } else if (st === 'cancelled') {
-                            showNotification(translations[currentLang].bookingCancelled);
-                        }
+                                                    } else if (st === 'rejected') {
+                                                    } else if (st === 'cancelled') {
+                                                    }
                         return;
                     }
 
@@ -1829,8 +1783,7 @@
                         const pst = pendingPushStatus; pendingPushStatus = null;
                         applyPushStatus(pst);
                     } else {
-                        showNotification('🔄 Reserva ativa restaurada.');
-                    }
+                                            }
 
                 } else if (data.booking && currentBooking?.bookingId === data.booking.bookingId && st !== currentStatus) {
                     // Reconexão: sincronizar estado que pode ter mudado durante desligação
@@ -1859,28 +1812,24 @@
                         currentBooking = booking;
                         displayBooking(booking);
                         if (booking.status && booking.status !== 'pending') updateBookingStatus(booking.status);
-                        showNotification('⚠️ A aguardar confirmação do servidor...');
-                    } catch { localStorage.removeItem('691_booking'); }
+                                            } catch { localStorage.removeItem('691_booking'); }
                 }
             });
 
             socket.on('disconnect', () => {
                 updateStatus(false);
-                showNotification(translations[currentLang].disconnected);
-            });
+                            });
 
             socket.on('driver_arrived', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     updateBookingStatus('arrived');
-                    showNotification(translations[currentLang].driverArrived);
-                    playSound();
+                                        playSound();
                 }
             });
 
             socket.on('new_booking', (data) => {
                 if (data.clientId === clientId) {
-                    showNotification(translations[currentLang].newBooking);
-                    displayBooking(data);
+                                        displayBooking(data);
                     playSound();
                 }
             });
@@ -1888,8 +1837,7 @@
             socket.on('booking_accepted', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     updateBookingStatus('accepted');
-                    showNotification(translations[currentLang].bookingAccepted);
-                    playSound();
+                                        playSound();
                     if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
                 }
             });
@@ -1898,8 +1846,7 @@
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     localStorage.removeItem('691_booking');
                     updateBookingStatus('rejected');
-                    showNotification(translations[currentLang].bookingRejected);
-                    playSound();
+                                        playSound();
                     setTimeout(() => { hideBooking(); }, 3000);
                 }
             });
@@ -1907,8 +1854,7 @@
             socket.on('booking_cancelled', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     localStorage.removeItem('691_booking');
-                    showNotification(translations[currentLang].bookingCancelled);
-                    hideBooking();
+                                        hideBooking();
                     playSound();
                 }
             });
@@ -1917,8 +1863,7 @@
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     localStorage.removeItem('691_booking');
                     updateBookingStatus('completed');
-                    showNotification(translations[currentLang].bookingCompleted);
-                    playSound();
+                                        playSound();
                     setTimeout(() => { hideBooking(); }, 5000);
                 }
             });
@@ -2130,32 +2075,27 @@
             } else if (st === 'completed') {
                 localStorage.removeItem('691_booking');
                 updateBookingStatus('completed');
-                showNotification(translations[currentLang].bookingCompleted);
-                playSound();
+                                playSound();
                 setTimeout(() => hideBooking(), 5000);
             } else if (st === 'rejected') {
                 localStorage.removeItem('691_booking');
                 updateBookingStatus('rejected');
-                showNotification(translations[currentLang].bookingRejected);
-                playSound();
+                                playSound();
                 setTimeout(() => hideBooking(), 3000);
             } else if (st === 'cancelled') {
                 localStorage.removeItem('691_booking');
                 updateBookingStatus('cancelled');
-                showNotification(translations[currentLang].bookingCancelled);
-                playSound();
+                                playSound();
                 setTimeout(() => hideBooking(), 3000);
             } else if (st === 'accepted') {
                 openBookingWindow();
                 updateBookingStatus('accepted');
-                showNotification(translations[currentLang].bookingAccepted);
-                playSound();
+                                playSound();
                 if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
             } else if (st === 'arrived') {
                 openBookingWindow();
                 updateBookingStatus('arrived');
-                showNotification(translations[currentLang].driverArrived);
-                playSound();
+                                playSound();
             }
         }
 
@@ -2183,23 +2123,6 @@
         }
 
         // Show notification (toast)
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            document.getElementById('notification-text').textContent = message;
-            
-            // Special style for driver arrival
-            const isArrival = message.toLowerCase().includes('chegou') || message.toLowerCase().includes('arrived') || message.toLowerCase().includes('cheguei');
-            notification.classList.toggle('driver-arrived', isArrival);
-            
-            notification.classList.remove('show');
-            void notification.offsetWidth; // force reflow for re-animation
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, isArrival ? 7000 : 4500);
-        }
-
         // Play sound
         function playSound() {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2266,11 +2189,9 @@
                     }, 3000);
                 } else {
                     const errData = await response.json().catch(() => ({}))
-                    showNotification(errData.error || translations[currentLang].errorGeneric);
-                }
+                                    }
             } catch (error) {
-                showNotification(translations[currentLang].errorConnection);
-            }
+                            }
         });
 
         // Window cancel button
