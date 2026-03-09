@@ -1797,6 +1797,19 @@
                 const st = data.status || data.booking?.status || 'pending';
 
                 if (data.booking && !currentBooking) {
+                    // Verificar estados finais primeiro - não mostrar booking se já estiver concluído
+                    if (['completed','rejected','cancelled'].includes(st)) {
+                        localStorage.removeItem('691_booking');
+                        if (st === 'completed') {
+                            showNotification(translations[currentLang].bookingCompleted);
+                        } else if (st === 'rejected') {
+                            showNotification(translations[currentLang].bookingRejected);
+                        } else if (st === 'cancelled') {
+                            showNotification(translations[currentLang].bookingCancelled);
+                        }
+                        return;
+                    }
+
                     // Restauração inicial (página nova)
                     currentBooking = data.booking;
                     displayBooking(data.booking);
@@ -1809,18 +1822,6 @@
                     if (pendingPushStatus?.bookingId === data.booking.bookingId) {
                         const pst = pendingPushStatus; pendingPushStatus = null;
                         applyPushStatus(pst);
-                    } else if (st === 'completed') {
-                        localStorage.removeItem('691_booking');
-                        showNotification(translations[currentLang].bookingCompleted);
-                        setTimeout(() => hideBooking(), 4000);
-                    } else if (st === 'rejected') {
-                        localStorage.removeItem('691_booking');
-                        showNotification(translations[currentLang].bookingRejected);
-                        setTimeout(() => hideBooking(), 4000);
-                    } else if (st === 'cancelled') {
-                        localStorage.removeItem('691_booking');
-                        showNotification(translations[currentLang].bookingCancelled);
-                        setTimeout(() => hideBooking(), 4000);
                     } else {
                         showNotification('🔄 Reserva ativa restaurada.');
                     }
@@ -2116,8 +2117,9 @@
             const st = pushData.type;
             const bookingId = pushData.bookingId;
             if (!currentBooking || currentBooking.bookingId !== bookingId) return;
-            openBookingWindow();
+            
             if (st === 'message') {
+                openBookingWindow();
                 playSound();
             } else if (st === 'completed') {
                 localStorage.removeItem('691_booking');
@@ -2138,11 +2140,13 @@
                 playSound();
                 setTimeout(() => hideBooking(), 3000);
             } else if (st === 'accepted') {
+                openBookingWindow();
                 updateBookingStatus('accepted');
                 showNotification(translations[currentLang].bookingAccepted);
                 playSound();
                 if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
             } else if (st === 'arrived') {
+                openBookingWindow();
                 updateBookingStatus('arrived');
                 showNotification(translations[currentLang].driverArrived);
                 playSound();
