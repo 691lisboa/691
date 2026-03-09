@@ -329,8 +329,10 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
 }
 
 /** Inline keyboard com 3 linhas de botões */
-function buildKeyboard(bookingId: string, recolha: string) {
+function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
+  const whatsappUrl = telefone ? `https://wa.me/351${telefone.replace(/\D/g, '')}` : null
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[][] = [
     [
@@ -339,9 +341,15 @@ function buildKeyboard(bookingId: string, recolha: string) {
     ],
     [
       { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
-      { text: '🚀 Waze',     url: wazeUrl                           }
+      whatsappUrl ? { text: '� WhatsApp', url: whatsappUrl } : { text: '🚀 Waze', url: wazeUrl }
     ]
   ]
+  
+  // Adicionar Waze como botão separado se houver WhatsApp
+  if (whatsappUrl) {
+    rows.push([{ text: '🚀 Waze', url: wazeUrl }])
+  }
+  
   if (WEBAPP_URL) {
     rows.push([{ text: '🛰️ Tracking GPS', web_app: { url: `${WEBAPP_URL}/driver-track.html?bookingId=${bookingId}` } }])
   }
@@ -358,7 +366,7 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha) }
+      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone) }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
@@ -805,7 +813,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),
-        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha) }
+        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone) }
       )
       bookingMessages.set(bookingId, sent.message_id)
     } catch (error: unknown) {
