@@ -2004,27 +2004,15 @@
             const successMsg = document.getElementById('success-message');
             if (successMsg && !successMsg.classList.contains('show')) successMsg.textContent = t.successMessage;
 
-            // Update validation messages on form fields
+            // Update validation messages on form fields (title only for hover, no custom validity)
             const nomeInput = document.getElementById('nome');
             const telefoneInput = document.getElementById('telefone');
             const recolhaInput = document.getElementById('recolha');
             const destinoInput = document.getElementById('destino');
-            if (nomeInput) {
-                nomeInput.setCustomValidity(t.validationName);
-                nomeInput.title = t.validationName;
-            }
-            if (telefoneInput) {
-                telefoneInput.setCustomValidity(t.validationPhone);
-                telefoneInput.title = t.validationPhone;
-            }
-            if (recolhaInput) {
-                recolhaInput.setCustomValidity(t.validationPickup);
-                recolhaInput.title = t.validationPickup;
-            }
-            if (destinoInput) {
-                destinoInput.setCustomValidity(t.validationDestination);
-                destinoInput.title = t.validationDestination;
-            }
+            if (nomeInput) nomeInput.title = t.validationName;
+            if (telefoneInput) telefoneInput.title = t.validationPhone;
+            if (recolhaInput) recolhaInput.title = t.validationPickup;
+            if (destinoInput) destinoInput.title = t.validationDestination;
 
             // Re-render booking status badge in the new language
             if (currentBooking) updateBookingStatus(currentStatus);
