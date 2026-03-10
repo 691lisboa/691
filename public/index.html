@@ -507,10 +507,10 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.98);
             display: none;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             z-index: 3000;
-            padding: 20px;
+            padding: 96px 20px 20px;
             backdrop-filter: blur(20px);
         }
 
@@ -781,7 +781,7 @@
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             .booking-window {
-                padding: 5px;
+                padding: 86px 10px 10px;
             }
 
             .booking-container {
@@ -839,7 +839,7 @@
 
         @media (max-width: 480px) {
             .booking-window {
-                padding: 0;
+                padding: 76px 8px 8px;
             }
 
             .booking-container {
@@ -1502,6 +1502,7 @@
                 destinationLabel: 'Destino',
                 submitButton: 'Reservar Táxi',
                 whatsappChat: 'Falar com o Motorista',
+                cancelButton: '❌ Cancelar Reserva',
                 bookingTitle: '🚕 Reserva Ativa',
                 bookingPending: '⏳ Aguardando Confirmação',
                 bookingAccepted: '✅ Reserva aceite.',
@@ -1530,6 +1531,7 @@
                 destinationLabel: 'Destination',
                 submitButton: 'Book Taxi',
                 whatsappChat: 'Talk to the Driver',
+                cancelButton: '❌ Cancel Booking',
                 bookingTitle: '🚕 Active Booking',
                 bookingPending: '⏳ Awaiting Confirmation',
                 bookingAccepted: '✅ Booking accepted.',
