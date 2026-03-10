@@ -1940,9 +1940,12 @@
 
         // Update language
         function updateLanguage(lang) {
+            console.log('updateLanguage called with:', lang);
             if (!lang) lang = 'pt';
             currentLang = lang;
             const t = translations[lang];
+            console.log('translations object:', translations);
+            console.log('selected translation:', t);
             
             document.getElementById('title').textContent = t.title;
             document.getElementById('subtitle').textContent = t.subtitle;
