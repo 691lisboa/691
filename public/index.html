@@ -2007,8 +2007,8 @@
             const taxiForm    = document.getElementById('taxi-form');
             const mainContactFab = document.getElementById('main-contact-fab');
 
-            noBookings.style.display  = 'none';
-            bookingInfo.style.display = 'block';
+            if (noBookings) noBookings.style.display = 'none';
+            if (bookingInfo) bookingInfo.style.display = 'block';
             if (taxiForm) taxiForm.style.display = 'none';
             if (mainContactFab) mainContactFab.style.display = 'none';
 
