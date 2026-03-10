@@ -161,6 +161,65 @@
             to { transform: rotate(360deg); }
         }
 
+        /* WhatsApp Chat Button - Top Right */
+        .whatsapp-chat-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 12px 20px;
+            background: #004d00;
+            animation: pulse-glow 3s ease-in-out infinite;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: filter 0.3s, transform 0.2s, box-shadow 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 24px rgba(0,77,0,0.4);
+        }
+
+        .whatsapp-chat-btn:hover {
+            filter: brightness(1.4);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(0,77,0,0.6);
+            animation: none;
+        }
+
+        .whatsapp-chat-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.95);
+            animation: none;
+        }
+
+        .whatsapp-chat-btn .emoji {
+            font-size: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-3px); }
+            60% { transform: translateY(-2px); }
+        }
+
+        @media (max-width: 768px) {
+            .whatsapp-chat-btn {
+                top: 15px;
+                right: 15px;
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+        }
+
         .submit-btn {
             width: 100%;
             padding: 17px;
@@ -1255,6 +1314,12 @@
         <span class="splash-logo">691</span>
     </div>
 
+    <!-- WhatsApp Chat Button - Top Right -->
+    <a href="https://wa.me/351923255691" target="_blank" class="whatsapp-chat-btn" id="whatsapp-chat-btn">
+        <span class="emoji">🟢</span>
+        <span id="whatsapp-chat-text">CHAT DIRETO WHATSAPP</span>
+    </a>
+
     <!-- Language Toggle (top-left, flags only) -->
     <div class="language-toggle">
         <button id="pt-btn" class="active" title="Português">🇵🇹</button>
@@ -1493,29 +1558,23 @@
                 pickupLabel: 'Local de Recolha',
                 destinationLabel: 'Destino',
                 submitButton: 'Reservar Táxi',
+                whatsappChat: 'CHAT DIRETO WHATSAPP',
                 bookingTitle: '🚕 Reserva Ativa',
                 bookingPending: '⏳ Aguardando Confirmação',
                 bookingAccepted: '✅ Reserva aceite.',
                 bookingRejected: '❌ Reserva recusada.',
                 bookingCancelled: '❌ Reserva cancelada.',
                 bookingCompleted: '✅ Viagem concluída.',
-                viewBookingButton: '🚕 Ver Reserva Ativa',
-                cancelButton: '❌ Cancelar Reserva',
-                driverArrived: '🚕 O motorista chegou.',
-                newBooking: '🚕 Nova reserva recebida!',
-                messageFromDriver: 'Mensagem do motorista:',
-                connected: 'Conectado.',
-                disconnected: 'Desconectado.',
-                noBookings: 'Sem reservas ativas no momento',
-                bookingDetailsTitle: '📋 Detalhes da Reserva',
-                successMessage: '✅ Reserva enviada com sucesso!',
-                youLabel: 'Você',
-                errorGeneric: '❌ Erro ao enviar reserva.',
-                errorConnection: '❌ Erro de conexão.',
-                namePlaceholder: 'Seu nome',
-                phonePlaceholder: 'Seu telefone',
-                pickupPlaceholder: 'Endereço de recolha',
-                destPlaceholder: 'Endereço de destino'
+                noBookings: 'No active bookings at the moment',
+                bookingDetailsTitle: '📋 Booking Details',
+                successMessage: '✅ Booking sent successfully!',
+                youLabel: 'You',
+                errorGeneric: '❌ Error sending booking.',
+                errorConnection: '❌ Connection error.',
+                namePlaceholder: 'Your name',
+                phonePlaceholder: 'Your phone',
+                pickupPlaceholder: 'Pickup address',
+                destPlaceholder: 'Destination address'
             },
             en: {
                 title: '691',
@@ -1527,19 +1586,13 @@
                 pickupLabel: 'Pickup Location',
                 destinationLabel: 'Destination',
                 submitButton: 'Book Taxi',
+                whatsappChat: 'DIRECT WHATSAPP CHAT',
                 bookingTitle: '🚕 Active Booking',
                 bookingPending: '⏳ Awaiting Confirmation',
                 bookingAccepted: '✅ Booking accepted.',
                 bookingRejected: '❌ Booking rejected.',
                 bookingCancelled: '❌ Booking cancelled.',
                 bookingCompleted: '✅ Trip completed.',
-                viewBookingButton: '🚕 View Active Booking',
-                cancelButton: '❌ Cancel Booking',
-                driverArrived: '🚕 Driver arrived.',
-                newBooking: '🚕 New booking received!',
-                messageFromDriver: 'Message from driver:',
-                connected: 'Connected.',
-                disconnected: 'Disconnected.',
                 noBookings: 'No active bookings at the moment',
                 bookingDetailsTitle: '📋 Booking Details',
                 successMessage: '✅ Booking sent successfully!',
@@ -1972,6 +2025,7 @@
             document.getElementById('pickup-label').textContent = t.pickupLabel;
             document.getElementById('dest-label').textContent = t.destinationLabel;
             document.getElementById('submit-btn').textContent = t.submitButton;
+            document.getElementById('whatsapp-chat-text').textContent = t.whatsappChat;
             document.getElementById('booking-title').textContent = t.bookingTitle;
             document.getElementById('no-bookings-text').textContent = t.noBookings;
             // Form input placeholders
