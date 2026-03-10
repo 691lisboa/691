@@ -36,7 +36,7 @@
       bottom: 110px;
     }
 
-    /* Bottom footer bar */
+    /* Bottom footer bar - seamless with background */
     .trip-footer {
       position: fixed;
       left: 0;
@@ -44,9 +44,14 @@
       bottom: 0;
       z-index: 5;
       padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-      background: var(--oled);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(16px);
+      background: #000;
+      border-top: none;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      margin: 0 8px;
+      width: calc(100% - 16px);
     }
 
     .trip-footer-inner {
