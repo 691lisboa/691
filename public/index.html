@@ -2270,19 +2270,24 @@
                     const result = await response.json();
                     const bookingData = { ...data, bookingId: result.bookingId };
                     const successMsg = document.getElementById('success-message');
-                    successMsg.classList.add('show');
+                    if (successMsg) successMsg.classList.add('show');
                     displayBooking(bookingData);
                     // Persistir no localStorage
                     localStorage.setItem('691_booking', JSON.stringify(bookingData));
                     e.target.reset();
                     setTimeout(() => {
-                        successMsg.classList.remove('show');
+                        if (successMsg) successMsg.classList.remove('show');
                     }, 3000);
                 } else {
-                    const errData = await response.json().catch(() => ({}))
-                                    }
+                    const t = translations[currentLang] || translations.pt;
+                    const errData = await response.json().catch(() => ({}));
+                    const msg = errData?.message || t?.errorGeneric || '❌ Erro ao enviar reserva.';
+                    alert(msg);
+                }
             } catch (error) {
-                            }
+                const t = translations[currentLang] || translations.pt;
+                alert(t?.errorConnection || '❌ Erro de ligação.');
+            }
         });
 
         // Window cancel button
