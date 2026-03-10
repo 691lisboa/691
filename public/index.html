@@ -2258,6 +2258,7 @@
             };
 
             try {
+                console.log('Enviando reserva...', data);
                 const response = await fetch('/api/reserva', {
                     method: 'POST',
                     headers: {
@@ -2265,9 +2266,11 @@
                     },
                     body: JSON.stringify(data)
                 });
+                console.log('Resposta HTTP:', response.status, response.statusText);
 
                 if (response.ok) {
                     const result = await response.json();
+                    console.log('Resultado:', result);
                     const bookingData = { ...data, bookingId: result.bookingId };
                     const successMsg = document.getElementById('success-message');
                     if (successMsg) successMsg.classList.add('show');
@@ -2279,12 +2282,15 @@
                         if (successMsg) successMsg.classList.remove('show');
                     }, 3000);
                 } else {
+                    console.error('Erro HTTP:', response.status);
                     const t = translations[currentLang] || translations.pt;
                     const errData = await response.json().catch(() => ({}));
-                    const msg = errData?.message || t?.errorGeneric || '❌ Erro ao enviar reserva.';
+                    console.error('Dados erro:', errData);
+                    const msg = errData?.error || errData?.message || t?.errorGeneric || '❌ Erro ao enviar reserva.';
                     alert(msg);
                 }
             } catch (error) {
+                console.error('Erro fetch:', error);
                 const t = translations[currentLang] || translations.pt;
                 alert(t?.errorConnection || '❌ Erro de ligação.');
             }
