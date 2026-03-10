@@ -1585,7 +1585,7 @@
                 }
             } catch {}
             const infoEl = document.getElementById('tracking-info');
-            infoEl.textContent = currentLang === 'pt' ? '🛰️ À espera da localização do motorista...' : '🛰️ Waiting for driver location...';
+            if (infoEl) infoEl.textContent = currentLang === 'pt' ? '🛰️ À espera da localização do motorista...' : '🛰️ Waiting for driver location...';
         }
 
         async function updateDriverPosition(lat, lng, bookingId) {
@@ -1601,7 +1601,7 @@
                 const bounds = L.latLngBounds([[lat, lng], [pickupCoords.lat, pickupCoords.lng]]);
                 trackingMap.fitBounds(bounds, { padding: [40, 40] });
                 const infoEl = document.getElementById('tracking-info');
-                infoEl.textContent = currentLang === 'pt' ? '🔄 A calcular rota...' : '🔄 Calculating route...';
+                if (infoEl) infoEl.textContent = currentLang === 'pt' ? '🔄 A calcular rota...' : '🔄 Calculating route...';
                 try {
                     const r = await fetch(
                         `/api/route?from=${lat},${lng}&to=${pickupCoords.lat},${pickupCoords.lng}`
@@ -1629,18 +1629,14 @@
                     } else {
                         // fallback haversine
                         const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
+                        if (dist === null) return;
                         const eta  = Math.max(1, Math.ceil(dist / 0.5));
-                        infoEl.textContent = currentLang === 'pt'
+                        const infoEl = document.getElementById('tracking-info');
+                        if (infoEl) infoEl.textContent = currentLang === 'pt'
                             ? `🚗 ~${eta} min · ~${dist.toFixed(1)} km`
                             : `🚗 ~${eta} min · ~${dist.toFixed(1)} km`;
                     }
-                } catch {
-                    const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
-                    const eta  = Math.max(1, Math.ceil(dist / 0.5));
-                    document.getElementById('tracking-info').textContent = currentLang === 'pt'
-                        ? `🚗 ~${eta} min · ~${dist.toFixed(1)} km`
-                        : `🚗 ~${eta} min · ~${dist.toFixed(1)} km`;
-                }
+                } catch {}
             } else {
                 trackingMap.setView([lat, lng], 15);
             }
@@ -2019,6 +2015,7 @@
         // Update booking window — Uber-style trip card (safe DOM, no innerHTML with user data)
         function updateBookingWindow(booking) {
             const bookingDetails = document.getElementById('booking-window-details');
+            if (!bookingDetails) return;
             bookingDetails.innerHTML = '';
 
             const isPT = currentLang === 'pt';
@@ -2298,7 +2295,8 @@
         });
 
         // Window cancel button
-        document.getElementById('window-cancel-btn').addEventListener('click', () => {
+        const windowCancelBtn = document.getElementById('window-cancel-btn');
+        if (windowCancelBtn) windowCancelBtn.addEventListener('click', () => {
             if (currentBooking) {
                 socket.emit('cancel_booking', {
                     bookingId: currentBooking.bookingId,
@@ -2313,7 +2311,8 @@
         });
 
         // Original cancel button
-        document.getElementById('cancel-btn').addEventListener('click', () => {
+        const cancelBtn = document.getElementById('cancel-btn');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => {
             if (currentBooking) {
                 socket.emit('cancel_booking', {
                     bookingId: currentBooking.bookingId,
@@ -2345,10 +2344,12 @@
                             );
                             const json = await res.json().catch(() => ({}));
                             const addr = json?.addr;
-                            if (addr) document.getElementById('recolha').value = addr;
-                            else document.getElementById('recolha').value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                            const recolhaInput = document.getElementById('recolha');
+                            if (addr && recolhaInput) recolhaInput.value = addr;
+                            else if (recolhaInput) recolhaInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
                         } catch {
-                            document.getElementById('recolha').value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                            const recolhaInput = document.getElementById('recolha');
+                            if (recolhaInput) recolhaInput.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
                         } finally {
                             btn.classList.remove('loading');
                         }

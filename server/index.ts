@@ -703,7 +703,10 @@ app.get('/api/route', async (req: Request, res: Response) => {
     const osrmUrl =
       `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}` +
       `?overview=full&geometries=geojson`
-    const r = await fetch(osrmUrl, { signal: AbortSignal.timeout(8000) })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000)
+    const r = await fetch(osrmUrl, { signal: controller.signal })
+    clearTimeout(timeout)
     if (!r.ok) return res.json(null)
     const body = await r.json() as {
       routes?: Array<{ distance: number; duration: number; geometry: { type: string; coordinates: number[][] } }>
