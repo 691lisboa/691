@@ -2193,10 +2193,10 @@
             const taxiForm      = document.getElementById('taxi-form');
             const mainContactFab = document.getElementById('main-contact-fab');
 
-            bookingInfo.style.display = 'none';
-            noBookings.style.display  = 'block';
-            taxiForm.style.display = 'block';
-            bookingWindow.classList.remove('show');
+            if (bookingInfo) bookingInfo.style.display = 'none';
+            if (noBookings) noBookings.style.display  = 'block';
+            if (taxiForm) taxiForm.style.display = 'block';
+            if (bookingWindow) bookingWindow.classList.remove('show');
             if (mainContactFab) mainContactFab.style.display = 'flex';
 
             // Hide contact buttons when booking is closed
