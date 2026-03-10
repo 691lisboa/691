@@ -453,9 +453,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           const msg = statusMsg('accepted', lang)
           io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'accepted' }).catch(() => {})
-        } else {
-          console.warn(`accept_: clientId não encontrado para ${bookingId}`)
         }
+        // Broadcast status update to all sockets (including driver's tracking page)
+        io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
         await editMsg(bookingId, '✅ RESERVA ACEITE')
 
       // ── ❌ Recusar ─────────────────────────────────────────────────────────
@@ -472,6 +472,8 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           io.to(clientId).emit('booking_rejected', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa', msg, { bookingId, type: 'rejected' }).catch(() => {})
         }
+        // Broadcast status update
+        io.emit('booking_status_update', { bookingId, status: 'rejected', message: statusMsg('rejected', lang) })
         bookingMessages.delete(bookingId)
         setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
 
@@ -490,6 +492,8 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         } else {
           console.warn(`arrived_: clientId não encontrado para ${bookingId}`)
         }
+        // Broadcast status update
+        io.emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
         await editMsg(bookingId, '📍 MOTORISTA NO LOCAL')
 
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
@@ -506,6 +510,8 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           io.to(clientId).emit('booking_completed', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa ✅', msg, { bookingId, type: 'completed' }).catch(() => {})
         }
+        // Broadcast status update
+        io.emit('booking_status_update', { bookingId, status: 'completed', message: statusMsg('completed', lang) })
         bookingMessages.delete(bookingId)
         setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
       }
@@ -572,6 +578,21 @@ io.on('connection', (socket) => {
     io.to(clientId).emit('tracking_update', { lat, lng, bookingId, ts: Date.now() })
   })
 
+  // Driver checks booking status (for GPS tracking page)
+  socket.on('check_booking_status', (data: { bookingId: string }) => {
+    const bookingId = sanitize(String(data.bookingId || ''), 20)
+    const booking = activeBookings.get(bookingId)
+    if (booking) {
+      socket.emit('booking_status_result', {
+        exists: true,
+        status: booking.status || 'pending',
+        message: statusMsg(booking.status || 'pending', booking.lang || 'pt')
+      })
+    } else {
+      socket.emit('booking_status_result', { exists: false })
+    }
+  })
+
   // Cliente cancela reserva
   socket.on('cancel_booking', async (data) => {
     const clientId  = sanitize(data.clientId, 64)
@@ -619,6 +640,8 @@ io.on('connection', (socket) => {
 
     bookingMessages.delete(bookingId)
     socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
+    // Broadcast status update to driver's tracking page
+    io.emit('booking_status_update', { bookingId, status: 'cancelled', message: cancelMsg })
     // Manter em memória 5 min (consistente com reject/complete)
     setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
   })

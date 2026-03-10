@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>691 – GPS Tracking</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -17,122 +17,324 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            gap: 20px;
+            gap: 16px;
             padding: 28px;
             text-align: center;
         }
         .dot {
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             background: #6b7280;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            transition: background 0.4s;
+            font-size: 2.2rem;
+            transition: background 0.4s, transform 0.3s;
         }
-        .dot.active { background: #10b981; animation: pulse 1.8s infinite; }
+        .dot.active { 
+            background: #10b981; 
+            animation: pulse 1.8s infinite; 
+        }
+        .dot.error { 
+            background: #ef4444; 
+            animation: none;
+        }
         @keyframes pulse {
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-            50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+            50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(16,185,129,0); }
         }
-        .status { font-size: 1.05rem; font-weight: 500; }
-        .coords { font-size: 0.78rem; opacity: 0.45; font-family: monospace; }
+        .status { 
+            font-size: 1.1rem; 
+            font-weight: 500;
+            min-height: 1.5em;
+        }
+        .status.error { color: #f87171; }
+        .coords { 
+            font-size: 0.85rem; 
+            opacity: 0.6; 
+            font-family: monospace;
+            min-height: 1.5em;
+        }
         .booking-badge {
-            font-size: 0.72rem;
-            opacity: 0.35;
-            background: rgba(255,255,255,0.06);
-            padding: 4px 12px;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            background: rgba(255,255,255,0.08);
+            padding: 6px 14px;
             border-radius: 20px;
+            margin-top: 8px;
         }
         .counter {
-            font-size: 0.78rem;
-            opacity: 0.4;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            min-height: 1.5em;
         }
+        .trip-status {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 12px;
+        }
+        .trip-status.accepted { background: rgba(16,185,129,0.15); color: #10b981; }
+        .trip-status.arrived { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .trip-status.completed { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .trip-status.cancelled { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .btn {
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #4b5563; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <div class="dot" id="dot">🛰️</div>
-    <div class="status" id="status">A aguardar GPS...</div>
+    <div class="status" id="status">A iniciar...</div>
     <div class="coords" id="coords">—</div>
     <div class="counter" id="counter"></div>
+    <div class="trip-status" id="trip-status" style="display:none"></div>
     <div class="booking-badge" id="badge"></div>
+    <button class="btn" id="retry-btn" style="display:none" onclick="startTracking()">🔄 Tentar novamente</button>
 
     <script>
+        // Initialize Telegram WebApp
         if (window.Telegram?.WebApp) {
             Telegram.WebApp.ready();
             Telegram.WebApp.expand();
+            Telegram.WebApp.enableClosingConfirmation();
         }
 
-        const params   = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
         const bookingId = params.get('bookingId') || '';
-        document.getElementById('badge').textContent = bookingId ? `Reserva: ${bookingId}` : 'Sem reserva';
+        document.getElementById('badge').textContent = bookingId ? `Reserva: ${bookingId.slice(-8).toUpperCase()}` : 'Sem reserva';
 
-        const socket = io();
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: Infinity
+        });
+        
         let sentCount = 0;
-        let watchId   = null;
+        let watchId = null;
+        let lastEmit = 0;
+        let currentStatus = 'pending';
+        let permissionRequested = false;
 
         socket.on('connect', () => {
+            document.getElementById('dot').classList.remove('error');
             if (!bookingId) {
-                document.getElementById('status').textContent = '⚠️ ID de reserva em falta.';
+                updateStatus('⚠️ ID de reserva em falta.', true);
                 return;
             }
-            startTracking();
+            // Check trip status before starting tracking
+            socket.emit('check_booking_status', { bookingId });
         });
 
         socket.on('connect_error', () => {
             document.getElementById('dot').classList.remove('active');
-            document.getElementById('status').textContent = '⚠️ Sem ligação ao servidor.';
+            document.getElementById('dot').classList.add('error');
+            updateStatus('⚠️ Sem ligação ao servidor. A tentar...', true);
         });
 
         socket.on('disconnect', () => {
             document.getElementById('dot').classList.remove('active');
-            document.getElementById('status').textContent = '⚠️ Ligação perdida. A tentar reconectar...';
+            updateStatus('⚠️ Ligação perdida. A reconectar...', true);
+        });
+
+        // Listen for booking status updates
+        socket.on('booking_status_update', (data) => {
+            if (data.bookingId === bookingId) {
+                currentStatus = data.status;
+                updateTripStatus(data.status, data.message);
+                
+                // Stop tracking if trip ended
+                if (['completed', 'cancelled', 'rejected'].includes(data.status)) {
+                    stopTracking();
+                    updateStatus(`🏁 Viagem ${getStatusText(data.status)}`);
+                }
+            }
+        });
+
+        // Response to status check
+        socket.on('booking_status_result', (data) => {
+            if (data.exists) {
+                currentStatus = data.status;
+                updateTripStatus(data.status, data.message);
+                
+                // Only start tracking if trip is active
+                if (['pending', 'accepted', 'arrived'].includes(data.status)) {
+                    startTracking();
+                } else {
+                    updateStatus(`🏁 Viagem ${getStatusText(data.status)}`);
+                    document.getElementById('dot').classList.remove('active');
+                }
+            } else {
+                updateStatus('❌ Reserva não encontrada', true);
+                document.getElementById('dot').classList.add('error');
+            }
+        });
+
+        function getStatusText(status) {
+            const map = {
+                'completed': 'concluída',
+                'cancelled': 'cancelada',
+                'rejected': 'recusada',
+                'accepted': 'aceite',
+                'arrived': 'motorista chegou',
+                'pending': 'pendente'
+            };
+            return map[status] || status;
+        }
+
+        function updateTripStatus(status, message) {
+            const el = document.getElementById('trip-status');
+            el.style.display = 'block';
+            el.className = 'trip-status ' + status;
+            el.textContent = message || getStatusText(status);
+        }
+
+        function updateStatus(msg, isError = false) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = isError ? 'status error' : 'status';
+        }
+
+        function stopTracking() {
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
-        });
+            document.getElementById('dot').classList.remove('active');
+        }
 
         function startTracking() {
             if (!('geolocation' in navigator)) {
-                document.getElementById('status').textContent = '❌ GPS não suportado neste dispositivo.';
+                updateStatus('❌ GPS não suportado neste dispositivo.', true);
+                document.getElementById('retry-btn').style.display = 'block';
                 return;
             }
-            document.getElementById('status').textContent = 'A obter localização...';
+
+            // Check permission state first (if available)
+            if (navigator.permissions && !permissionRequested) {
+                navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+                    permissionRequested = true;
+                    if (result.state === 'granted') {
+                        beginWatchPosition();
+                    } else if (result.state === 'prompt') {
+                        updateStatus('📍 A pedir autorização GPS...');
+                        beginWatchPosition();
+                    } else if (result.state === 'denied') {
+                        updateStatus('❌ Permissão GPS negada. Ative nas definições.', true);
+                        document.getElementById('dot').classList.add('error');
+                        document.getElementById('retry-btn').style.display = 'block';
+                    }
+                }).catch(() => {
+                    // Fallback: just try to get position
+                    beginWatchPosition();
+                });
+            } else {
+                beginWatchPosition();
+            }
+        }
+
+        function beginWatchPosition() {
+            updateStatus('📡 A obter localização...');
+            
+            // Clear any existing watch
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            
             watchId = navigator.geolocation.watchPosition(onPosition, onError, {
                 enableHighAccuracy: true,
-                maximumAge: 5000,
-                timeout: 15000
+                maximumAge: 3000,
+                timeout: 10000
             });
         }
 
-        let lastEmit = 0;
         function onPosition(pos) {
             const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+            document.getElementById('dot').classList.remove('error');
             document.getElementById('dot').classList.add('active');
-            document.getElementById('status').textContent = '✅ A transmitir localização';
-            document.getElementById('coords').textContent =
+            document.getElementById('retry-btn').style.display = 'none';
+            updateStatus('✅ A transmitir localização');
+            document.getElementById('coords').textContent = 
                 `${lat.toFixed(5)}, ${lng.toFixed(5)}  ±${Math.round(accuracy)}m`;
 
             const now = Date.now();
-            if (now - lastEmit >= 10000) {
+            if (now - lastEmit >= 8000) { // Send every 8 seconds
                 socket.emit('driver_location_update', { lat, lng, bookingId });
                 lastEmit = now;
                 sentCount++;
-                document.getElementById('counter').textContent = `${sentCount} atualização${sentCount !== 1 ? 'ões' : ''} enviada${sentCount !== 1 ? 's' : ''}`;
+                document.getElementById('counter').textContent = 
+                    `${sentCount} atualização${sentCount !== 1 ? 'ões' : ''} enviada${sentCount !== 1 ? 's' : ''}`;
             }
         }
 
         function onError(err) {
+            console.error('GPS Error:', err);
             document.getElementById('dot').classList.remove('active');
-            document.getElementById('status').textContent = '❌ Erro GPS: ' + err.message;
+            document.getElementById('dot').classList.add('error');
+            
+            let msg = 'Erro GPS: ';
+            switch(err.code) {
+                case err.PERMISSION_DENIED:
+                    msg = '❌ Permissão GPS negada. Ative nas definições.';
+                    break;
+                case err.POSITION_UNAVAILABLE:
+                    msg = '📡 Localização indisponível. A tentar...';
+                    // Auto-retry after 3 seconds
+                    setTimeout(() => {
+                        if (watchId === null) startTracking();
+                    }, 3000);
+                    break;
+                case err.TIMEOUT:
+                    msg = '⏱️ Timeout GPS. A tentar...';
+                    setTimeout(() => {
+                        if (watchId === null) startTracking();
+                    }, 2000);
+                    break;
+                default:
+                    msg += err.message;
+            }
+            
+            updateStatus(msg, true);
+            document.getElementById('retry-btn').style.display = 'block';
         }
 
-        window.addEventListener('beforeunload', () => {
+        // Handle page visibility changes - resume tracking when page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && bookingId && ['pending', 'accepted', 'arrived'].includes(currentStatus)) {
+                if (watchId === null) {
+                    startTracking();
+                }
+            }
+        });
+
+        // Prevent accidental closure during active trip
+        window.addEventListener('beforeunload', (e) => {
+            if (['pending', 'accepted', 'arrived'].includes(currentStatus)) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
             if (watchId !== null) navigator.geolocation.clearWatch(watchId);
         });
+
+        // Check status periodically to know when to stop
+        setInterval(() => {
+            if (socket.connected && bookingId) {
+                socket.emit('check_booking_status', { bookingId });
+            }
+        }, 30000); // Check every 30 seconds
     </script>
 </body>
 </html>
