@@ -163,6 +163,29 @@
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.08);
         }
 
+        /* Custom validation messages */
+        .validation-message {
+            display: none;
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .form-group input.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.07);
+        }
+
+        .form-group input.error:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.08);
+        }
+
         @keyframes pulse-glow {
             0%, 100% { box-shadow: 0 4px 24px rgba(0,77,0,0.4); }
             50%       { box-shadow: 0 4px 36px rgba(0,204,68,0.55), 0 0 18px rgba(0,204,68,0.2); }
@@ -1283,6 +1306,104 @@
                 animation-iteration-count: 1 !important;
             }
         }
+
+        /* Large phones optimization (6.5-6.8 inches: iPhone 14 Pro Max, Galaxy S23 Ultra, etc.) */
+        @media (min-width: 390px) and (max-width: 430px) {
+            body {
+                padding: 10px;
+                padding-top: 75px;
+                align-items: flex-start;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 26px 18px;
+                border-radius: 20px;
+            }
+
+            .logo {
+                margin-bottom: 24px;
+            }
+
+            .logo h1 {
+                font-size: 2.4rem;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-group input {
+                padding: 13px 14px;
+            }
+
+            /* Keep date/time side by side on large phones */
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .submit-btn {
+                padding: 16px;
+                margin-top: 6px;
+            }
+
+            /* Adjust top elements for large phones */
+            .whatsapp-chat-btn {
+                top: 12px;
+                right: 12px;
+                padding: 9px 14px;
+                font-size: 0.7rem;
+            }
+
+            .language-toggle {
+                top: 14px;
+                left: 14px;
+            }
+
+            .language-toggle button {
+                font-size: 1.5rem;
+            }
+
+            /* Status indicator adjustment */
+            .status-indicator {
+                bottom: 16px;
+                left: 16px;
+                padding: 7px 12px;
+            }
+
+            /* Contact FAB */
+            .contact-fab {
+                bottom: 22px;
+                right: 20px;
+            }
+        }
+
+        /* Extra large phones (6.7+ inches) */
+        @media (min-width: 431px) and (max-width: 480px) {
+            body {
+                padding: 12px;
+                padding-top: 78px;
+            }
+
+            .form-card {
+                padding: 28px 22px;
+            }
+
+            .logo h1 {
+                font-size: 2.6rem;
+            }
+
+            /* Keep datetime side by side */
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1370,15 +1491,17 @@
                 </div>
             </div>
 
-            <form id="taxi-form">
+            <form id="taxi-form" novalidate>
                 <div class="form-group">
                     <label id="name-label" for="nome">Nome</label>
                     <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
+                    <div class="validation-message" id="nome-error"></div>
                 </div>
 
                 <div class="form-group">
                     <label id="phone-label" for="telefone">Telefone</label>
                     <input type="tel" id="telefone" name="telefone" placeholder="Seu telefone" required>
+                    <div class="validation-message" id="telefone-error"></div>
                 </div>
 
                 <div class="datetime-inputs">
@@ -1395,12 +1518,14 @@
                 <div class="form-group autocomplete-container">
                     <label id="pickup-label" for="recolha">Local de Recolha</label>
                     <input type="text" id="recolha" name="recolha" placeholder="Endereço de recolha" autocomplete="off" required>
+                    <div class="validation-message" id="recolha-error"></div>
                     <div id="recolha-autocomplete" class="autocomplete-list"></div>
                 </div>
 
                 <div class="form-group autocomplete-container">
                     <label id="dest-label" for="destino">Destino</label>
                     <input type="text" id="destino" name="destino" placeholder="Endereço de destino" autocomplete="off" required>
+                    <div class="validation-message" id="destino-error"></div>
                     <div id="destino-autocomplete" class="autocomplete-list"></div>
                 </div>
 
@@ -2264,9 +2389,60 @@
             if (statusInd) statusInd.style.opacity = connected ? '0.9' : '0.7';
         }
 
+        // Custom validation with translated messages
+        function validateForm() {
+            const t = translations[currentLang];
+            let isValid = true;
+
+            const fields = [
+                { id: 'nome', errorId: 'nome-error', message: t.validationName },
+                { id: 'telefone', errorId: 'telefone-error', message: t.validationPhone },
+                { id: 'recolha', errorId: 'recolha-error', message: t.validationPickup },
+                { id: 'destino', errorId: 'destino-error', message: t.validationDestination }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const errorEl = document.getElementById(field.errorId);
+                
+                if (input && errorEl) {
+                    if (!input.value.trim()) {
+                        input.classList.add('error');
+                        errorEl.textContent = field.message;
+                        errorEl.classList.add('show');
+                        isValid = false;
+                    } else {
+                        input.classList.remove('error');
+                        errorEl.classList.remove('show');
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        // Clear validation on input
+        function clearValidation(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            const errorEl = document.getElementById(errorId);
+            if (input && errorEl) {
+                input.addEventListener('input', () => {
+                    if (input.value.trim()) {
+                        input.classList.remove('error');
+                        errorEl.classList.remove('show');
+                    }
+                });
+            }
+        }
+
         // Handle form submission
         document.getElementById('taxi-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Custom validation
+            if (!validateForm()) {
+                return;
+            }
             
             const formData = new FormData(e.target);
             const data = {
@@ -2395,6 +2571,13 @@
             initSocket();
             setupAddressAutocomplete();
             setupGpsButton();
+            
+            // Setup validation clearing on input
+            clearValidation('nome', 'nome-error');
+            clearValidation('telefone', 'telefone-error');
+            clearValidation('recolha', 'recolha-error');
+            clearValidation('destino', 'destino-error');
+            
             updateLanguage('pt');
 
             // Language toggle (with null checks)
