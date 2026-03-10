@@ -380,6 +380,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
     
     // Delete any existing webhook to ensure polling works
     await bot.api.deleteWebhook().catch(() => {})
+    
+    // Add delay to ensure webhook is fully deleted
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Comandos de texto
     bot.on('message', async (ctx) => {
@@ -529,11 +532,24 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
     })
 
     bot.catch((err) => {
-      if (!String(err).includes('409'))
+      if (String(err).includes('409')) {
+        console.warn('Bot Telegram: Conflito 409 detectado - tentando reiniciar...')
+        setTimeout(() => {
+          bot?.start().catch(() => {})
+        }, 5000)
+      } else {
         console.error('Erro no bot Telegram:', err)
+      }
     })
 
-    bot.start().catch((err) => console.error('Erro ao iniciar polling:', err))
+    bot.start().catch((err) => {
+      if (String(err).includes('409')) {
+        console.warn('Bot Telegram: Erro 409 ao iniciar - outra instância pode estar ativa')
+        // Não falhar completamente se for apenas conflito 409
+      } else {
+        console.error('Erro ao iniciar polling:', err)
+      }
+    })
     console.log('Bot Telegram inicializado (grammy)')
   } catch (error: unknown) {
     console.error('Erro ao inicializar bot Telegram:', error)
