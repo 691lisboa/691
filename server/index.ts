@@ -377,6 +377,9 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
 if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new Bot(TELEGRAM_TOKEN)
+    
+    // Delete any existing webhook to ensure polling works
+    await bot.api.deleteWebhook().catch(() => {})
 
     // Comandos de texto
     bot.on('message', async (ctx) => {
