@@ -2264,7 +2264,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
+                    cache: 'no-store'
                 });
                 console.log('Resposta HTTP:', response.status, response.statusText);
 
