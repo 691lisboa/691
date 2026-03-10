@@ -2258,8 +2258,9 @@
             };
 
             try {
-                console.log('Enviando reserva...', data);
-                const response = await fetch('/api/reserva', {
+                const apiUrl = window.location.origin + '/api/reserva';
+                console.log('Enviando reserva para:', apiUrl, data);
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2291,9 +2292,11 @@
                     alert(msg);
                 }
             } catch (error) {
-                console.error('Erro fetch:', error);
+                console.error('Erro fetch completo:', error);
+                console.error('Tipo:', error?.name);
+                console.error('Mensagem:', error?.message);
                 const t = translations[currentLang] || translations.pt;
-                alert(t?.errorConnection || '❌ Erro de ligação.');
+                alert((t?.errorConnection || '❌ Erro de ligação.') + '\n' + (error?.message || ''));
             }
         });
 
