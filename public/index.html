@@ -1359,10 +1359,6 @@
                 </div>
             </div>
 
-            <div id="no-bookings" class="no-bookings">
-                <span id="no-bookings-text">Sem reservas ativas</span>
-            </div>
-
             <form id="taxi-form">
                 <div class="form-group">
                     <label id="name-label" for="nome">Nome</label>
@@ -1509,16 +1505,16 @@
                 bookingRejected: '❌ Reserva recusada.',
                 bookingCancelled: '❌ Reserva cancelada.',
                 bookingCompleted: '✅ Viagem concluída.',
-                noBookings: 'No active bookings at the moment',
-                bookingDetailsTitle: '📋 Booking Details',
-                successMessage: '✅ Booking sent successfully!',
+                noBookings: 'Sem reservas ativas',
+                bookingDetailsTitle: '📋 Detalhes da Reserva',
+                successMessage: '✅ Reserva enviada com sucesso!',
                 youLabel: 'You',
                 errorGeneric: '❌ Error sending booking.',
                 errorConnection: '❌ Connection error.',
-                namePlaceholder: 'Your name',
-                phonePlaceholder: 'Your phone',
-                pickupPlaceholder: 'Pickup address',
-                destPlaceholder: 'Destination address'
+                namePlaceholder: 'Seu nome',
+                phonePlaceholder: 'Seu telefone',
+                pickupPlaceholder: 'Local de recolha',
+                destPlaceholder: 'Destino'
             },
             en: {
                 title: '691',
@@ -1972,7 +1968,8 @@
             document.getElementById('submit-btn').textContent = t.submitButton;
             document.getElementById('whatsapp-chat-text').textContent = t.whatsappChat;
             document.getElementById('booking-title').textContent = t.bookingTitle;
-            document.getElementById('no-bookings-text').textContent = t.noBookings;
+            const noBookingsText = document.getElementById('no-bookings-text');
+            if (noBookingsText) noBookingsText.textContent = t.noBookings;
             // Form input placeholders
             document.getElementById('nome').placeholder      = t.namePlaceholder;
             document.getElementById('telefone').placeholder  = t.phonePlaceholder;
