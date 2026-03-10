@@ -1709,7 +1709,9 @@
                 pickupPlaceholder: 'Local de recolha',
                 destPlaceholder: 'Destino',
                 validationName: 'Por favor, preencha o nome',
+                validationNameInvalid: 'Nome inválido (mínimo 2 letras)',
                 validationPhone: 'Por favor, preencha o telefone',
+                validationPhoneInvalid: 'Telefone inválido (mínimo 7 dígitos)',
                 validationPickup: 'Por favor, preencha o local de recolha',
                 validationDestination: 'Por favor, preencha o destino'
             },
@@ -1743,7 +1745,9 @@
                 pickupPlaceholder: 'Pickup address',
                 destPlaceholder: 'Destination address',
                 validationName: 'Please fill in your name',
+                validationNameInvalid: 'Invalid name (minimum 2 characters)',
                 validationPhone: 'Please fill in your phone',
+                validationPhoneInvalid: 'Invalid phone (minimum 7 digits)',
                 validationPickup: 'Please fill in the pickup location',
                 validationDestination: 'Please fill in the destination'
             }
@@ -2455,29 +2459,77 @@
             const t = translations[currentLang];
             let isValid = true;
 
-            const fields = [
-                { id: 'nome', errorId: 'nome-error', message: t.validationName },
-                { id: 'telefone', errorId: 'telefone-error', message: t.validationPhone },
-                { id: 'recolha', errorId: 'recolha-error', message: t.validationPickup },
-                { id: 'destino', errorId: 'destino-error', message: t.validationDestination }
-            ];
-
-            fields.forEach(field => {
-                const input = document.getElementById(field.id);
-                const errorEl = document.getElementById(field.errorId);
-                
-                if (input && errorEl) {
-                    if (!input.value.trim()) {
-                        input.classList.add('error');
-                        errorEl.textContent = field.message;
-                        errorEl.classList.add('show');
-                        isValid = false;
-                    } else {
-                        input.classList.remove('error');
-                        errorEl.classList.remove('show');
-                    }
+            // Name validation
+            const nomeInput = document.getElementById('nome');
+            const nomeError = document.getElementById('nome-error');
+            if (nomeInput && nomeError) {
+                const nomeValue = nomeInput.value.trim();
+                if (!nomeValue) {
+                    nomeInput.classList.add('error');
+                    nomeError.textContent = t.validationName;
+                    nomeError.classList.add('show');
+                    isValid = false;
+                } else if (nomeValue.length < 2) {
+                    nomeInput.classList.add('error');
+                    nomeError.textContent = t.validationNameInvalid;
+                    nomeError.classList.add('show');
+                    isValid = false;
+                } else {
+                    nomeInput.classList.remove('error');
+                    nomeError.classList.remove('show');
                 }
-            });
+            }
+
+            // Phone validation
+            const telefoneInput = document.getElementById('telefone');
+            const telefoneError = document.getElementById('telefone-error');
+            if (telefoneInput && telefoneError) {
+                const telefoneValue = telefoneInput.value.trim();
+                if (!telefoneValue) {
+                    telefoneInput.classList.add('error');
+                    telefoneError.textContent = t.validationPhone;
+                    telefoneError.classList.add('show');
+                    isValid = false;
+                } else if (!/^[+\d\s()\-]{7,30}$/.test(telefoneValue)) {
+                    telefoneInput.classList.add('error');
+                    telefoneError.textContent = t.validationPhoneInvalid;
+                    telefoneError.classList.add('show');
+                    isValid = false;
+                } else {
+                    telefoneInput.classList.remove('error');
+                    telefoneError.classList.remove('show');
+                }
+            }
+
+            // Pickup validation
+            const recolhaInput = document.getElementById('recolha');
+            const recolhaError = document.getElementById('recolha-error');
+            if (recolhaInput && recolhaError) {
+                if (!recolhaInput.value.trim()) {
+                    recolhaInput.classList.add('error');
+                    recolhaError.textContent = t.validationPickup;
+                    recolhaError.classList.add('show');
+                    isValid = false;
+                } else {
+                    recolhaInput.classList.remove('error');
+                    recolhaError.classList.remove('show');
+                }
+            }
+
+            // Destination validation
+            const destinoInput = document.getElementById('destino');
+            const destinoError = document.getElementById('destino-error');
+            if (destinoInput && destinoError) {
+                if (!destinoInput.value.trim()) {
+                    destinoInput.classList.add('error');
+                    destinoError.textContent = t.validationDestination;
+                    destinoError.classList.add('show');
+                    isValid = false;
+                } else {
+                    destinoInput.classList.remove('error');
+                    destinoError.classList.remove('show');
+                }
+            }
 
             return isValid;
         }
