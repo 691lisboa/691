@@ -480,8 +480,10 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       // ── 📍 Cheguei ─────────────────────────────────────────────────────────
       } else if (data.startsWith('arrived_')) {
         const bookingId = data.slice(8)
+        console.log(`[Telegram] Cheguei clicado para reserva: ${bookingId}`)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'arrived'
         saveBookings()
@@ -489,8 +491,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           const msg = statusMsg('arrived', lang)
           io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa 📍', msg, { bookingId, type: 'arrived' }).catch(() => {})
+          console.log(`[Telegram] Evento driver_arrived emitido para ${clientId}`)
         } else {
-          console.warn(`arrived_: clientId não encontrado para ${bookingId}`)
+          console.warn(`[Telegram] arrived_: clientId não encontrado para ${bookingId}`)
         }
         // Broadcast status update
         io.emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
@@ -499,8 +502,10 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
       } else if (data.startsWith('complete_')) {
         const bookingId = data.slice(9)
+        console.log(`[Telegram] Concluir clicado para reserva: ${bookingId}`)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'completed'
         saveBookings()
@@ -509,6 +514,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           const msg = statusMsg('completed', lang)
           io.to(clientId).emit('booking_completed', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa ✅', msg, { bookingId, type: 'completed' }).catch(() => {})
+          console.log(`[Telegram] Evento booking_completed emitido para ${clientId}`)
+        } else {
+          console.warn(`[Telegram] complete_: clientId não encontrado para ${bookingId}`)
         }
         // Broadcast status update
         io.emit('booking_status_update', { bookingId, status: 'completed', message: statusMsg('completed', lang) })
