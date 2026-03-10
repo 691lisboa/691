@@ -36,22 +36,20 @@
       bottom: 110px;
     }
 
-    /* Bottom footer bar - seamless with background */
+    /* Bottom footer bar - seamless single block */
     .trip-footer {
       position: fixed;
-      left: 0;
-      right: 0;
+      left: 50%;
       bottom: 0;
+      transform: translateX(-50%);
       z-index: 5;
       padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
       background: #000;
-      border-top: none;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
+      border: none;
+      border-radius: 12px 12px 0 0;
       margin: 0 8px;
       width: calc(100% - 16px);
+      max-width: 400px;
     }
 
     .trip-footer-inner {
