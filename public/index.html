@@ -2217,7 +2217,14 @@
             isConnected = connected;
             const t = translations[currentLang];
             const text = connected ? t.connected : t.disconnected;
-            document.getElementById('status-text').textContent = text;
+
+            const statusText = document.getElementById('status-text');
+            const statusDot  = document.querySelector('.status-dot');
+            const statusInd  = document.querySelector('.status-indicator');
+
+            if (statusText) statusText.textContent = text;
+            if (statusDot) statusDot.style.background = connected ? '#22c55e' : '#ef4444';
+            if (statusInd) statusInd.style.opacity = connected ? '0.9' : '0.7';
         }
 
         // Handle form submission
