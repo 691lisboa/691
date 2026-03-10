@@ -1298,6 +1298,59 @@
             .booking-actions-panel { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
             body { padding-bottom: env(safe-area-inset-bottom); }
         }
+
+        /* iPhone notch and Dynamic Island optimization */
+        @supports (padding: env(safe-area-inset-top)) {
+            body {
+                padding-top: calc(20px + env(safe-area-inset-top));
+            }
+
+            .whatsapp-chat-btn {
+                top: calc(12px + env(safe-area-inset-top));
+            }
+
+            .language-toggle {
+                top: calc(14px + env(safe-area-inset-top));
+            }
+
+            .booking-window {
+                padding-top: calc(96px + env(safe-area-inset-top));
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding-top: calc(80px + env(safe-area-inset-top));
+                }
+
+                .booking-window {
+                    padding-top: calc(86px + env(safe-area-inset-top));
+                }
+            }
+
+            @media (max-width: 480px) {
+                body {
+                    padding-top: calc(72px + env(safe-area-inset-top));
+                }
+
+                .booking-window {
+                    padding-top: calc(76px + env(safe-area-inset-top));
+                }
+            }
+
+            /* Large phones with notch/Dynamic Island */
+            @media (min-width: 390px) and (max-width: 430px) {
+                body {
+                    padding-top: calc(75px + env(safe-area-inset-top));
+                }
+            }
+
+            @media (min-width: 431px) and (max-width: 480px) {
+                body {
+                    padding-top: calc(78px + env(safe-area-inset-top));
+                }
+            }
+        }
+
         /* Respect system reduced-motion preference */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
