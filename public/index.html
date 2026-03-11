@@ -1444,6 +1444,93 @@
             }
         }
 
+        /* iPhone 14/15 Pro Max specific optimizations (430px) */
+        @media (width: 430px) {
+            body {
+                padding: 12px;
+                padding-top: calc(70px + env(safe-area-inset-top));
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 24px 20px;
+                border-radius: 22px;
+            }
+
+            .logo {
+                margin-bottom: 22px;
+            }
+
+            .logo h1 {
+                font-size: 2.5rem;
+            }
+
+            .logo p {
+                font-size: 0.75rem;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+                margin-bottom: 5px;
+            }
+
+            .form-group input {
+                padding: 14px 15px;
+                font-size: 16px; /* Prevent iOS zoom */
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 15px;
+            }
+
+            .submit-btn {
+                padding: 16px;
+                font-size: 0.9rem;
+            }
+
+            /* Dynamic Island / Notch adjustments */
+            .whatsapp-chat-btn {
+                top: calc(10px + env(safe-area-inset-top));
+                right: 12px;
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+
+            .language-toggle {
+                top: calc(12px + env(safe-area-inset-top));
+                left: 12px;
+            }
+
+            .language-toggle button {
+                font-size: 1.5rem;
+                padding: 5px;
+            }
+
+            /* Bottom elements - account for home indicator */
+            .contact-fab {
+                bottom: calc(55px + env(safe-area-inset-bottom));
+                right: 16px;
+            }
+
+            .status-indicator {
+                bottom: calc(14px + env(safe-area-inset-bottom));
+                left: 14px;
+            }
+
+            .page-footer {
+                bottom: calc(10px + env(safe-area-inset-bottom));
+            }
+        }
+
         /* Extra large phones (6.7+ inches) */
         @media (min-width: 431px) and (max-width: 480px) {
             body {
