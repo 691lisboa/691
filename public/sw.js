@@ -1,4 +1,4 @@
-const CACHE = '691-v7'
+const CACHE = '691-v9'
 const OFFLINE = '/offline.html'
 
 const PRECACHE = [
