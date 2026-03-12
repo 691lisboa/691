@@ -328,22 +328,10 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
   )
 }
 
-/** Formata número de telefone para link WhatsApp - converte + para 00 */
+/** Formata número de telefone para link WhatsApp - mantém exatamente como cliente introduziu */
 function formatWhatsAppNumber(telefone: string): string {
-  // Remove todos os caracteres não numéricos exceto o +
-  let cleaned = telefone.replace(/[^\d+]/g, '')
-  
-  // Se começar com +, substituir por 00
-  if (cleaned.startsWith('+')) {
-    cleaned = '00' + cleaned.slice(1)
-  }
-  
-  // Se não tiver código de país (não começar com 00), adicionar 351
-  if (!cleaned.startsWith('00')) {
-    cleaned = '00351' + cleaned
-  }
-  
-  return cleaned
+  // Apenas remove espaços, parênteses, traços e pontos - mantém o + e dígitos exatamente como foram introduzidos
+  return telefone.replace(/[\s()\-\.]/g, '')
 }
 function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
