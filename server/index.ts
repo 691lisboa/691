@@ -328,10 +328,26 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
   )
 }
 
-/** Inline keyboard com 3 linhas de botões */
+/** Formata número de telefone para link WhatsApp - converte + para 00 */
+function formatWhatsAppNumber(telefone: string): string {
+  // Remove todos os caracteres não numéricos exceto o +
+  let cleaned = telefone.replace(/[^\d+]/g, '')
+  
+  // Se começar com +, substituir por 00
+  if (cleaned.startsWith('+')) {
+    cleaned = '00' + cleaned.slice(1)
+  }
+  
+  // Se não tiver código de país (não começar com 00), adicionar 351
+  if (!cleaned.startsWith('00')) {
+    cleaned = '00351' + cleaned
+  }
+  
+  return cleaned
+}
 function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
-  const whatsappUrl = telefone ? `https://wa.me/351${telefone.replace(/\D/g, '')}` : null
+  const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[][] = [
@@ -436,7 +452,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           )
         } else {
           const rows = Array.from(activeBookings.values()).map(booking => {
-            const whatsappUrl = `https://wa.me/351${booking.telefone.replace(/\D/g, '')}`
+            const whatsappUrl = `https://wa.me/${formatWhatsAppNumber(booking.telefone)}`
             return [
               {
                 text: `💬 ${esc(booking.nome)} (${esc(booking.telefone)})`,
