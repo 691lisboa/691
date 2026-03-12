@@ -128,6 +128,8 @@
         let lastEmit = 0;
         let currentStatus = 'pending';
         let permissionRequested = false;
+        let isTracking = false;
+        let locationPermissionGranted = false;
 
         socket.on('connect', () => {
             document.getElementById('dot').classList.remove('error');
@@ -213,21 +215,31 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
+            isTracking = false;
             document.getElementById('dot').classList.remove('active');
         }
 
         function startTracking() {
+            if (isTracking) return; // Já está ativo
+            
             if (!('geolocation' in navigator)) {
                 updateStatus('❌ GPS não suportado neste dispositivo.', true);
                 document.getElementById('retry-btn').style.display = 'block';
                 return;
             }
 
-            // Check permission state first (if available)
+            // Se já temos permissão garantida, iniciar diretamente
+            if (locationPermissionGranted) {
+                beginWatchPosition();
+                return;
+            }
+
+            // Verificar estado da permissão primeiro
             if (navigator.permissions && !permissionRequested) {
                 navigator.permissions.query({ name: 'geolocation' }).then((result) => {
                     permissionRequested = true;
                     if (result.state === 'granted') {
+                        locationPermissionGranted = true;
                         beginWatchPosition();
                     } else if (result.state === 'prompt') {
                         updateStatus('📍 A pedir autorização GPS...');
@@ -238,7 +250,7 @@
                         document.getElementById('retry-btn').style.display = 'block';
                     }
                 }).catch(() => {
-                    // Fallback: just try to get position
+                    // Fallback: tentar obter posição diretamente
                     beginWatchPosition();
                 });
             } else {
@@ -247,22 +259,30 @@
         }
 
         function beginWatchPosition() {
+            if (isTracking) return; // Evitar múltiplos watchers
+            
             updateStatus('📡 A obter localização...');
             
-            // Clear any existing watch
+            // Limpar watcher existente
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
             }
             
+            isTracking = true;
+            
             watchId = navigator.geolocation.watchPosition(onPosition, onError, {
                 enableHighAccuracy: true,
-                maximumAge: 3000,
-                timeout: 10000
+                maximumAge: 5000,      // Aumentado para 5 segundos
+                timeout: 20000         // Aumentado para 20 segundos
             });
         }
 
         function onPosition(pos) {
             const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+            
+            // Marcar permissão como garantida no primeiro sucesso
+            locationPermissionGranted = true;
+            
             document.getElementById('dot').classList.remove('error');
             document.getElementById('dot').classList.add('active');
             document.getElementById('retry-btn').style.display = 'none';
@@ -271,7 +291,7 @@
                 `${lat.toFixed(5)}, ${lng.toFixed(5)}  ±${Math.round(accuracy)}m`;
 
             const now = Date.now();
-            if (now - lastEmit >= 8000) { // Send every 8 seconds
+            if (now - lastEmit >= 5000) { // Reduzido para 5 segundos
                 socket.emit('driver_location_update', { lat, lng, bookingId });
                 lastEmit = now;
                 sentCount++;
@@ -285,30 +305,35 @@
             document.getElementById('dot').classList.remove('active');
             document.getElementById('dot').classList.add('error');
             
+            // Não parar o tracking em erros temporários
+            if (err.code === err.PERMISSION_DENIED) {
+                locationPermissionGranted = false;
+                isTracking = false;
+                updateStatus('❌ Permissão GPS negada. Ative nas definições.', true);
+                document.getElementById('retry-btn').style.display = 'block';
+                return;
+            }
+            
+            // Erros temporários - manter tracking ativo
             let msg = 'Erro GPS: ';
             switch(err.code) {
-                case err.PERMISSION_DENIED:
-                    msg = '❌ Permissão GPS negada. Ative nas definições.';
-                    break;
                 case err.POSITION_UNAVAILABLE:
-                    msg = '📡 Localização indisponível. A tentar...';
-                    // Auto-retry after 3 seconds
-                    setTimeout(() => {
-                        if (watchId === null) startTracking();
-                    }, 3000);
+                    msg = '📡 Sinal GPS fraco. A tentar...';
+                    // Não reiniciar - deixar o watchPosition continuar
                     break;
                 case err.TIMEOUT:
                     msg = '⏱️ Timeout GPS. A tentar...';
-                    setTimeout(() => {
-                        if (watchId === null) startTracking();
-                    }, 2000);
+                    // Não reiniciar - deixar o watchPosition continuar
                     break;
                 default:
                     msg += err.message;
             }
             
             updateStatus(msg, true);
-            document.getElementById('retry-btn').style.display = 'block';
+            // Não mostrar botão retry para erros temporários
+            if (err.code === err.PERMISSION_DENIED) {
+                document.getElementById('retry-btn').style.display = 'block';
+            }
         }
 
         // Handle page visibility changes - resume tracking when page becomes visible
