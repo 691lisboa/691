@@ -76,7 +76,6 @@
             max-width: 440px;
             position: relative;
             z-index: 1;
-            padding-bottom: 160px;
         }
 
         .form-card {
@@ -332,8 +331,8 @@
 
         /* Footer */
         .page-footer {
-            position: absolute;
-            bottom: -130px;
+            position: fixed;
+            bottom: 20px;
             left: 0;
             right: 0;
             text-align: center;
@@ -348,11 +347,11 @@
         }
         .page-footer:hover { opacity: 0.85; }
 
-        /* Contact icons — bottom-right of form */
+        /* Contact icons — bottom of page */
         .contact-fab {
-            position: absolute;
-            bottom: -80px;
-            right: 0;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
             z-index: 1001;
             display: flex;
             flex-direction: row;
@@ -1105,11 +1104,11 @@
             letter-spacing: 0.08em;
         }
 
-        /* Contact icons — bottom-right of form */
+        /* Contact icons — bottom of page */
         .contact-fab {
-            position: absolute;
-            bottom: -80px;
-            right: 0;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
             z-index: 1001;
             display: flex;
             flex-direction: row;
