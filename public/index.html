@@ -331,10 +331,12 @@
 
         /* Footer */
         .page-footer {
-            position: relative;
-            margin-top: 40px;
+            position: absolute;
+            bottom: -90px;
+            left: 0;
+            right: 0;
             text-align: center;
-            padding: 20px 16px;
+            padding: 10px 16px;
             color: rgba(255,255,255,0.3);
             font-size: 0.7rem;
             letter-spacing: 0.06em;
@@ -345,11 +347,11 @@
         }
         .page-footer:hover { opacity: 0.85; }
 
-        /* Contact icons — always visible, bottom-right */
+        /* Contact icons — bottom-right of form */
         .contact-fab {
-            position: relative;
-            margin-top: 30px;
-            justify-content: center;
+            position: absolute;
+            bottom: -50px;
+            right: 0;
             z-index: 1001;
             display: flex;
             flex-direction: row;
@@ -1102,11 +1104,11 @@
             letter-spacing: 0.08em;
         }
 
-        /* Contact icons — always visible, bottom-right */
+        /* Contact icons — bottom-right of form */
         .contact-fab {
-            position: relative;
-            margin-top: 30px;
-            justify-content: center;
+            position: absolute;
+            bottom: -50px;
+            right: 0;
             z-index: 1001;
             display: flex;
             flex-direction: row;
