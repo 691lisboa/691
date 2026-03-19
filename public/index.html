@@ -2450,6 +2450,10 @@
                         // Play sound to notify client
                         playSound();
                     }
+                    // Update booking status to trigger UI changes (hide cancel button on 'onway')
+                    if (data.status) {
+                        updateBookingStatus(data.status);
+                    }
                 }
             });
         }

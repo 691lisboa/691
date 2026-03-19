@@ -645,15 +645,15 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
-        if (bk) bk.status = 'accepted' // Mantém status como accepted
+        if (bk) bk.status = 'onway'
         saveBookings()
         if (clientId) {
           const msg = statusMsg('onway', lang)
-          io.to(clientId).emit('booking_status_update', { bookingId, status: 'accepted', message: msg, timestamp: new Date().toISOString() })
-          sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'message' }).catch(() => {})
+          io.to(clientId).emit('booking_status_update', { bookingId, status: 'onway', message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'onway' }).catch(() => {})
         }
         // Broadcast status update
-        io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
+        io.emit('booking_status_update', { bookingId, status: 'onway', message: statusMsg('onway', lang) })
         await editMsg(bookingId, telegramStatusMsg('onway', lang))
 
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
