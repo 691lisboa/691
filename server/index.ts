@@ -277,7 +277,7 @@ async function translate(text: string, from: string, to: string): Promise<string
 /** Mensagens de estado localizadas */
 function statusMsg(event: string, lang: string): string {
   const en: Record<string, string> = {
-    accepted:  '✅ Booking accepted! Driver on the way.',
+    accepted:  '✅ Booking accepted!',
     rejected:  '❌ Booking rejected. Please try again.',
     arrived:   '📍 Driver arrived.',
     completed: '✅ Trip completed! Thank you. 🙏',
@@ -293,7 +293,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Motorista a Caminho'
   }
   const fr: Record<string, string> = {
-    accepted:  '✅ Réservation acceptée! Le chauffeur est en route.',
+    accepted:  '✅ Réservation acceptée!',
     rejected:  '❌ Réservation refusée. Veuillez réessayer.',
     arrived:   '📍 Le chauffeur est arrivé.',
     completed: '✅ Trajet terminé! Merci. 🙏',
@@ -301,7 +301,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Le chauffeur est en route!'
   }
   const es: Record<string, string> = {
-    accepted:  '✅ ¡Reserva aceptada! El conductor está en camino.',
+    accepted:  '✅ ¡Reserva aceptada!',
     rejected:  '❌ Reserva rechazada. Por favor intente nuevamente.',
     arrived:   '📍 El conductor ha llegado.',
     completed: '✅ ¡Viaje completado! Gracias. 🙏',
@@ -309,7 +309,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 ¡El conductor está en camino!'
   }
   const de: Record<string, string> = {
-    accepted:  '✅ Buchung akzeptiert! Fahrer ist unterwegs.',
+    accepted:  '✅ Buchung akzeptiert!',
     rejected:  '❌ Buchung abgelehnt. Bitte versuchen Sie es erneut.',
     arrived:   '📍 Fahrer angekommen.',
     completed: '✅ Fahrt abgeschlossen! Vielen Dank. 🙏',
@@ -317,7 +317,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Fahrer ist unterwegs!'
   }
   const it: Record<string, string> = {
-    accepted:  '✅ Prenotazione accettata! L\'autista è in viaggio.',
+    accepted:  '✅ Prenotazione accettata!',
     rejected:  '❌ Prenotazione rifiutata. Riprova.',
     arrived:   '📍 L\'autista è arrivato.',
     completed: '✅ Viaggio completato! Grazie. 🙏',
@@ -325,7 +325,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 L\'autista è in viaggio!'
   }
   const zh: Record<string, string> = {
-    accepted:  '✅ 预订已接受！司机正在路上。',
+    accepted:  '✅ 预订已接受！',
     rejected:  '❌ 预订被拒绝。请重试。',
     arrived:   '📍 司机已到达。',
     completed: '✅ 行程完成！谢谢。🙏',
@@ -333,7 +333,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 司机正在路上！'
   }
   const ja: Record<string, string> = {
-    accepted:  '✅ 予約が承認されました！ドライバーが向かっています。',
+    accepted:  '✅ 予約が承認されました！',
     rejected:  '❌ 予約が拒否されました。もう一度お試しください。',
     arrived:   '📍 ドライバーが到着しました。',
     completed: '✅ 旅行が完了しました！ありがとうございます。🙏',
@@ -341,7 +341,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 ドライバーが向かっています！'
   }
   const ru: Record<string, string> = {
-    accepted:  '✅ Бронирование принято! Водитель в пути.',
+    accepted:  '✅ Бронирование принято!',
     rejected:  '❌ Бронирование отклонено. Попробуйте еще раз.',
     arrived:   '📍 Водитель прибыл.',
     completed: '✅ Поездка завершена! Спасибо. 🙏',
@@ -349,7 +349,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Водитель в пути!'
   }
   const nl: Record<string, string> = {
-    accepted:  '✅ Boeking geaccepteerd! Bestuurder is onderweg.',
+    accepted:  '✅ Boeking geaccepteerd!',
     rejected:  '❌ Boeking geweigerd. Probeer het opnieuw.',
     arrived:   '📍 Bestuurder is aangekomen.',
     completed: '✅ Rit voltooid! Dank u. 🙏',
@@ -357,7 +357,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Bestuurder is onderweg!'
   }
   const pl: Record<string, string> = {
-    accepted:  '✅ Rezerwacja przyjęta! Kierowca w drodze.',
+    accepted:  '✅ Rezerwacja przyjęta!',
     rejected:  '❌ Rezerwacja odrzucona. Spróbuj ponownie.',
     arrived:   '📍 Kierowca przyjechał.',
     completed: '✅ Podróż zakończona! Dziękujemy. 🙏',
