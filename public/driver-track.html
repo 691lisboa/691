@@ -92,7 +92,20 @@
             transition: background 0.3s;
         }
         .btn:hover { background: #4b5563; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.3s;
+            display: none;
+        }
+        .btn-whatsapp:hover { background: #128C7E; }
+        .btn-whatsapp:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -103,6 +116,7 @@
     <div class="trip-status" id="trip-status" style="display:none"></div>
     <div class="booking-badge" id="badge"></div>
     <button class="btn" id="retry-btn" style="display:none" onclick="startTracking()">🔄 Tentar novamente</button>
+    <button class="btn-whatsapp" id="whatsapp-btn" onclick="shareLocationViaWhatsApp()">📱 Partilhar localização no WhatsApp</button>
 
     <script>
         // Initialize Telegram WebApp
@@ -285,7 +299,8 @@
             
             document.getElementById('dot').classList.remove('error');
             document.getElementById('dot').classList.add('active');
-            document.getElementById('retry-btn').style.display = 'none';
+            lastPosition = { lat, lng };
+            document.getElementById('whatsapp-btn').style.display = 'block';
             updateStatus('✅ A transmitir localização');
             document.getElementById('coords').textContent = 
                 `${lat.toFixed(5)}, ${lng.toFixed(5)}  ±${Math.round(accuracy)}m`;
@@ -336,7 +351,18 @@
             }
         }
 
-        // Handle page visibility changes - resume tracking when page becomes visible
+        let lastPosition = null;
+
+        function shareLocationViaWhatsApp() {
+            if (!lastPosition) {
+                alert('Aguarde... ainda não temos a localização.');
+                return;
+            }
+            const { lat, lng } = lastPosition;
+            const message = `📍 Localização do motorista:\nhttps://www.google.com/maps?q=${lat},${lng}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && bookingId && ['pending', 'accepted', 'arrived'].includes(currentStatus)) {
                 if (watchId === null) {
