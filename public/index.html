@@ -84,7 +84,7 @@
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(0, 77, 0, 0.6);
             border-radius: 24px;
-            padding: 40px 32px;
+            padding: 24px 32px 40px;
             box-shadow:
                 0 0 0 1px rgba(0, 77, 0, 0.15),
                 0 25px 50px rgba(0, 0, 0, 0.6),
@@ -196,12 +196,12 @@
             to { transform: rotate(360deg); }
         }
 
-        /* WhatsApp Chat Button - Above logo, left aligned */
+        /* WhatsApp Chat Button - Above logo, right aligned */
         .whatsapp-chat-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin: 0 0 20px 0;
+            margin: 0 0 28px auto;
             padding: 12px 20px;
             background: #004d00;
             animation: pulse-glow 3s ease-in-out infinite;
@@ -217,7 +217,7 @@
             letter-spacing: 0.08em;
             text-decoration: none;
             box-shadow: 0 4px 24px rgba(0,77,0,0.4);
-            align-self: flex-start;
+            align-self: flex-end;
         }
 
         .whatsapp-chat-btn:hover {
@@ -916,7 +916,7 @@
             body {
                 padding: 12px;
                 align-items: flex-start;
-                padding-top: 80px;
+                padding-top: 20px;
             }
 
             .container {
@@ -979,12 +979,11 @@
         @media (max-width: 480px) {
             body {
                 padding: 8px;
-                padding-bottom: 100px;
-                padding-top: 72px;
+                padding-top: 12px;
             }
 
             .form-card {
-                padding: 24px 16px;
+                padding: 20px 16px 32px;
                 border-radius: 18px;
             }
 
@@ -1131,7 +1130,7 @@
             body {
                 padding: 12px;
                 align-items: flex-start;
-                padding-top: 80px;
+                padding-top: 20px;
             }
 
             .container {
@@ -1175,11 +1174,11 @@
         @media (max-width: 480px) {
             body {
                 padding: 8px;
-                padding-top: 72px;
+                padding-top: 16px;
             }
 
             .form-card {
-                padding: 24px 16px;
+                padding: 20px 16px 32px;
                 border-radius: 18px;
             }
 
@@ -1496,7 +1495,7 @@
     <!-- Main Container -->
     <div class="container">
         <div class="form-card">
-            <!-- WhatsApp Chat Button (inside form, left side, above logo) -->
+            <!-- WhatsApp Chat Button (inside form, right side, above logo) -->
             <a href="https://wa.me/351923255691" target="_blank" class="whatsapp-chat-btn" id="whatsapp-chat-btn">
                 <span class="wa-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor">
