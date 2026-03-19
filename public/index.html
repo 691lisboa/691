@@ -2591,6 +2591,8 @@
             const statusEl = document.getElementById('booking-status');
             const windowStatusEl = document.getElementById('booking-window-status');
             const whatsappSection = document.getElementById('whatsapp-section');
+            const windowCancelBtn = document.getElementById('window-cancel-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
             
             if (statusEl) {
                 statusEl.className = 'booking-status ' + status;
@@ -2608,6 +2610,15 @@
                 } else {
                     whatsappSection.style.display = 'none';
                 }
+            }
+            
+            // Esconder botões de cancelamento quando motorista chega
+            if (status === 'arrived') {
+                if (windowCancelBtn) windowCancelBtn.style.display = 'none';
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            } else {
+                if (windowCancelBtn) windowCancelBtn.style.display = 'block';
+                if (cancelBtn) cancelBtn.style.display = 'block';
             }
         }
 
