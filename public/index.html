@@ -2332,6 +2332,8 @@
                     // Verificar estados finais primeiro - não mostrar booking se já estiver concluído
                     if (['completed','rejected','cancelled'].includes(st)) {
                         localStorage.removeItem('691_booking');
+                        // Garantir que volta ao menu inicial mesmo se browser foi reaberto
+                        hideBooking();
                         if (st === 'completed') {
                                                     } else if (st === 'rejected') {
                                                     } else if (st === 'cancelled') {
@@ -2366,6 +2368,8 @@
                         // Não restaurar estados finais guardados
                         if (['completed','rejected','cancelled'].includes(booking.status)) {
                             localStorage.removeItem('691_booking');
+                            // Garantir que volta ao menu inicial mesmo se browser foi reaberto
+                            hideBooking();
                             return;
                         }
                         currentBooking = booking;
