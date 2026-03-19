@@ -95,6 +95,7 @@
         .logo {
             text-align: center;
             margin-bottom: 32px;
+            width: 100%;
         }
 
         .logo h1 {
@@ -195,13 +196,12 @@
             to { transform: rotate(360deg); }
         }
 
-        /* WhatsApp Chat Button - Inside Form */
+        /* WhatsApp Chat Button - Above logo, left aligned */
         .whatsapp-chat-btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
-            margin: 16px auto 8px;
+            margin: 0 0 20px 0;
             padding: 12px 20px;
             background: #004d00;
             animation: pulse-glow 3s ease-in-out infinite;
@@ -217,6 +217,7 @@
             letter-spacing: 0.08em;
             text-decoration: none;
             box-shadow: 0 4px 24px rgba(0,77,0,0.4);
+            align-self: flex-start;
         }
 
         .whatsapp-chat-btn:hover {
@@ -1495,12 +1496,7 @@
     <!-- Main Container -->
     <div class="container">
         <div class="form-card">
-            <div class="logo">
-                <h1 id="title">691</h1>
-                <p id="subtitle">Táxi Lisboa</p>
-            </div>
-
-            <!-- WhatsApp Chat Button (inside form) -->
+            <!-- WhatsApp Chat Button (inside form, left side, above logo) -->
             <a href="https://wa.me/351923255691" target="_blank" class="whatsapp-chat-btn" id="whatsapp-chat-btn">
                 <span class="wa-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1509,6 +1505,11 @@
                 </span>
                 <span id="whatsapp-chat-text">Falar com o Motorista</span>
             </a>
+
+            <div class="logo">
+                <h1 id="title">691</h1>
+                <p id="subtitle">Táxi Lisboa</p>
+            </div>
 
             <!-- Booking Info -->
             <div id="booking-info" class="booking-info" style="display: none;">
