@@ -1256,6 +1256,10 @@
 
         /* iPhone notch and Dynamic Island optimization */
         @supports (padding: env(safe-area-inset-top)) {
+            body {
+                padding-top: env(safe-area-inset-top);
+            }
+
             .whatsapp-chat-btn {
                 padding: 10px 14px;
                 font-size: 0.7rem;
