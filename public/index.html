@@ -2631,8 +2631,8 @@
                 }
             }
             
-            // Esconder botões de cancelamento quando motorista chega ou viagem é concluída
-            if (status === 'arrived' || status === 'completed') {
+            // Esconder botões de cancelamento quando motorista vai a caminho, chega ou viagem é concluída
+            if (status === 'onway' || status === 'arrived' || status === 'completed') {
                 if (windowCancelBtn) windowCancelBtn.style.display = 'none';
                 if (cancelBtn) cancelBtn.style.display = 'none';
             } else {
