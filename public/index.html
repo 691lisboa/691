@@ -567,11 +567,14 @@
         .booking-details-panel {
             flex: 1;
             padding: 20px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px;
+            overflow: hidden;
             overflow-y: auto;
         }
 
-        /* booking-info-card is now a transparent wrapper */
+        /* booking-info-card is now integrated into single card */
         .booking-info-card {
             background: transparent;
             border: none;
@@ -816,21 +819,14 @@
                 border-radius: 15px;
             }
 
-            .booking-header {
-                padding: 15px;
-            }
-
-            .booking-header h3 {
-                font-size: 1.1rem;
-            }
-
             .booking-content {
                 flex-direction: column;
             }
 
             .booking-details-panel {
                 flex: 1;
-                border-right: none;
+                border-radius: 12px;
+                margin: 10px;
             }
 
             .booking-info-card {
@@ -849,7 +845,7 @@
 
             .booking-actions-row {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
             }
 
             .cancel-btn {
@@ -2434,9 +2430,21 @@
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     // Update status display for messages like "onway"
                     if (data.message) {
-                        // Show the message as a temporary notification or update status
                         console.log('Status update:', data.message);
-                        // Could show a toast notification here if needed
+                        // Show the message in the status display
+                        const windowStatusEl = document.getElementById('booking-window-status');
+                        if (windowStatusEl) {
+                            windowStatusEl.textContent = data.message;
+                            windowStatusEl.className = 'booking-status accepted';
+                        }
+                        // Also update main status if it exists
+                        const statusEl = document.getElementById('booking-status');
+                        if (statusEl) {
+                            statusEl.textContent = data.message;
+                            statusEl.className = 'booking-status accepted';
+                        }
+                        // Play sound to notify client
+                        playSound();
                     }
                 }
             });
