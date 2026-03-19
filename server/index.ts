@@ -285,7 +285,7 @@ function statusMsg(event: string, lang: string): string {
     onway:     '🚗 Driver is on the way!'
   }
   const pt: Record<string, string> = {
-    accepted:  '✅ Reserva Aceite',
+    accepted:  '✅ Viagem Aceite',
     rejected:  '❌ Reserva Recusada',
     arrived:   '📍 Motorista Chegou',
     completed: '✅ Viagem Concluída. Muito obrigado pela sua preferência.',
@@ -390,7 +390,7 @@ function buttonText(textKey: string, lang: string): string {
 /** Mensagens de status para o Telegram (sempre em português) */
 function telegramStatusMsg(status: string, lang: string): string {
   const messages: Record<string, string> = {
-    accepted:  '✅ Reserva Aceite',
+    accepted:  '✅ Viagem Aceite',
     rejected:  '❌ Reserva Recusada',
     arrived:   '📍 Motorista Chegou',
     completed: '✅ Viagem Concluída',
