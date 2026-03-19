@@ -333,7 +333,7 @@ function formatWhatsAppNumber(telefone: string): string {
   // Apenas remove espaços, parênteses, traços e pontos - mantém o + e dígitos exatamente como foram introduzidos
   return telefone.replace(/[\s()\-\.]/g, '')
 }
-function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
+function buildKeyboard(bookingId: string, recolha: string, telefone?: string, status?: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
   
@@ -354,9 +354,11 @@ function buildKeyboard(bookingId: string, recolha: string, telefone?: string) {
     rows.push([{ text: '🚀 Waze', url: wazeUrl }])
   }
   
-  if (WEBAPP_URL) {
-    rows.push([{ text: '🛰️ Tracking GPS', web_app: { url: `${WEBAPP_URL}/driver-track.html?bookingId=${bookingId}` } }])
+  // Adicionar botão de estado "Motorista a caminho" quando aceite
+  if (status === 'accepted') {
+    rows.push([{ text: '� Motorista a caminho', callback_data: `onway_${bookingId}` }])
   }
+  
   rows.push([{ text: '🏁 Concluir', callback_data: `complete_${bookingId}` }])
   return { inline_keyboard: rows }
 }
@@ -370,7 +372,7 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone) }
+      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone, booking.status) }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
@@ -523,6 +525,24 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         // Broadcast status update
         io.emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
         await editMsg(bookingId, '📍 MOTORISTA NO LOCAL')
+
+      // ── 🚗 Motorista a caminho ────────────────────────────────────────────────────
+      } else if (data.startsWith('onway_')) {
+        const bookingId = data.slice(6)
+        console.log(`[Telegram] Motorista a caminho clicado para reserva: ${bookingId}`)
+        const clientId  = clientIdForBooking(bookingId)
+        const lang      = activeBookings.get(bookingId)?.lang || 'pt'
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'accepted' // Mantém status como accepted
+        saveBookings()
+        if (clientId) {
+          const msg = lang === 'en' ? '🚗 Driver is on the way!' : '🚗 Motorista a caminho!'
+          io.to(clientId).emit('booking_status_update', { bookingId, status: 'accepted', message: msg, timestamp: new Date().toISOString() })
+          sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'message' }).catch(() => {})
+        }
+        // Broadcast status update
+        io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
+        await editMsg(bookingId, '🚗 MOTORISTA A CAMINHO')
 
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
       } else if (data.startsWith('complete_')) {
@@ -877,7 +897,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),
-        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone) }
+        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone, 'pending') }
       )
       bookingMessages.set(bookingId, sent.message_id)
     } catch (error: unknown) {
