@@ -1698,6 +1698,7 @@
                 bookingPending: '⏳ Aguardando Confirmação',
                 bookingAccepted: '✅ Viagem aceite.',
                 driverArrived: '📍 O motorista chegou.',
+                driverOnTheWay: '🚗 Motorista a caminho!',
                 bookingRejected: '❌ Reserva recusada.',
                 bookingCancelled: '❌ Reserva cancelada.',
                 bookingCompleted: '✅ Viagem concluída.',
@@ -1740,6 +1741,7 @@
                 bookingPending: '⏳ Awaiting Confirmation',
                 bookingAccepted: '✅ Booking accepted.',
                 driverArrived: '📍 Driver arrived.',
+                driverOnTheWay: '🚗 Driver is on the way!',
                 bookingRejected: '❌ Booking rejected.',
                 bookingCancelled: '❌ Booking cancelled.',
                 bookingCompleted: '✅ Trip completed.',
@@ -1782,6 +1784,7 @@
                 bookingPending: '⏳ En attente de confirmation',
                 bookingAccepted: '✅ Réservation acceptée.',
                 driverArrived: '📍 Le chauffeur est arrivé.',
+                driverOnTheWay: '🚗 Le chauffeur est en route!',
                 bookingRejected: '❌ Réservation refusée.',
                 bookingCancelled: '❌ Réservation annulée.',
                 bookingCompleted: '✅ Trajet terminé.',
@@ -1824,6 +1827,7 @@
                 bookingPending: '⏳ Esperando confirmación',
                 bookingAccepted: '✅ Reserva aceptada.',
                 driverArrived: '📍 El conductor ha llegado.',
+                driverOnTheWay: '🚗 ¡El conductor está en camino!',
                 bookingRejected: '❌ Reserva rechazada.',
                 bookingCancelled: '❌ Reserva cancelada.',
                 bookingCompleted: '✅ Viaje completado.',
@@ -1866,6 +1870,7 @@
                 bookingPending: '⏳ Warte auf Bestätigung',
                 bookingAccepted: '✅ Buchung akzeptiert.',
                 driverArrived: '📍 Fahrer angekommen.',
+                driverOnTheWay: '🚗 Fahrer ist unterwegs!',
                 bookingRejected: '❌ Buchung abgelehnt.',
                 bookingCancelled: '❌ Buchung storniert.',
                 bookingCompleted: '✅ Fahrt abgeschlossen.',
@@ -1908,6 +1913,7 @@
                 bookingPending: '⏳ In attesa di conferma',
                 bookingAccepted: '✅ Prenotazione accettata.',
                 driverArrived: '📍 L\'autista è arrivato.',
+                driverOnTheWay: '🚗 L\'autista è in viaggio!',
                 bookingRejected: '❌ Prenotazione rifiutata.',
                 bookingCancelled: '❌ Prenotazione annullata.',
                 bookingCompleted: '✅ Viaggio completato.',
@@ -1950,6 +1956,7 @@
                 bookingPending: '⏳ 等待确认',
                 bookingAccepted: '✅ 预订已接受。',
                 driverArrived: '📍 司机已到达。',
+                driverOnTheWay: '🚗 司机正在路上！',
                 bookingRejected: '❌ 预订被拒绝。',
                 bookingCancelled: '❌ 预订已取消。',
                 bookingCompleted: '✅ 行程已完成。',
@@ -1991,7 +1998,8 @@
                 bookingTitle: '🚕 アクティブ予約',
                 bookingPending: '⏳ 確認待ち',
                 bookingAccepted: '✅ 予約が承認されました。',
-                driverArrived: '📍 運転手が到着しました。',
+                driverArrived: '📍 ドライバーが到着しました。',
+                driverOnTheWay: '🚗 ドライバーが向かっています！',
                 bookingRejected: '❌ 予約が拒否されました。',
                 bookingCancelled: '❌ 予約がキャンセルされました。',
                 bookingCompleted: '✅ 旅行が完了しました。',
@@ -2034,6 +2042,7 @@
                 bookingPending: '⏳ Ожидание подтверждения',
                 bookingAccepted: '✅ Бронирование принято.',
                 driverArrived: '📍 Водитель прибыл.',
+                driverOnTheWay: '🚗 Водитель в пути!',
                 bookingRejected: '❌ Бронирование отклонено.',
                 bookingCancelled: '❌ Бронирование отменено.',
                 bookingCompleted: '✅ Поездка завершена.',
@@ -2076,6 +2085,7 @@
                 bookingPending: '⏳ Wachten op bevestiging',
                 bookingAccepted: '✅ Reservering geaccepteerd.',
                 driverArrived: '📍 Chauffeur is gearriveerd.',
+                driverOnTheWay: '🚗 Chauffeur is onderweg!',
                 bookingRejected: '❌ Reservering afgewezen.',
                 bookingCancelled: '❌ Reservering geannuleerd.',
                 bookingCompleted: '✅ Rit voltooid.',
@@ -2118,6 +2128,7 @@
                 bookingPending: '⏳ Oczekiwanie na potwierdzenie',
                 bookingAccepted: '✅ Rezerwacja zaakceptowana.',
                 driverArrived: '📍 Kierowca przyjechał.',
+                driverOnTheWay: '🚗 Kierowca w drodze!',
                 bookingRejected: '❌ Rezerwacja odrzucona.',
                 bookingCancelled: '❌ Rezerwacja anulowana.',
                 bookingCompleted: '✅ Podróż zakończona.',
@@ -2656,6 +2667,8 @@
                     return t.bookingPending;
                 case 'accepted':
                     return t.bookingAccepted;
+                case 'onway':
+                    return t.driverOnTheWay || '🚗 Motorista a caminho!';
                 case 'arrived':
                     return t.driverArrived;
                 case 'rejected':
