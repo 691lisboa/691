@@ -2660,8 +2660,8 @@
                 }
             }
             
-            // Esconder botões de cancelamento quando motorista vai a caminho, chega ou viagem é concluída
-            if (status === 'onway' || status === 'arrived' || status === 'completed') {
+            // Esconder botões de cancelamento quando motorista vai a caminho, chega, viagem é concluída, ou reserva é cancelada/recusada
+            if (status === 'onway' || status === 'arrived' || status === 'completed' || status === 'cancelled' || status === 'rejected') {
                 if (windowCancelBtn) windowCancelBtn.style.display = 'none';
                 if (cancelBtn) cancelBtn.style.display = 'none';
             } else {
