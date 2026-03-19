@@ -329,12 +329,10 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
-        /* Footer */
+        /* Footer - follows scroll */
         .page-footer {
-            position: fixed;
-            bottom: 12px;
-            left: 0;
-            right: 0;
+            position: relative;
+            margin-top: 20px;
             text-align: center;
             padding: 6px 16px;
             color: rgba(255,255,255,0.3);
@@ -347,16 +345,16 @@
         }
         .page-footer:hover { opacity: 0.85; }
 
-        /* Contact icons — always visible, bottom-right */
+        /* Contact icons - follows scroll, centered below form */
         .contact-fab {
-            position: fixed;
-            bottom: 60px;
-            right: 24px;
+            position: relative;
+            margin-top: 24px;
             z-index: 1001;
             display: flex;
             flex-direction: row;
             align-items: center;
             gap: 10px;
+            justify-content: center;
         }
 
         .gps-btn {
@@ -1075,16 +1073,16 @@
             letter-spacing: 0.08em;
         }
 
-        /* Contact icons — always visible, bottom-right */
+        /* Contact icons - follows scroll, centered below form */
         .contact-fab {
-            position: fixed;
-            bottom: 60px;
-            right: 24px;
+            position: relative;
+            margin-top: 24px;
             z-index: 1001;
             display: flex;
             flex-direction: row;
             align-items: center;
             gap: 10px;
+            justify-content: center;
         }
 
         .contact-icon-btn {
@@ -1207,12 +1205,11 @@
             }
 
             .contact-fab {
-                bottom: 65px;
-                right: 18px;
+                margin-top: 20px;
             }
 
             .page-footer {
-                bottom: 16px;
+                margin-top: 16px;
             }
 
             .contact-icon-btn {
@@ -1388,12 +1385,11 @@
 
             /* Contact FAB */
             .contact-fab {
-                bottom: 62px;
-                right: 16px;
+                margin-top: 20px;
             }
 
             .page-footer {
-                bottom: 12px;
+                margin-top: 16px;
             }
         }
 
@@ -1460,8 +1456,7 @@
 
             /* Bottom elements - account for home indicator */
             .contact-fab {
-                bottom: calc(55px + env(safe-area-inset-bottom));
-                right: 16px;
+                margin-top: 20px;
             }
 
             .status-indicator {
@@ -1470,7 +1465,7 @@
             }
 
             .page-footer {
-                bottom: calc(10px + env(safe-area-inset-bottom));
+                margin-top: 16px;
             }
         }
 
