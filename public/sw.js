@@ -94,35 +94,62 @@ self.addEventListener('push', (e) => {
   try { payload = e.data?.json() ?? {} } catch { payload = { title: '691 Lisboa', body: e.data?.text() || '' } }
   const title = payload.title || '691 Lisboa'
   const type  = payload.data?.type || ''
+  
+  // Base notification options
   const options = {
     body:               payload.body || '',
     icon:               '/icon.svg',
     badge:              '/icon.svg',
     data:               payload.data || {},
     vibrate:            [200, 100, 200, 100, 200],
-    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed'].includes(type),
+    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed', 'onway'].includes(type),
     tag:                payload.data?.bookingId || '691',
     renotify:           true,
     silent:             false
   }
+  
+  // Add action buttons based on notification type
+  if (type === 'onway') {
+    options.actions = [
+      { action: 'open', title: '🚕 Ver Reserva' }
+    ]
+  } else if (type === 'accepted') {
+    options.actions = [
+      { action: 'open', title: '🚕 Ver Reserva' }
+    ]
+  } else if (type === 'arrived') {
+    options.actions = [
+      { action: 'open', title: '📍 Ver Localização' }
+    ]
+  } else if (type === 'completed') {
+    options.actions = [
+      { action: 'open', title: '✅ Nova Reserva' }
+    ]
+  }
+  
   e.waitUntil(self.registration.showNotification(title, options))
 })
 
 self.addEventListener('notificationclick', (e) => {
   const pushData = e.notification.data || {}
+  const action = e.action
   e.notification.close()
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      const existing = list.find(c => c.url.startsWith(self.location.origin))
-      if (existing && 'focus' in existing) {
-        existing.focus()
-        existing.postMessage({ type: 'PUSH_STATUS', data: pushData })
-        return
-      }
-      return clients.openWindow('/').then(w => {
-        // Window just opened — postMessage after a brief delay for app to initialise
-        if (w) setTimeout(() => w.postMessage({ type: 'PUSH_STATUS', data: pushData }), 1500)
+  
+  // Handle action button clicks
+  if (action === 'open' || action === '') {
+    e.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+        const existing = list.find(c => c.url.startsWith(self.location.origin))
+        if (existing && 'focus' in existing) {
+          existing.focus()
+          existing.postMessage({ type: 'PUSH_STATUS', data: pushData })
+          return
+        }
+        return clients.openWindow('/').then(w => {
+          // Window just opened — postMessage after a brief delay for app to initialise
+          if (w) setTimeout(() => w.postMessage({ type: 'PUSH_STATUS', data: pushData }), 1500)
+        })
       })
-    })
-  )
+    )
+  }
 })
