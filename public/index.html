@@ -598,7 +598,7 @@
             justify-content: space-between;
             padding: 13px 16px;
             background: rgba(0,77,0,0.18);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: none;
         }
 
         .trip-id-pill {
@@ -2427,6 +2427,17 @@
                     updateBookingStatus('completed');
                                         playSound();
                     setTimeout(() => { hideBooking(); }, 5000);
+                }
+            });
+
+            socket.on('booking_status_update', (data) => {
+                if (currentBooking && currentBooking.bookingId === data.bookingId) {
+                    // Update status display for messages like "onway"
+                    if (data.message) {
+                        // Show the message as a temporary notification or update status
+                        console.log('Status update:', data.message);
+                        // Could show a toast notification here if needed
+                    }
                 }
             });
         }

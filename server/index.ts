@@ -389,21 +389,23 @@ function buildKeyboard(bookingId: string, recolha: string, telefone?: string, st
     [
       { text: buttonText('accept', language),   callback_data: `accept_${bookingId}`  },
       { text: buttonText('reject', language),   callback_data: `reject_${bookingId}`  }
-    ],
-    [
-      { text: buttonText('arrived', language),  callback_data: `arrived_${bookingId}` },
-      whatsappUrl ? { text: buttonText('whatsapp', language), url: whatsappUrl } : { text: buttonText('waze', language), url: wazeUrl }
     ]
   ]
+  
+  // Adicionar botão "Motorista a caminho" em 3ª posição quando aceite
+  if (status === 'accepted') {
+    rows.push([{ text: buttonText('onway', language), callback_data: `onway_${bookingId}` }])
+  }
+  
+  // Segunda linha de ação
+  rows.push([
+    { text: buttonText('arrived', language),  callback_data: `arrived_${bookingId}` },
+    whatsappUrl ? { text: buttonText('whatsapp', language), url: whatsappUrl } : { text: buttonText('waze', language), url: wazeUrl }
+  ])
   
   // Adicionar Waze como botão separado se houver WhatsApp
   if (whatsappUrl) {
     rows.push([{ text: buttonText('waze', language), url: wazeUrl }])
-  }
-  
-  // Adicionar botão de estado "Motorista a caminho" quando aceite
-  if (status === 'accepted') {
-    rows.push([{ text: buttonText('onway', language), callback_data: `onway_${bookingId}` }])
   }
   
   rows.push([{ text: buttonText('complete', language), callback_data: `complete_${bookingId}` }])
