@@ -980,8 +980,6 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
     return res.status(429).json({ success: false, error: rateLimitMsgs[lang] || rateLimitMsgs.pt })
   }
 
-  const raw = req.body || {}
-
   // Validação: campos obrigatórios
   if (!raw.nome || !raw.telefone || !raw.data || !raw.hora || !raw.recolha || !raw.destino || !raw.clientId) {
     return res.status(400).json({ success: false, error: 'Campos obrigatórios em falta' })
@@ -995,7 +993,6 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const recolha  = sanitize(raw.recolha, 300)
   const destino  = sanitize(raw.destino, 300)
   const clientId = sanitize(raw.clientId, 64)
-  const lang     = raw.lang || 'pt'
 
   if (nome.length < 2)
     return res.status(400).json({ success: false, error: 'Nome inválido' })
