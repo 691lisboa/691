@@ -1614,10 +1614,14 @@
                         </div>
                         <button id="window-cancel-btn" class="cancel-btn" style="width:100%;margin-top:12px;">❌ Cancelar Reserva</button>
                     </div>
-                    <!-- GPS Tracking (visible when accepted/arrived) -->
-                    <div id="tracking-section" class="tracking-section">
-                        <div id="tracking-map-container"></div>
-                        <div id="tracking-info" class="tracking-info"></div>
+                    <!-- Botão WhatsApp (visível quando aceite) -->
+                    <div id="whatsapp-section" class="whatsapp-section" style="display:none; margin-top:16px; text-align:center;">
+                        <a href="https://wa.me/351923255691" target="_blank" class="whatsapp-driver-btn" style="display:inline-flex; align-items:center; gap:8px; padding:12px 20px; background:#25D366; color:white; text-decoration:none; border-radius:10px; font-weight:600; font-size:0.9rem;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px; height:20px;">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.149-.67.149-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.123-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                            </svg>
+                            Falar com o Motorista
+                        </a>
                     </div>
                 </div>
             </div>
@@ -2126,103 +2130,6 @@
         let isConnected = false;
         let pendingPushStatus = null; // armazena push recebido antes de session_restored
 
-        // GPS Tracking state
-        let trackingMap = null;
-        let driverMarker = null;
-        let pickupMarker = null;
-        let pickupCoords = null;
-        let routePolyline = null;
-
-        function haversine(lat1, lng1, lat2, lng2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLng = (lng2 - lng1) * Math.PI / 180;
-            const a = Math.sin(dLat/2)**2 +
-                      Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        }
-
-        async function initTrackingMap(recolha) {
-            const section = document.getElementById('tracking-section');
-            section.classList.add('show');
-            if (!trackingMap) {
-                trackingMap = L.map('tracking-map-container', { zoomControl: false, attributionControl: false });
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(trackingMap);
-            }
-            try {
-                const r = await fetch('/api/geocode?q=' + encodeURIComponent(recolha));
-                const pos = await r.json();
-                if (pos && pos.lat) {
-                    pickupCoords = pos;
-                    const icon = L.divIcon({ className: '', html: '<div style="background:#10b981;width:12px;height:12px;border-radius:50%;border:2px solid #fff"></div>', iconSize: [12,12], iconAnchor: [6,6] });
-                    pickupMarker = L.marker([pos.lat, pos.lng], { icon }).addTo(trackingMap);
-                    trackingMap.setView([pos.lat, pos.lng], 14);
-                }
-            } catch {}
-            const infoEl = document.getElementById('tracking-info');
-            const t = translations[currentLang];
-            if (infoEl) infoEl.textContent = t.trackingWaiting;
-        }
-
-        async function updateDriverPosition(lat, lng, bookingId) {
-            if (!trackingMap) return;
-            const driverHtml = '<div style="background:#facc15;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #facc1588"></div>';
-            const driverIcon = L.divIcon({ className: '', html: driverHtml, iconSize: [14,14], iconAnchor: [7,7] });
-            if (driverMarker) {
-                driverMarker.setLatLng([lat, lng]);
-            } else {
-                driverMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(trackingMap);
-            }
-            if (pickupCoords) {
-                const bounds = L.latLngBounds([[lat, lng], [pickupCoords.lat, pickupCoords.lng]]);
-                trackingMap.fitBounds(bounds, { padding: [40, 40] });
-                const infoEl = document.getElementById('tracking-info');
-                const t = translations[currentLang];
-                if (infoEl) infoEl.textContent = t.trackingCalculating;
-                try {
-                    const r = await fetch(
-                        `/api/route?from=${lat},${lng}&to=${pickupCoords.lat},${pickupCoords.lng}`
-                    );
-                    const route = await r.json();
-                    if (route && route.etaMin) {
-                        // Draw / update route polyline
-                        if (route.geometry && route.geometry.coordinates) {
-                            const latlngs = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-                            if (routePolyline) {
-                                routePolyline.setLatLngs(latlngs);
-                            } else {
-                                routePolyline = L.polyline(latlngs, {
-                                    color: '#facc15', weight: 4, opacity: 0.75, dashArray: '8 5'
-                                }).addTo(trackingMap);
-                            }
-                            trackingMap.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
-                        }
-                        const traffic = route.trafficDelaySec > 60
-                            ? ` ⚠️ +${Math.round(route.trafficDelaySec/60)} ${t.trackingTraffic}`
-                            : '';
-                        infoEl.textContent = `🚗 ${route.etaMin} min · ${route.distanceKm} km${traffic}`;
-                    } else {
-                        // fallback haversine
-                        const dist = haversine(lat, lng, pickupCoords.lat, pickupCoords.lng);
-                        if (dist === null) return;
-                        const eta  = Math.max(1, Math.ceil(dist / 0.5));
-                        const infoEl = document.getElementById('tracking-info');
-                        const t = translations[currentLang];
-                        if (infoEl) infoEl.textContent = `🚗 ~${eta} min · ~${dist.toFixed(1)} km`;
-                    }
-                } catch {}
-            } else {
-                trackingMap.setView([lat, lng], 15);
-            }
-        }
-
-        function hideTrackingMap() {
-            const section = document.getElementById('tracking-section');
-            if (section) section.classList.remove('show');
-            if (trackingMap) { trackingMap.remove(); trackingMap = null; }
-            driverMarker = null; pickupMarker = null; pickupCoords = null; routePolyline = null;
-        }
-
         // clientId persiste no localStorage para sobreviver a refreshes
         let clientId = localStorage.getItem('691_clientId');
         if (!clientId) {
@@ -2414,9 +2321,6 @@
                     displayBooking(data.booking);
                     updateBookingStatus(st);
 
-                    if (st === 'accepted' || st === 'arrived') {
-                        initTrackingMap(data.booking.recolha);
-                    }
                     openBookingWindow();
                     if (pendingPushStatus?.bookingId === data.booking.bookingId) {
                         const pst = pendingPushStatus; pendingPushStatus = null;
@@ -2427,13 +2331,6 @@
                 } else if (data.booking && currentBooking?.bookingId === data.booking.bookingId && st !== currentStatus) {
                     // Reconexão: sincronizar estado que pode ter mudado durante desligação
                     updateBookingStatus(st);
-                    if (st === 'accepted' && !trackingMap && currentBooking?.recolha) initTrackingMap(currentBooking.recolha);
-                }
-            });
-
-            socket.on('tracking_update', (data) => {
-                if (currentBooking && currentBooking.bookingId === data.bookingId) {
-                    updateDriverPosition(data.lat, data.lng, data.bookingId);
                 }
             });
 
@@ -2477,7 +2374,6 @@
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     updateBookingStatus('accepted');
                                         playSound();
-                    if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
                 }
             });
 
@@ -2662,24 +2558,27 @@
         // Update booking status (persists to localStorage — excepto estados finais)
         function updateBookingStatus(status) {
             currentStatus = status;
-            // Não persistir estados finais: já foram removidos do localStorage antes desta chamada
-            const isFinal = ['completed','rejected','cancelled'].includes(status);
-            if (currentBooking && !isFinal) {
-                currentBooking.status = status;
-                localStorage.setItem('691_booking', JSON.stringify(currentBooking));
-            }
-            const statusElement = document.getElementById('booking-status');
-            const windowStatusElement = document.getElementById('booking-window-status');
             const t = translations[currentLang];
-            const statusClass = 'booking-status ' + status;
-            const statusText = getStatusText(status, t);
-            if (statusElement) {
-                statusElement.className = statusClass;
-                statusElement.textContent = statusText;
+            const statusEl = document.getElementById('booking-status');
+            const windowStatusEl = document.getElementById('booking-window-status');
+            const whatsappSection = document.getElementById('whatsapp-section');
+            
+            if (statusEl) {
+                statusEl.className = 'booking-status ' + status;
+                statusEl.textContent = getStatusText(status, t);
             }
-            if (windowStatusElement) {
-                windowStatusElement.className = statusClass;
-                windowStatusElement.textContent = statusText;
+            if (windowStatusEl) {
+                windowStatusEl.className = 'booking-status ' + status;
+                windowStatusEl.textContent = getStatusText(status, t);
+            }
+            
+            // Mostrar botão WhatsApp quando aceite ou chegou
+            if (whatsappSection) {
+                if (status === 'accepted' || status === 'arrived') {
+                    whatsappSection.style.display = 'block';
+                } else {
+                    whatsappSection.style.display = 'none';
+                }
             }
         }
 
@@ -2707,8 +2606,6 @@
         function openBookingWindow() {
             const bw = document.getElementById('booking-window');
             if (bw) bw.classList.add('show');
-            
-            if (trackingMap) setTimeout(() => trackingMap.invalidateSize(), 50);
         }
 
         // Aplicar estado recebido via push (PUSH_STATUS ou session_restored)
@@ -2740,7 +2637,6 @@
                 openBookingWindow();
                 updateBookingStatus('accepted');
                                 playSound();
-                if (currentBooking.recolha) initTrackingMap(currentBooking.recolha);
             } else if (st === 'arrived') {
                 openBookingWindow();
                 updateBookingStatus('arrived');
@@ -2764,7 +2660,6 @@
 
             currentBooking = null;
             currentStatus = 'pending';
-            hideTrackingMap();
         }
 
         // Show notification (toast)
