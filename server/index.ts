@@ -34,7 +34,7 @@ const REVERSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000
 app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
   const lat = Number(req.query.lat)
   const lng = Number(req.query.lng)
-  const lang = String(req.query.lang || 'pt').toLowerCase().startsWith('en') ? 'en' : 'pt'
+  const lang = String(req.query.lang || 'pt').toLowerCase()
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return res.status(400).json({ ok: false })
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return res.status(400).json({ ok: false })
@@ -292,7 +292,84 @@ function statusMsg(event: string, lang: string): string {
     cancelled: '❌ Reserva cancelada.',
     onway:     '🚗 Motorista a caminho!'
   }
-  return (lang === 'en' ? en[event] : pt[event]) ?? pt[event] ?? ''
+  const fr: Record<string, string> = {
+    accepted:  '✅ Réservation acceptée! Le chauffeur est en route.',
+    rejected:  '❌ Réservation refusée. Veuillez réessayer.',
+    arrived:   '📍 Le chauffeur est arrivé.',
+    completed: '✅ Trajet terminé! Merci. 🙏',
+    cancelled: '❌ Réservation annulée.',
+    onway:     '🚗 Le chauffeur est en route!'
+  }
+  const es: Record<string, string> = {
+    accepted:  '✅ ¡Reserva aceptada! El conductor está en camino.',
+    rejected:  '❌ Reserva rechazada. Por favor intente nuevamente.',
+    arrived:   '📍 El conductor ha llegado.',
+    completed: '✅ ¡Viaje completado! Gracias. 🙏',
+    cancelled: '❌ Reserva cancelada.',
+    onway:     '🚗 ¡El conductor está en camino!'
+  }
+  const de: Record<string, string> = {
+    accepted:  '✅ Buchung akzeptiert! Fahrer ist unterwegs.',
+    rejected:  '❌ Buchung abgelehnt. Bitte versuchen Sie es erneut.',
+    arrived:   '📍 Fahrer angekommen.',
+    completed: '✅ Fahrt abgeschlossen! Vielen Dank. 🙏',
+    cancelled: '❌ Buchung storniert.',
+    onway:     '🚗 Fahrer ist unterwegs!'
+  }
+  const it: Record<string, string> = {
+    accepted:  '✅ Prenotazione accettata! L\'autista è in viaggio.',
+    rejected:  '❌ Prenotazione rifiutata. Riprova.',
+    arrived:   '📍 L\'autista è arrivato.',
+    completed: '✅ Viaggio completato! Grazie. 🙏',
+    cancelled: '❌ Prenotazione annullata.',
+    onway:     '🚗 L\'autista è in viaggio!'
+  }
+  const zh: Record<string, string> = {
+    accepted:  '✅ 预订已接受！司机正在路上。',
+    rejected:  '❌ 预订被拒绝。请重试。',
+    arrived:   '📍 司机已到达。',
+    completed: '✅ 行程完成！谢谢。🙏',
+    cancelled: '❌ 预订已取消。',
+    onway:     '🚗 司机正在路上！'
+  }
+  const ja: Record<string, string> = {
+    accepted:  '✅ 予約が承認されました！ドライバーが向かっています。',
+    rejected:  '❌ 予約が拒否されました。もう一度お試しください。',
+    arrived:   '📍 ドライバーが到着しました。',
+    completed: '✅ 旅行が完了しました！ありがとうございます。🙏',
+    cancelled: '❌ 予約がキャンセルされました。',
+    onway:     '🚗 ドライバーが向かっています！'
+  }
+  const ru: Record<string, string> = {
+    accepted:  '✅ Бронирование принято! Водитель в пути.',
+    rejected:  '❌ Бронирование отклонено. Попробуйте еще раз.',
+    arrived:   '📍 Водитель прибыл.',
+    completed: '✅ Поездка завершена! Спасибо. 🙏',
+    cancelled: '❌ Бронирование отменено.',
+    onway:     '🚗 Водитель в пути!'
+  }
+  const nl: Record<string, string> = {
+    accepted:  '✅ Boeking geaccepteerd! Bestuurder is onderweg.',
+    rejected:  '❌ Boeking geweigerd. Probeer het opnieuw.',
+    arrived:   '📍 Bestuurder is aangekomen.',
+    completed: '✅ Rit voltooid! Dank u. 🙏',
+    cancelled: '❌ Boeking geannuleerd.',
+    onway:     '🚗 Bestuurder is onderweg!'
+  }
+  const pl: Record<string, string> = {
+    accepted:  '✅ Rezerwacja przyjęta! Kierowca w drodze.',
+    rejected:  '❌ Rezerwacja odrzucona. Spróbuj ponownie.',
+    arrived:   '📍 Kierowca przyjechał.',
+    completed: '✅ Podróż zakończona! Dziękujemy. 🙏',
+    cancelled: '❌ Rezerwacja anulowana.',
+    onway:     '🚗 Kierowca w drodze!'
+  }
+
+  const languages: Record<string, Record<string, string>> = {
+    en, pt, fr, es, de, it, zh, ja, ru, nl, pl
+  }
+  
+  return languages[lang]?.[event] || pt[event] || ''
 }
 
 /** Textos dos botões localizados */
@@ -315,7 +392,93 @@ function buttonText(textKey: string, lang: string): string {
     waze:       '🚀 Waze',
     complete:   '🏁 Concluir'
   }
-  return (lang === 'en' ? en[textKey] : pt[textKey]) ?? pt[textKey] ?? textKey
+  const fr: Record<string, string> = {
+    accept:     '✅ Accepter',
+    reject:     '❌ Refuser',
+    arrived:    '📍 Arrivé',
+    onway:      '🚗 En route',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Terminer'
+  }
+  const es: Record<string, string> = {
+    accept:     '✅ Aceptar',
+    reject:     '❌ Rechazar',
+    arrived:    '📍 Llegado',
+    onway:      '🚗 En camino',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Completar'
+  }
+  const de: Record<string, string> = {
+    accept:     '✅ Akzeptieren',
+    reject:     '❌ Ablehnen',
+    arrived:    '📍 Angekommen',
+    onway:      '🚗 Unterwegs',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Abschließen'
+  }
+  const it: Record<string, string> = {
+    accept:     '✅ Accetta',
+    reject:     '❌ Rifiuta',
+    arrived:    '📍 Arrivato',
+    onway:      '🚗 In viaggio',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Completa'
+  }
+  const zh: Record<string, string> = {
+    accept:     '✅ 接受',
+    reject:     '❌ 拒绝',
+    arrived:    '📍 到达',
+    onway:      '🚗 在路上',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 完成'
+  }
+  const ja: Record<string, string> = {
+    accept:     '✅ 承認',
+    reject:     '❌ 拒否',
+    arrived:    '📍 到着',
+    onway:      '🚗 移動中',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 完了'
+  }
+  const ru: Record<string, string> = {
+    accept:     '✅ Принять',
+    reject:     '❌ Отклонить',
+    arrived:    '📍 Прибыл',
+    onway:      '🚗 В пути',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Завершить'
+  }
+  const nl: Record<string, string> = {
+    accept:     '✅ Accepteren',
+    reject:     '❌ Weigeren',
+    arrived:    '📍 Aangekomen',
+    onway:      '🚗 Onderweg',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Voltooien'
+  }
+  const pl: Record<string, string> = {
+    accept:     '✅ Akceptuj',
+    reject:     '❌ Odrzuć',
+    arrived:    '📍 Przyjechał',
+    onway:      '🚗 W drodze',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Zakończ'
+  }
+
+  const languages: Record<string, Record<string, string>> = {
+    en, pt, fr, es, de, it, zh, ja, ru, nl, pl
+  }
+  
+  return languages[lang]?.[textKey] || pt[textKey] || textKey
 }
 
 /** Mensagens de status para o Telegram */
@@ -336,7 +499,84 @@ function telegramStatusMsg(status: string, lang: string): string {
     cancelled: '❌ RESERVA CANCELADA',
     onway:     '🚗 MOTORISTA A CAMINHO'
   }
-  return (lang === 'en' ? en[status] : pt[status]) ?? pt[status] ?? status
+  const fr: Record<string, string> = {
+    accepted:  '✅ RÉSERVA ACCEPTÉE',
+    rejected:  '❌ RÉSERVA REFUSÉE',
+    arrived:   '📍 CHAUFFEUR ARRIVÉ',
+    completed: '✅ TRAJET TERMINÉ',
+    cancelled: '❌ RÉSERVA ANNULÉE',
+    onway:     '🚗 CHAUFFEUR EN ROUTE'
+  }
+  const es: Record<string, string> = {
+    accepted:  '✅ RESERVA ACEPTADA',
+    rejected:  '❌ RESERVA RECHAZADA',
+    arrived:   '📍 CONDUCTOR LLEGADO',
+    completed: '✅ VIAJE COMPLETADO',
+    cancelled: '❌ RESERVA CANCELADA',
+    onway:     '🚗 CONDUCTOR EN CAMINO'
+  }
+  const de: Record<string, string> = {
+    accepted:  '✅ BUCHUNG AKZEPTIERT',
+    rejected:  '❌ BUCHUNG ABGELEHNT',
+    arrived:   '📍 FAHRER ANGEKOMMEN',
+    completed: '✅ FAHRT ABGESCHLOSSEN',
+    cancelled: '❌ BUCHUNG STORNIERT',
+    onway:     '🚗 FAHRER UNTERWEGS'
+  }
+  const it: Record<string, string> = {
+    accepted:  '✅ PRENOTAZIONE ACCETTATA',
+    rejected:  '❌ PRENOTAZIONE RIFIUTATA',
+    arrived:   '📍 AUTISTA ARRIVATO',
+    completed: '✅ VIAGGIO COMPLETATO',
+    cancelled: '❌ PRENOTAZIONE ANNULLATA',
+    onway:     '🚗 AUTISTA IN VIAGGIO'
+  }
+  const zh: Record<string, string> = {
+    accepted:  '✅ 预订已接受',
+    rejected:  '❌ 预订被拒绝',
+    arrived:   '📍 司机已到达',
+    completed: '✅ 行程完成',
+    cancelled: '❌ 预订已取消',
+    onway:     '🚗 司机在路上'
+  }
+  const ja: Record<string, string> = {
+    accepted:  '✅ 予約が承認されました',
+    rejected:  '❌ 予約が拒否されました',
+    arrived:   '📍 ドライバーが到着しました',
+    completed: '✅ 旅行が完了しました',
+    cancelled: '❌ 予約がキャンセルされました',
+    onway:     '🚗 ドライバーが移動中です'
+  }
+  const ru: Record<string, string> = {
+    accepted:  '✅ БРОНИРОВАНИЕ ПРИНЯТО',
+    rejected:  '❌ БРОНИРОВАНИЕ ОТКЛОНЕНО',
+    arrived:   '📍 ВОДИТЕЛЬ ПРИБЫЛ',
+    completed: '✅ ПОЕЗДКА ЗАВЕРШЕНА',
+    cancelled: '❌ БРОНИРОВАНИЕ ОТМЕНЕНО',
+    onway:     '🚗 ВОДИТЕЛЬ В ПУТИ'
+  }
+  const nl: Record<string, string> = {
+    accepted:  '✅ BOEKING GEACCEPTEERD',
+    rejected:  '❌ BOEKING GEWEIGERD',
+    arrived:   '📍 BESTUURDER AANGEKOMEN',
+    completed: '✅ RIT VOLTOOID',
+    cancelled: '❌ BOEKING GEANNULEERD',
+    onway:     '🚗 BESTUURDER ONDERWEG'
+  }
+  const pl: Record<string, string> = {
+    accepted:  '✅ REZERWACJA PRZYJĘTA',
+    rejected:  '❌ REZERWACJA ODRZUCONA',
+    arrived:   '📍 KIEROWCA PRZYJECHAŁ',
+    completed: '✅ PODRÓŻ ZAKOŃCZONA',
+    cancelled: '❌ REZERWACJA ANULOWANA',
+    onway:     '🚗 KIEROWCA W DRODZE'
+  }
+
+  const languages: Record<string, Record<string, string>> = {
+    en, pt, fr, es, de, it, zh, ja, ru, nl, pl
+  }
+  
+  return languages[lang]?.[status] || pt[status] || status
 }
 
 /** Escapa caracteres especiais para HTML do Telegram */
@@ -917,7 +1157,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const recolha  = sanitize(raw.recolha, 300)
   const destino  = sanitize(raw.destino, 300)
   const clientId = sanitize(raw.clientId, 64)
-  const lang     = (raw.lang === 'en') ? 'en' : 'pt'
+  const lang     = raw.lang || 'pt'
 
   if (nome.length < 2)
     return res.status(400).json({ success: false, error: 'Nome inválido' })
