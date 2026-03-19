@@ -23,7 +23,6 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
 const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:booking@691.pt'
-const WEBAPP_URL        = process.env.WEBAPP_URL        || ''
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
 // Key: "lat,lng" rounded; Value: { addr, ts }
@@ -588,6 +587,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'accepted'
+        saveBookings()
         if (clientId) {
           const msg = statusMsg('accepted', lang)
           io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -981,8 +981,22 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   }
 
   // Validação: campos obrigatórios
+  const validationMsgs: Record<string, Record<string, string>> = {
+    pt: { missing: 'Campos obrigatórios em falta', name: 'Nome inválido', phone: 'Telefone inválido', address: 'Moradas inválidas' },
+    en: { missing: 'Required fields missing', name: 'Invalid name', phone: 'Invalid phone', address: 'Invalid addresses' },
+    fr: { missing: 'Champs obligatoires manquants', name: 'Nom invalide', phone: 'Téléphone invalide', address: 'Adresses invalides' },
+    es: { missing: 'Campos obligatorios faltantes', name: 'Nombre inválido', phone: 'Teléfono inválido', address: 'Direcciones inválidas' },
+    de: { missing: 'Pflichtfelder fehlen', name: 'Ungültiger Name', phone: 'Ungültiges Telefon', address: 'Ungültige Adressen' },
+    it: { missing: 'Campi obbligatori mancanti', name: 'Nome non valido', phone: 'Telefono non valido', address: 'Indirizzi non validi' },
+    zh: { missing: '必填字段缺失', name: '姓名无效', phone: '电话无效', address: '地址无效' },
+    ja: { missing: '必須フィールドが不足しています', name: '無効な名前', phone: '無効な電話', address: '無効な住所' },
+    ru: { missing: 'Обязательные поля отсутствуют', name: 'Неверное имя', phone: 'Неверный телефон', address: 'Неверные адреса' },
+    nl: { missing: 'Verplichte velden ontbreken', name: 'Ongeldige naam', phone: 'Ongeldige telefoon', address: 'Ongeldige adressen' },
+    pl: { missing: 'Brak wymaganych pól', name: 'Nieprawidłowe imię', phone: 'Nieprawidłowy telefon', address: 'Nieprawidłowe adresy' }
+  }
+  const vm = validationMsgs[lang] || validationMsgs.pt
   if (!raw.nome || !raw.telefone || !raw.data || !raw.hora || !raw.recolha || !raw.destino || !raw.clientId) {
-    return res.status(400).json({ success: false, error: 'Campos obrigatórios em falta' })
+    return res.status(400).json({ success: false, error: vm.missing })
   }
 
   // Sanitização
@@ -995,11 +1009,11 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const clientId = sanitize(raw.clientId, 64)
 
   if (nome.length < 2)
-    return res.status(400).json({ success: false, error: 'Nome inválido' })
+    return res.status(400).json({ success: false, error: vm.name })
   if (!/^[+\d\s()\-]{7,30}$/.test(telefone))
-    return res.status(400).json({ success: false, error: 'Telefone inválido' })
+    return res.status(400).json({ success: false, error: vm.phone })
   if (recolha.length < 3 || destino.length < 3)
-    return res.status(400).json({ success: false, error: 'Moradas inválidas' })
+    return res.status(400).json({ success: false, error: vm.address })
 
   const bookingId  = '691-' + Date.now().toString().slice(-6)
   const bookingData: Record<string, any> = {
@@ -1012,10 +1026,24 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   saveBookings()
   console.log('Nova reserva:', bookingId, nome, recolha, '→', destino)
 
+  const successMsgs: Record<string, string> = {
+    pt: '🚕 Reserva recebida!',
+    en: '🚕 Booking received!',
+    fr: '🚕 Réservation reçue !',
+    es: '🚕 ¡Reserva recibida!',
+    de: '🚕 Buchung erhalten!',
+    it: '🚕 Prenotazione ricevuta!',
+    zh: '🚕 预订已收到！',
+    ja: '🚕 予約を受け付けました！',
+    ru: '🚕 Бронирование получено!',
+    nl: '🚕 Reservering ontvangen!',
+    pl: '🚕 Rezerwacja otrzymana!'
+  }
+
   // Notificar cliente via socket
   io.to(clientId).emit('new_booking', {
     ...bookingData,
-    message: `🚕 Reserva ${bookingId} recebida!`,
+    message: successMsgs[lang] || successMsgs.pt,
     timestamp: new Date().toISOString()
   })
 
