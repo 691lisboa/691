@@ -281,16 +281,62 @@ function statusMsg(event: string, lang: string): string {
     rejected:  '❌ Booking rejected. Please try again.',
     arrived:   '📍 Driver arrived.',
     completed: '✅ Trip completed! Thank you. 🙏',
-    cancelled: '❌ Booking cancelled.'
+    cancelled: '❌ Booking cancelled.',
+    onway:     '🚗 Driver is on the way!'
   }
   const pt: Record<string, string> = {
     accepted:  '✅ Reserva aceite! Motorista a caminho.',
     rejected:  '❌ Reserva recusada. Por favor tente novamente.',
     arrived:   '📍 O motorista chegou.',
     completed: '✅ Viagem concluída! Obrigado pela preferência. 🙏',
-    cancelled: '❌ Reserva cancelada.'
+    cancelled: '❌ Reserva cancelada.',
+    onway:     '🚗 Motorista a caminho!'
   }
   return (lang === 'en' ? en[event] : pt[event]) ?? pt[event] ?? ''
+}
+
+/** Textos dos botões localizados */
+function buttonText(textKey: string, lang: string): string {
+  const en: Record<string, string> = {
+    accept:     '✅ Accept',
+    reject:     '❌ Reject',
+    arrived:    '📍 Arrived',
+    onway:      '🚗 On the way',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Complete'
+  }
+  const pt: Record<string, string> = {
+    accept:     '✅ Aceitar',
+    reject:     '❌ Recusar',
+    arrived:    '📍 Cheguei',
+    onway:      '🚗 Motorista a caminho',
+    whatsapp:   '📱 WhatsApp',
+    waze:       '🚀 Waze',
+    complete:   '🏁 Concluir'
+  }
+  return (lang === 'en' ? en[textKey] : pt[textKey]) ?? pt[textKey] ?? textKey
+}
+
+/** Mensagens de status para o Telegram */
+function telegramStatusMsg(status: string, lang: string): string {
+  const en: Record<string, string> = {
+    accepted:  '✅ BOOKING ACCEPTED',
+    rejected:  '❌ BOOKING REJECTED',
+    arrived:   '📍 DRIVER ARRIVED',
+    completed: '✅ TRIP COMPLETED',
+    cancelled: '❌ BOOKING CANCELLED',
+    onway:     '🚗 DRIVER ON THE WAY'
+  }
+  const pt: Record<string, string> = {
+    accepted:  '✅ RESERVA ACEITE',
+    rejected:  '❌ RECUSADA',
+    arrived:   '📍 MOTORISTA NO LOCAL',
+    completed: '✅ VIAGEM CONCLUÍDA',
+    cancelled: '❌ RESERVA CANCELADA',
+    onway:     '🚗 MOTORISTA A CAMINHO'
+  }
+  return (lang === 'en' ? en[status] : pt[status]) ?? pt[status] ?? status
 }
 
 /** Escapa caracteres especiais para HTML do Telegram */
@@ -333,33 +379,34 @@ function formatWhatsAppNumber(telefone: string): string {
   // Apenas remove espaços, parênteses, traços e pontos - mantém o + e dígitos exatamente como foram introduzidos
   return telefone.replace(/[\s()\-\.]/g, '')
 }
-function buildKeyboard(bookingId: string, recolha: string, telefone?: string, status?: string) {
+function buildKeyboard(bookingId: string, recolha: string, telefone?: string, status?: string, lang?: string) {
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
+  const language = lang || 'pt'
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: any[][] = [
     [
-      { text: '✅ Aceitar',   callback_data: `accept_${bookingId}`  },
-      { text: '❌ Recusar',   callback_data: `reject_${bookingId}`  }
+      { text: buttonText('accept', language),   callback_data: `accept_${bookingId}`  },
+      { text: buttonText('reject', language),   callback_data: `reject_${bookingId}`  }
     ],
     [
-      { text: '📍 Cheguei',  callback_data: `arrived_${bookingId}` },
-      whatsappUrl ? { text: '📱 WhatsApp', url: whatsappUrl } : { text: '🚀 Waze', url: wazeUrl }
+      { text: buttonText('arrived', language),  callback_data: `arrived_${bookingId}` },
+      whatsappUrl ? { text: buttonText('whatsapp', language), url: whatsappUrl } : { text: buttonText('waze', language), url: wazeUrl }
     ]
   ]
   
   // Adicionar Waze como botão separado se houver WhatsApp
   if (whatsappUrl) {
-    rows.push([{ text: '🚀 Waze', url: wazeUrl }])
+    rows.push([{ text: buttonText('waze', language), url: wazeUrl }])
   }
   
   // Adicionar botão de estado "Motorista a caminho" quando aceite
   if (status === 'accepted') {
-    rows.push([{ text: '� Motorista a caminho', callback_data: `onway_${bookingId}` }])
+    rows.push([{ text: buttonText('onway', language), callback_data: `onway_${bookingId}` }])
   }
   
-  rows.push([{ text: '🏁 Concluir', callback_data: `complete_${bookingId}` }])
+  rows.push([{ text: buttonText('complete', language), callback_data: `complete_${bookingId}` }])
   return { inline_keyboard: rows }
 }
 
@@ -369,10 +416,11 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
   const booking = activeBookings.get(bookingId)
   if (!bot || !TELEGRAM_CHAT_ID || !msgId || !booking) return
   try {
+    const lang = booking.lang || 'pt'
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone, booking.status) }
+      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone, booking.status, lang) }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
@@ -483,7 +531,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         }
         // Broadcast status update to all sockets (including driver's tracking page)
         io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
-        await editMsg(bookingId, '✅ RESERVA ACEITE')
+        await editMsg(bookingId, telegramStatusMsg('accepted', lang))
 
       // ── ❌ Recusar ─────────────────────────────────────────────────────────
       } else if (data.startsWith('reject_')) {
@@ -493,7 +541,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'rejected'
         saveBookings()
-        await editMsg(bookingId, '❌ RECUSADA')
+        await editMsg(bookingId, telegramStatusMsg('rejected', lang))
         if (clientId) {
           const msg = statusMsg('rejected', lang)
           io.to(clientId).emit('booking_rejected', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -524,7 +572,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         }
         // Broadcast status update
         io.emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
-        await editMsg(bookingId, '📍 MOTORISTA NO LOCAL')
+        await editMsg(bookingId, telegramStatusMsg('arrived', lang))
 
       // ── 🚗 Motorista a caminho ────────────────────────────────────────────────────
       } else if (data.startsWith('onway_')) {
@@ -536,13 +584,13 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         if (bk) bk.status = 'accepted' // Mantém status como accepted
         saveBookings()
         if (clientId) {
-          const msg = lang === 'en' ? '🚗 Driver is on the way!' : '🚗 Motorista a caminho!'
+          const msg = statusMsg('onway', lang)
           io.to(clientId).emit('booking_status_update', { bookingId, status: 'accepted', message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'message' }).catch(() => {})
         }
         // Broadcast status update
         io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
-        await editMsg(bookingId, '🚗 MOTORISTA A CAMINHO')
+        await editMsg(bookingId, telegramStatusMsg('onway', lang))
 
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
       } else if (data.startsWith('complete_')) {
@@ -554,7 +602,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'completed'
         saveBookings()
-        await editMsg(bookingId, '🏁 VIAGEM CONCLUÍDA')
+        await editMsg(bookingId, telegramStatusMsg('completed', lang))
         if (clientId) {
           const msg = statusMsg('completed', lang)
           io.to(clientId).emit('booking_completed', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -673,13 +721,16 @@ io.on('connection', (socket) => {
     // Notificar Telegram ANTES de apagar da memória
     // Editar mensagem original (marca como cancelada no histórico)
     if (booking && hasMsgId) {
-      await editMsg(bookingId, '🚫 CANCELADA PELO CLIENTE').catch(() => {})
+      const lang = booking.lang || 'pt'
+      await editMsg(bookingId, telegramStatusMsg('cancelled', lang)).catch(() => {})
     }
     // Enviar SEMPRE uma nova mensagem — edições não geram notificação no Telegram
     if (bot && TELEGRAM_CHAT_ID) {
+      const lang = booking?.lang || 'pt'
+      const cancelTitle = lang === 'en' ? '🚫 BOOKING CANCELLED BY CLIENT' : '🚫 RESERVA CANCELADA PELO CLIENTE'
       await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
-        `<b>🚫 RESERVA CANCELADA PELO CLIENTE</b>\n` +
+        `<b>${cancelTitle}</b>\n` +
         `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
         `<b>👤</b> ${esc(booking?.nome || data.name || '—')} — ` +
         `<a href="tel:${esc(booking?.telefone || data.phone || '')}">${esc(booking?.telefone || data.phone || '—')}</a>\n` +
@@ -897,7 +948,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),
-        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone, 'pending') }
+        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone, 'pending', bookingData.lang || 'pt') }
       )
       bookingMessages.set(bookingId, sent.message_id)
     } catch (error: unknown) {
