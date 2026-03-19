@@ -431,35 +431,6 @@
             transform: translateY(-1px);
         }
 
-        .language-toggle {
-            position: fixed;
-            top: 18px;
-            left: 20px;
-            display: flex;
-            gap: 4px;
-            z-index: 1001;
-        }
-
-        .language-toggle button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.6rem;
-            opacity: 0.45;
-            transition: opacity 0.3s, transform 0.2s;
-            padding: 6px;
-            line-height: 1;
-        }
-
-        .language-toggle button.active {
-            opacity: 0.9;
-        }
-
-        .language-toggle button:hover:not(.active) {
-            opacity: 0.7;
-            transform: scale(1.15);
-        }
-
         .status-indicator {
             position: fixed;
             bottom: 20px;
@@ -1264,11 +1235,6 @@
                 height: 10px;
             }
 
-            .language-toggle {
-                top: 14px;
-                left: 14px;
-            }
-
             .booking-actions-row {
                 gap: 8px;
             }
@@ -1311,10 +1277,6 @@
 
             .whatsapp-chat-btn {
                 top: calc(12px + env(safe-area-inset-top));
-            }
-
-            .language-toggle {
-                top: calc(14px + env(safe-area-inset-top));
             }
 
             .booking-window {
@@ -1417,15 +1379,6 @@
                 font-size: 0.7rem;
             }
 
-            .language-toggle {
-                top: 14px;
-                left: 14px;
-            }
-
-            .language-toggle button {
-                font-size: 1.5rem;
-            }
-
             /* Status indicator adjustment */
             .status-indicator {
                 bottom: 16px;
@@ -1505,16 +1458,6 @@
                 font-size: 0.75rem;
             }
 
-            .language-toggle {
-                top: calc(12px + env(safe-area-inset-top));
-                left: 12px;
-            }
-
-            .language-toggle button {
-                font-size: 1.5rem;
-                padding: 5px;
-            }
-
             /* Bottom elements - account for home indicator */
             .contact-fab {
                 bottom: calc(55px + env(safe-area-inset-bottom));
@@ -1573,11 +1516,7 @@
         <span id="whatsapp-chat-text">Falar com o Motorista</span>
     </a>
 
-    <!-- Language Toggle (top-left, flags only) -->
-    <div class="language-toggle">
-        <button id="pt-btn" class="active" title="Português">🇵🇹</button>
-        <button id="en-btn" title="English">🇬🇧</button>
-    </div>
+    <!-- Language Toggle removed - automatic detection -->
 
     <!-- Contact Icons (bottom-right, always visible) -->
     <div id="main-contact-fab" class="contact-fab">
@@ -2740,21 +2679,19 @@
             clearValidation('recolha', 'recolha-error');
             clearValidation('destino', 'destino-error');
             
-            updateLanguage('pt');
-
-            // Language toggle (with null checks)
-            const ptBtn = document.getElementById('pt-btn');
-            const enBtn = document.getElementById('en-btn');
-            if (ptBtn) ptBtn.addEventListener('click', () => {
-                updateLanguage('pt');
-                ptBtn.classList.add('active');
-                if (enBtn) enBtn.classList.remove('active');
-            });
-            if (enBtn) enBtn.addEventListener('click', () => {
-                updateLanguage('en');
-                enBtn.classList.add('active');
-                if (ptBtn) ptBtn.classList.remove('active');
-            });
+            // Detect browser language automatically
+            function detectBrowserLanguage() {
+                const browserLang = navigator.language || navigator.userLanguage || 'pt';
+                // Extract primary language code (e.g., 'en-US' -> 'en')
+                const primaryLang = browserLang.split('-')[0].toLowerCase();
+                // Supported languages: pt, en
+                if (primaryLang === 'en') return 'en';
+                // Default to Portuguese for any other language
+                return 'pt';
+            }
+            
+            const detectedLang = detectBrowserLanguage();
+            updateLanguage(detectedLang);
         });
     </script>
 
