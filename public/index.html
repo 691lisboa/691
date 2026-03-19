@@ -52,7 +52,7 @@
             align-items: flex-start;
             justify-content: center;
             overflow-x: hidden;
-            padding: 20px;
+            padding: 0 20px 20px;
         }
 
         /* Map background */
@@ -83,8 +83,8 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(0, 77, 0, 0.6);
-            border-radius: 24px;
-            padding: 24px 32px 40px;
+            border-radius: 0 0 24px 24px;
+            padding: 16px 32px 40px;
             box-shadow:
                 0 0 0 1px rgba(0, 77, 0, 0.15),
                 0 25px 50px rgba(0, 0, 0, 0.6),
@@ -92,6 +92,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
+            margin-top: 0;
         }
 
         .logo {
@@ -916,9 +917,7 @@
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             body {
-                padding: 12px;
-                align-items: flex-start;
-                padding-top: 20px;
+                padding: 0 12px 12px;
             }
 
             .container {
@@ -926,8 +925,8 @@
             }
 
             .form-card {
-                padding: 28px 20px;
-                border-radius: 20px;
+                padding: 16px 20px;
+                border-radius: 0 0 20px 20px;
             }
 
             .logo h1 {
@@ -980,13 +979,12 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 8px;
-                padding-top: 12px;
+                padding: 0 8px 8px;
             }
 
             .form-card {
-                padding: 20px 16px 32px;
-                border-radius: 18px;
+                padding: 12px 16px 32px;
+                border-radius: 0 0 18px 18px;
             }
 
             .logo h1 {
@@ -1130,9 +1128,7 @@
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             body {
-                padding: 12px;
-                align-items: flex-start;
-                padding-top: 20px;
+                padding: 0 12px 12px;
             }
 
             .container {
@@ -1140,8 +1136,8 @@
             }
 
             .form-card {
-                padding: 28px 20px;
-                border-radius: 20px;
+                padding: 16px 20px;
+                border-radius: 0 0 20px 20px;
             }
 
             .logo h1 {
@@ -1175,13 +1171,12 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 8px;
-                padding-top: 16px;
+                padding: 0 8px 8px;
             }
 
             .form-card {
-                padding: 20px 16px 32px;
-                border-radius: 18px;
+                padding: 12px 16px 32px;
+                border-radius: 0 0 18px 18px;
             }
 
             .logo h1 {
@@ -1261,10 +1256,6 @@
 
         /* iPhone notch and Dynamic Island optimization */
         @supports (padding: env(safe-area-inset-top)) {
-            body {
-                padding-top: calc(20px + env(safe-area-inset-top));
-            }
-
             .whatsapp-chat-btn {
                 padding: 10px 14px;
                 font-size: 0.7rem;
@@ -1275,20 +1266,12 @@
             }
 
             @media (max-width: 768px) {
-                body {
-                    padding-top: calc(80px + env(safe-area-inset-top));
-                }
-
                 .booking-window {
                     padding-top: calc(86px + env(safe-area-inset-top));
                 }
             }
 
             @media (max-width: 480px) {
-                body {
-                    padding-top: calc(72px + env(safe-area-inset-top));
-                }
-
                 .booking-window {
                     padding-top: calc(76px + env(safe-area-inset-top));
                 }
@@ -1320,9 +1303,7 @@
         /* Large phones optimization (6.5-6.8 inches: iPhone 14 Pro Max, Galaxy S23 Ultra, etc.) */
         @media (min-width: 390px) and (max-width: 430px) {
             body {
-                padding: 10px;
-                padding-bottom: 120px;
-                padding-top: 75px;
+                padding: 0 10px 10px;
                 align-items: flex-start;
             }
 
@@ -1331,8 +1312,8 @@
             }
 
             .form-card {
-                padding: 26px 18px;
-                border-radius: 20px;
+                padding: 16px 18px;
+                border-radius: 0 0 20px 20px;
             }
 
             .logo {
@@ -1389,8 +1370,7 @@
         /* iPhone 14/15 Pro Max specific optimizations (430px) */
         @media (width: 430px) {
             body {
-                padding: 12px;
-                padding-top: calc(70px + env(safe-area-inset-top));
+                padding: 0 12px 12px;
             }
 
             .container {
@@ -1398,8 +1378,8 @@
             }
 
             .form-card {
-                padding: 24px 20px;
-                border-radius: 22px;
+                padding: 16px 20px;
+                border-radius: 0 0 22px 22px;
             }
 
             .logo {
@@ -1463,12 +1443,11 @@
         /* Extra large phones (6.7+ inches) */
         @media (min-width: 431px) and (max-width: 480px) {
             body {
-                padding: 12px;
-                padding-top: 78px;
+                padding: 0 12px 12px;
             }
 
             .form-card {
-                padding: 28px 22px;
+                padding: 16px 22px;
             }
 
             .logo h1 {
