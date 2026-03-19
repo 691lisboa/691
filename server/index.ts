@@ -957,11 +957,27 @@ app.get('/health', (_req: Request, res: Response) => res.send('OK'))
 
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
 app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
+  const raw = req.body || {}
+  const lang = raw.lang || 'pt'
+  
   // Rate limiting por IP
   const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
     || req.socket.remoteAddress || 'unknown'
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({ success: false, error: 'Demasiados pedidos. Tente novamente em 10 minutos.' })
+    const rateLimitMsgs: Record<string, string> = {
+      pt: 'Demasiados pedidos. Tente novamente em 10 minutos.',
+      en: 'Too many requests. Please try again in 10 minutes.',
+      fr: 'Trop de demandes. Veuillez réessayer dans 10 minutes.',
+      es: 'Demasiadas solicitudes. Por favor inténtelo de nuevo en 10 minutos.',
+      de: 'Zu viele Anfragen. Bitte versuchen Sie es in 10 Minuten erneut.',
+      it: 'Troppe richieste. Per favore riprova tra 10 minuti.',
+      zh: '请求过多。请10分钟后再试。',
+      ja: 'リクエストが多すぎます。10分後にもう一度お試しください。',
+      ru: 'Слишком много запросов. Пожалуйста, попробуйте снова через 10 минут.',
+      nl: 'Te veel verzoeken. Probeer het over 10 minuten opnieuw.',
+      pl: 'Zbyt wiele próśb. Spróbuj ponownie za 10 minut.'
+    }
+    return res.status(429).json({ success: false, error: rateLimitMsgs[lang] || rateLimitMsgs.pt })
   }
 
   const raw = req.body || {}
