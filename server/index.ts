@@ -378,7 +378,7 @@ function buttonText(textKey: string, lang: string): string {
     accept:     '✅ Aceitar',
     reject:     '❌ Recusar',
     arrived:    '📍 Cheguei',
-    onway:      '🚗 Motorista a Caminho',
+    onway:      '🚗 A caminho',
     whatsapp:   '📱 WhatsApp',
     waze:       '🚀 Waze',
     complete:   '🏁 Concluir'
