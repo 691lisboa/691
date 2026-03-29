@@ -2803,24 +2803,20 @@
             const t = translations[currentLang];
             let isValid = true;
 
-            // Check notification permission - request if not granted
-            if (!('Notification' in window) || Notification.permission !== 'granted') {
-                // Try to request permission
-                if ('Notification' in window && Notification.permission === 'default') {
-                    Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                            // Re-register push if permission granted
-                            if ('serviceWorker' in navigator) {
-                                navigator.serviceWorker.ready.then(reg => {
-                                    if (reg.pushManager) {
-                                        registerPush(reg);
-                                    }
-                                });
-                            }
+            // Request notification permission if not already decided
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        // Re-register push if permission granted
+                        if ('serviceWorker' in navigator) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                if (reg.pushManager) {
+                                    registerPush(reg);
+                                }
+                            });
                         }
-                    });
-                }
-                // Don't block booking - just try to get permission
+                    }
+                });
             }
 
             // Name validation
