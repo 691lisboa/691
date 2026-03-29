@@ -21,8 +21,8 @@ const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 // Novas chaves VAPID geradas para corrigir erro de push
-const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || 'BLk2E2gRJK9Ckn9wlyUNOZUMUUzYisFniOr66nvZkNy24qtaHFrsN2Z0JYi0ATOvz9gxE3uqnD6i_cCBdp1ShQo'
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'hUPKDzRjVtQlHOajN3jQQoS35_9nTtbKeOSkc2heEV4'
+const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || 'BKicCkJHeKQ7NOfXN-KZaWdHicV0XIIYpWa1owRMqJ_e3roUkKfaXpdOotEqNoEHNp6n0XX3LshKdAot1SR7p4s'
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'hgvoYfQJvILxQtaXR3FjsAaJ3gNgJ9CYnKzCwi8Hlyc'
 const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:booking@691.pt'
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
