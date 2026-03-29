@@ -408,17 +408,12 @@ function esc(s: string): string {
 
 /** Constrói a mensagem rica em HTML para o Telegram */
 function buildMessage(b: Record<string, string>, statusLine = ''): string {
-  const now = new Date().toLocaleTimeString('pt-PT', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    timeZone: 'Europe/Lisbon'
-  })
+  const now = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
   let dateStr = `${esc(b.data)} às ${esc(b.hora)}`
   try {
     dateStr = new Date(`${b.data}T${b.hora}`).toLocaleString('pt-PT', {
       weekday: 'short', day: '2-digit', month: '2-digit',
-      hour: '2-digit', minute: '2-digit',
-      timeZone: 'Europe/Lisbon'
+      hour: '2-digit', minute: '2-digit'
     })
   } catch { /* mantém fallback */ }
 
