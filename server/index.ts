@@ -162,18 +162,18 @@ setInterval(() => {
     if (entry.ts < cutoff) rateLimit.delete(ip)
 }, 15 * 60 * 1000)
 
-// Limpar reservas expiradas (> 4h) a cada 30 min - apenas pendentes
+// Limpar reservas pendentes expiradas (> 24h) a cada 30 min
 setInterval(() => {
-  const cutoff = Date.now() - 4 * 60 * 60 * 1000
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000
   let changed = false
   for (const [bookingId, booking] of Array.from(activeBookings.entries())) {
-    // Só expirar reservas pendentes (não aceites ou em curso)
+    // Só expirar reservas pendentes após 24h (dá tempo para aceitar no dia seguinte)
     if (booking.status === 'pending' && Number(booking._ts || 0) < cutoff) {
       for (const [cid, bid] of Array.from(clientBookings.entries()))
         if (bid === bookingId) clientBookings.delete(cid)
       activeBookings.delete(bookingId)
       bookingMessages.delete(bookingId)
-      console.log(`Reserva pendente expirada removida: ${bookingId}`)
+      console.log(`Reserva pendente expirada (>24h): ${bookingId}`)
       changed = true
     }
   }
