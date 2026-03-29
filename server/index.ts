@@ -453,30 +453,35 @@ function buildKeyboard(bookingId: string, recolha: string, telefone?: string, st
   const language = lang || 'pt'
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows: any[][] = [
-    [
-      { text: buttonText('accept', language),   callback_data: `accept_${bookingId}`  },
-      { text: buttonText('reject', language),   callback_data: `reject_${bookingId}`  }
-    ]
-  ]
+  const rows: any[][] = []
   
-  // Adicionar botão "Motorista a caminho" em 3ª posição quando aceite
-  if (status === 'accepted') {
-    rows.push([{ text: buttonText('onway', language), callback_data: `onway_${bookingId}` }])
+  if (status === 'pending') {
+    // Estado inicial: só Aceitar, Recusar, WhatsApp
+    rows.push([
+      { text: buttonText('accept', language), callback_data: `accept_${bookingId}` },
+      { text: buttonText('reject', language), callback_data: `reject_${bookingId}` }
+    ])
+    if (whatsappUrl) {
+      rows.push([{ text: buttonText('whatsapp', language), url: whatsappUrl }])
+    }
+  } else {
+    // Depois de aceitar: Waze, Motorista a caminho, Cheguei, Concluir
+    // Linha 1: Waze + Motorista a caminho
+    rows.push([
+      { text: buttonText('waze', language), url: wazeUrl },
+      { text: buttonText('onway', language), callback_data: `onway_${bookingId}` }
+    ])
+    // Linha 2: Cheguei + Concluir
+    rows.push([
+      { text: buttonText('arrived', language), callback_data: `arrived_${bookingId}` },
+      { text: buttonText('complete', language), callback_data: `complete_${bookingId}` }
+    ])
+    // Linha 3: WhatsApp (se houver)
+    if (whatsappUrl) {
+      rows.push([{ text: buttonText('whatsapp', language), url: whatsappUrl }])
+    }
   }
   
-  // Segunda linha de ação
-  rows.push([
-    { text: buttonText('arrived', language),  callback_data: `arrived_${bookingId}` },
-    whatsappUrl ? { text: buttonText('whatsapp', language), url: whatsappUrl } : { text: buttonText('waze', language), url: wazeUrl }
-  ])
-  
-  // Adicionar Waze como botão separado se houver WhatsApp
-  if (whatsappUrl) {
-    rows.push([{ text: buttonText('waze', language), url: wazeUrl }])
-  }
-  
-  rows.push([{ text: buttonText('complete', language), callback_data: `complete_${bookingId}` }])
   return { inline_keyboard: rows }
 }
 
