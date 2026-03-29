@@ -74,9 +74,12 @@ app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
-  console.log('Web Push (VAPID) configurado')
+  console.log('Web Push (VAPID) configurado com chaves válidas')
+  console.log('[VAPID] Public key preview:', VAPID_PUBLIC_KEY.slice(0, 20) + '...')
 } else {
-  console.log('VAPID keys não configuradas — Web Push inativo')
+  console.warn('VAPID keys não configuradas — Web Push inativo')
+  console.warn('[VAPID] Public key exists:', !!VAPID_PUBLIC_KEY)
+  console.warn('[VAPID] Private key exists:', !!VAPID_PRIVATE_KEY)
 }
 
 // ── Estado em memória ────────────────────────────────────────────────────────
@@ -837,6 +840,7 @@ io.on('connection', (socket) => {
 
 // ── Web Push endpoints ────────────────────────────────────────────────────────
 app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
+  console.log('[VAPID] Public key requested:', VAPID_PUBLIC_KEY ? 'Sending key...' : 'No key available')
   res.json({ publicKey: VAPID_PUBLIC_KEY || null })
 })
 
@@ -844,9 +848,14 @@ app.post('/api/subscribe', express.json({ limit: '50kb' }), (req: Request, res: 
   const raw = req.body || {}
   const clientId = sanitize(String(raw.clientId || ''), 64)
   const subscription = raw.subscription as webpush.PushSubscription
-  if (!clientId || !subscription) return res.status(400).json({ ok: false })
+  console.log('[Push] Subscribe request:', { clientId: clientId ? 'Yes' : 'No', subscription: subscription ? 'Yes' : 'No' })
+  if (!clientId || !subscription) {
+    console.warn('[Push] Subscribe failed: missing clientId or subscription')
+    return res.status(400).json({ ok: false })
+  }
   pushSubscriptions.set(clientId, subscription)
   savePushSubs()
+  console.log('[Push] Subscription saved for client:', clientId.slice(0, 12) + '...')
   res.json({ ok: true })
 })
 
