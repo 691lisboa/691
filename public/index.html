@@ -3104,28 +3104,49 @@
 
         async function registerPush(swReg) {
             try {
+                console.log('[Push] Starting registration...');
+                
+                // Check notification permission first
+                if (!('Notification' in window)) {
+                    console.warn('[Push] Notifications not supported');
+                    return;
+                }
+                console.log('[Push] Notification permission:', Notification.permission);
+                
                 const keyRes = await fetch('/api/vapid-public-key');
                 const { publicKey } = await keyRes.json();
-                if (!publicKey) return;
+                console.log('[Push] VAPID public key received:', publicKey ? 'Yes' : 'No');
+                if (!publicKey) {
+                    console.warn('[Push] No VAPID public key - push disabled');
+                    return;
+                }
 
                 let sub = await swReg.pushManager.getSubscription();
+                console.log('[Push] Existing subscription:', sub ? 'Yes' : 'No');
+                
                 if (!sub) {
+                    console.log('[Push] Creating new subscription...');
                     sub = await swReg.pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: urlBase64ToUint8Array(publicKey)
                     });
+                    console.log('[Push] Subscription created successfully');
                 }
-                // Always re-POST — endpoint can rotate; server must always have the latest
-                await fetch('/api/subscribe', {
+                
+                // Send to server
+                console.log('[Push] Sending subscription to server...');
+                const res = await fetch('/api/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clientId, subscription: sub })
                 });
+                console.log('[Push] Server response:', res.ok ? 'OK' : 'Failed');
+                
                 // Ensure updated SW is controlling the page
                 if (swReg.waiting) swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                console.log('Push notifications registadas');
+                console.log('[Push] Registration complete');
             } catch (e) {
-                console.warn('Push registration failed:', e);
+                console.error('[Push] Registration failed:', e);
             }
         }
 
