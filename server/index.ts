@@ -408,7 +408,9 @@ function esc(s: string): string {
 
 /** Constrói a mensagem rica em HTML para o Telegram */
 function buildMessage(b: Record<string, string>, statusLine = ''): string {
-  const now = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+  // UTC+1 para hora de Portugal (horário de verão)
+  const now = new Date(Date.now() + 60 * 60 * 1000)
+  const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
   let dateStr = `${esc(b.data)} às ${esc(b.hora)}`
   try {
     dateStr = new Date(`${b.data}T${b.hora}`).toLocaleString('pt-PT', {
@@ -431,7 +433,7 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
     `<b>🏁 PARA:</b> ${esc(b.destino)}\n` +
     `━━━━━━━━━━━━━━━━━━━━━\n` +
     `<b>📅 Data/Hora:</b> ${dateStr}\n` +
-    `<b>🕐 Pedido às:</b> ${now}\n` +
+    `<b>🕐 Pedido às:</b> ${timeStr}\n` +
     `<b>🔑 ID:</b> <code>${esc(b.bookingId)}</code>`
   )
 }
