@@ -95,19 +95,17 @@ self.addEventListener('push', (e) => {
   const title = payload.title || '691 Lisboa'
   const type  = payload.data?.type || ''
   
-  // Base notification options - make them persistent and visual
+  // Base notification options
   const options = {
     body:               payload.body || '',
     icon:               '/icon.svg',
     badge:              '/icon.svg',
     data:               payload.data || {},
     vibrate:            [200, 100, 200, 100, 200],
-    requireInteraction: true, // Notification stays until user interacts
+    requireInteraction: ['accepted', 'arrived', 'rejected', 'completed', 'onway'].includes(type),
     tag:                payload.data?.bookingId || '691',
-    silent:             false,
-    // Make notification persistent on mobile
-    sticky:             true,  // Firefox
-    priority:           1      // High priority
+    renotify:           true,
+    silent:             false
   }
   
   // Add action buttons based on notification type
