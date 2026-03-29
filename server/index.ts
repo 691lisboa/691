@@ -20,8 +20,9 @@ const io = new SocketIOServer(server, {
 const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
-const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || ''
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
+// Novas chaves VAPID geradas para corrigir erro de push
+const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || 'BEsMITFDkVLP8LVJExemNbt9vwCtB-q4mrC4zNkEqOX0oGo1WEcwll5tkycFB4wziyUWy4mKoJCGAIPT2XrlAXY'
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'hOgk0JWJqSfQIoSe0uXhq7Qxq3y0a0qweay-PIWtNoI'
 const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:booking@691.pt'
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
