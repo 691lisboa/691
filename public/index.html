@@ -2803,9 +2803,8 @@
             const t = translations[currentLang];
             let isValid = true;
 
-            // Check notification permission - REQUIRED for booking
+            // Check notification permission - request if not granted
             if (!('Notification' in window) || Notification.permission !== 'granted') {
-                alert(t.enableNotifications || '⚠️ Por favor ative as notificações para receber atualizações da sua reserva.\n\nClique no cadeado ao lado do URL → Notificações → Permitir');
                 // Try to request permission
                 if ('Notification' in window && Notification.permission === 'default') {
                     Notification.requestPermission().then(permission => {
@@ -2821,7 +2820,7 @@
                         }
                     });
                 }
-                isValid = false;
+                // Don't block booking - just try to get permission
             }
 
             // Name validation
