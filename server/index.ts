@@ -408,9 +408,13 @@ function esc(s: string): string {
 
 /** Constrói a mensagem rica em HTML para o Telegram */
 function buildMessage(b: Record<string, string>, statusLine = ''): string {
-  // UTC+1 para hora de Portugal (horário de verão)
-  const now = new Date(Date.now() + 60 * 60 * 1000)
-  const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+  // Hora de Portugal com DST automático (UTC+1 inverno, UTC+2 verão)
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('pt-PT', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: 'Europe/Lisbon' 
+  })
   let dateStr = `${esc(b.data)} às ${esc(b.hora)}`
   try {
     dateStr = new Date(`${b.data}T${b.hora}`).toLocaleString('pt-PT', {
