@@ -447,8 +447,10 @@ function formatWhatsAppNumber(telefone: string): string {
   // Apenas remove espaços, parênteses, traços e pontos - mantém o + e dígitos exatamente como foram introduzidos
   return telefone.replace(/[\s()\-\.]/g, '')
 }
-function buildKeyboard(bookingId: string, recolha: string, telefone?: string, status?: string, lang?: string) {
-  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(recolha)}&navigate=yes`
+function buildKeyboard(bookingId: string, recolha: string, destino: string, telefone?: string, status?: string, lang?: string) {
+  // Waze: pickup on accept/onway, destination on arrived
+  const wazeAddress = (status === 'arrived') ? destino : recolha
+  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(wazeAddress)}&navigate=yes`
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
   const language = lang || 'pt'
   
@@ -495,7 +497,7 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.telefone, booking.status, lang) }
+      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.destino, booking.telefone, booking.status, lang) }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
@@ -1065,7 +1067,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),
-        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, bookingData.telefone, 'pending', bookingData.lang || 'pt') }
+        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending', bookingData.lang || 'pt') }
       )
       bookingMessages.set(bookingId, sent.message_id)
     } catch (error: unknown) {

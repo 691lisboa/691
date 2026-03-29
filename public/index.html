@@ -2803,42 +2803,9 @@
             const t = translations[currentLang];
             let isValid = true;
 
-            // Request notification permission - works across all browsers
-            if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    // First time - request permission
-                    Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                            if ('serviceWorker' in navigator) {
-                                navigator.serviceWorker.ready.then(reg => {
-                                    if (reg.pushManager) registerPush(reg);
-                                });
-                            }
-                        } else if (permission === 'denied') {
-                            showNotificationInstructions();
-                        }
-                    });
-                } else if (Notification.permission === 'denied') {
-                    // Permission blocked - show instructions
-                    showNotificationInstructions();
-                }
-            }
-
-            function showNotificationInstructions() {
-                const instructions = {
-                    pt: '⚠️ Para receber atualizações da sua reserva, ative as notificações:\n\n1. Clique no cadeado (🔒) ao lado do URL\n2. Encontre "Notificações" ou "Notifications"\n3. Selecione "Permitir" ou "Allow"\n4. Recarregue a página',
-                    en: '⚠️ To receive booking updates, enable notifications:\n\n1. Click the lock (🔒) next to the URL\n2. Find "Notifications"\n3. Select "Allow"\n4. Reload the page'
-                };
-                const msg = instructions[currentLang] || instructions.pt;
-                
-                // Show as a non-blocking banner instead of alert
-                const banner = document.createElement('div');
-                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f59e0b;color:#000;padding:12px;text-align:center;z-index:10000;font-size:14px;white-space:pre-line;';
-                banner.textContent = msg;
-                document.body.appendChild(banner);
-                
-                // Auto-hide after 10 seconds
-                setTimeout(() => banner.remove(), 10000);
+            // Request browser notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
             }
 
             // Name validation
