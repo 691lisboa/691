@@ -373,6 +373,33 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.22);
         }
 
+        /* Success confirmation is an overlay so it never changes the card/footer height. */
+        .success-message {
+            position: absolute;
+            left: 24px;
+            right: 24px;
+            bottom: 168px;
+            z-index: 30;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.25;
+            font-weight: 700;
+            color: #f3f4f6;
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            visibility: hidden;
+            transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
         .booking-info-header {
             display: flex;
             align-items: center;
@@ -1128,6 +1155,10 @@
                 margin-top: 20px;
             }
 
+            .success-message {
+                bottom: 156px;
+            }
+
             .page-footer {
                 margin-top: 16px;
             }
@@ -1394,6 +1425,62 @@
             .datetime-inputs {
                 grid-template-columns: 1fr 1fr;
                 gap: 15px;
+            }
+        }
+
+        /* Minimal bottom footer: centered, compact and intentionally subtle. */
+        .contact-fab {
+            margin-top: 10px !important;
+            gap: 8px !important;
+            opacity: 0.62;
+        }
+
+        .contact-icon-btn {
+            width: 28px !important;
+            height: 28px !important;
+            border-color: rgba(255,255,255,0.12) !important;
+            background: rgba(70,70,70,0.55) !important;
+            color: rgba(255,255,255,0.72) !important;
+            box-shadow: none !important;
+        }
+
+        .contact-icon-btn svg {
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        .page-footer {
+            margin: 6px auto 0 !important;
+            max-width: 92%;
+            text-align: center;
+            color: rgba(255,255,255,0.30) !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.01em;
+            opacity: 0.72;
+        }
+
+        @media (max-width: 480px) {
+            .contact-fab {
+                margin-top: 8px !important;
+                gap: 7px !important;
+            }
+
+            .contact-icon-btn {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .contact-icon-btn svg {
+                width: 11px !important;
+                height: 11px !important;
+            }
+
+            .page-footer {
+                margin-top: 5px !important;
+                font-size: 8px !important;
+                max-width: 88%;
             }
         }
     </style>
