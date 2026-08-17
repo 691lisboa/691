@@ -5,25 +5,52 @@ import { Server as SocketIOServer } from 'socket.io'
 import { Bot } from 'grammy'
 import webpush from 'web-push'
 import path from 'path'
-import fs from 'fs'
 import { fileURLToPath } from 'url'
+import crypto from 'crypto'
+import {
+  persistenceMode,
+  loadPersistentState,
+  upsertBooking,
+  deleteBooking,
+  upsertPushSubscription,
+  deletePushSubscription,
+} from './store'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
+app.disable('x-powered-by')
+app.set('trust proxy', 1)
 const server = createServer(app)
+const ALLOWED_ORIGINS = new Set(['https://691.pt', 'https://www.691.pt', 'http://localhost:3000', 'http://localhost:5173'])
 const io = new SocketIOServer(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || ALLOWED_ORIGINS.has(origin)) return callback(null, true)
+      return callback(new Error('Origin não permitida'))
+    },
+    methods: ['GET', 'POST']
+  }
+})
+
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()')
+  next()
 })
 
 const PORT             = process.env.PORT || 5000
 const TELEGRAM_TOKEN   = process.env.TELEGRAM_BOT_TOKEN
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 // Novas chaves VAPID geradas para corrigir erro de push
-const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || 'BKicCkJHeKQ7NOfXN-KZaWdHicV0XIIYpWa1owRMqJ_e3roUkKfaXpdOotEqNoEHNp6n0XX3LshKdAot1SR7p4s'
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'hgvoYfQJvILxQtaXR3FjsAaJ3gNgJ9CYnKzCwi8Hlyc'
-const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:jose@79.pt'
+const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY || ''
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
+const VAPID_EMAIL       = process.env.VAPID_EMAIL || 'mailto:jose@79.pt'
+const TELEGRAM_WEBHOOK_URL = String(process.env.TELEGRAM_WEBHOOK_URL || '')
+const TELEGRAM_WEBHOOK_SECRET = String(process.env.TELEGRAM_WEBHOOK_SECRET || '')
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
 // Key: "lat,lng" rounded; Value: { addr, ts }
@@ -51,7 +78,7 @@ app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
     const r = await fetch(url, {
       headers: {
         // Nominatim usage policy: identify application
-        'User-Agent': '691.pt/1.0 (jose@79.pt)',
+        'User-Agent': '691.pt/1.1 (jose@79.pt)',
         'Accept': 'application/json'
       }
     })
@@ -82,88 +109,169 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   console.warn('[VAPID] Private key exists:', !!VAPID_PRIVATE_KEY)
 }
 
-// ── Estado em memória ────────────────────────────────────────────────────────
+// ── Estado em memória + persistência ────────────────────────────────────────
 let bot: Bot | null = null
 const connectedClients = new Set<string>()
-const activeBookings   = new Map<string, Record<string, any>>()  // bookingId → dados
-const clientBookings   = new Map<string, string>()                  // clientId  → bookingId
-const bookingMessages  = new Map<string, number>()                  // bookingId → telegram messageId
-const rateLimit           = new Map<string, { count: number; ts: number }>()  // IP → contador
-// Dados persistidos em ficheiro para sobreviver a reinicios
-const PUSH_SUBS_FILE     = path.join(__dirname, '../data/push-subscriptions.json')
-const CLIENT_BOOK_FILE   = path.join(__dirname, '../data/client-bookings.json')
-const ACTIVE_BOOK_FILE   = path.join(__dirname, '../data/active-bookings.json')
+const activeBookings = new Map<string, Record<string, any>>()
+const clientBookings = new Map<string, string>()
+const bookingMessages = new Map<string, number>()
+const rateLimit = new Map<string, { count: number; ts: number }>()
+const apiRateLimit = new Map<string, { count: number; ts: number }>()
+let persistenceReady = false
 
-function loadPushSubs(): Map<string, webpush.PushSubscription> {
+async function initializePersistence(): Promise<void> {
+  if (persistenceMode !== 'supabase') {
+    persistenceReady = false
+    console.error('Persistência não configurada. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no ambiente de produção.')
+    return
+  }
+
   try {
-    const raw = fs.readFileSync(PUSH_SUBS_FILE, 'utf-8')
-    const obj = JSON.parse(raw) as Record<string, webpush.PushSubscription>
-    const m   = new Map<string, webpush.PushSubscription>()
-    for (const [k, v] of Object.entries(obj)) m.set(k, v)
-    console.log(`${m.size} push subscription(ões) carregada(s) do disco`)
-    return m
-  } catch { return new Map() }
+    const state = await loadPersistentState()
+    activeBookings.clear()
+    clientBookings.clear()
+    bookingMessages.clear()
+
+    for (const booking of state.bookings) {
+      activeBookings.set(String(booking.bookingId), booking)
+      clientBookings.set(String(booking.clientId), String(booking.bookingId))
+      if (booking._telegramMessageId) {
+        bookingMessages.set(String(booking.bookingId), Number(booking._telegramMessageId))
+      }
+    }
+
+    pushSubscriptions.clear()
+    for (const row of state.pushSubscriptions) {
+      pushSubscriptions.set(row.clientId, row.subscription as webpush.PushSubscription)
+    }
+
+    persistenceReady = true
+    console.log(`Persistência: Supabase (${activeBookings.size} reservas, ${pushSubscriptions.size} push subscriptions)`)
+  } catch (error) {
+    persistenceReady = false
+    console.error('Falha ao carregar Supabase:', error)
+    throw error
+  }
 }
 
-function savePushSubs(): void {
+// Estado em memória usado como cache de execução. A persistência de produção
+// é feita exclusivamente através do Supabase; não dependemos do filesystem
+// efémero do Render.
+const pushSubscriptions = new Map<string, webpush.PushSubscription>()
+
+async function savePushSubs(): Promise<void> {
+  if (persistenceMode !== 'supabase') return
   try {
-    const dir = path.dirname(PUSH_SUBS_FILE)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    const obj: Record<string, webpush.PushSubscription> = {}
-    for (const [k, v] of Array.from(pushSubscriptions.entries())) obj[k] = v
-    fs.writeFileSync(PUSH_SUBS_FILE, JSON.stringify(obj))
-  } catch (e) { console.warn('Erro ao guardar push subscriptions:', e) }
+    await Promise.all(Array.from(pushSubscriptions.entries()).map(([clientId, subscription]) =>
+      upsertPushSubscription(clientId, subscription)
+    ))
+  } catch (error) {
+    console.error('Falha ao persistir push subscriptions:', error)
+  }
 }
 
-const pushSubscriptions = loadPushSubs()       // clientId → sub
-
-// ── Persistência de reservas ─────────────────────────────────────────────────
-function persist(file: string, data: unknown): void {
+async function saveBookings(): Promise<void> {
+  if (persistenceMode !== 'supabase') return
   try {
-    const dir = path.dirname(file)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(file, JSON.stringify(data))
-  } catch (e) { console.warn(`Erro ao guardar ${path.basename(file)}:`, e) }
+    await Promise.all(Array.from(activeBookings.values()).map(booking => upsertBooking(booking)))
+  } catch (error) {
+    console.error('Falha ao persistir reservas:', error)
+    throw error
+  }
 }
 
-function loadClientBookings(): Map<string, string> {
-  try {
-    const obj = JSON.parse(fs.readFileSync(CLIENT_BOOK_FILE, 'utf-8')) as Record<string, string>
-    const m = new Map<string, string>()
-    for (const [k, v] of Object.entries(obj)) m.set(k, v)
-    console.log(`${m.size} clientBooking(s) carregado(s) do disco`)
-    return m
-  } catch { return new Map() }
+async function deletePersistedBooking(bookingId: string): Promise<void> {
+  if (persistenceMode !== 'supabase') return
+  await deleteBooking(bookingId)
 }
 
-function loadActiveBookings(): Map<string, Record<string, string>> {
-  try {
-    const obj = JSON.parse(fs.readFileSync(ACTIVE_BOOK_FILE, 'utf-8')) as Record<string, Record<string, string>>
-    const m = new Map<string, Record<string, string>>()
-    for (const [k, v] of Object.entries(obj)) m.set(k, v)
-    console.log(`${m.size} activeBooking(s) carregado(s) do disco`)
-    return m
-  } catch { return new Map() }
+async function deletePersistedPushSubscription(clientId: string): Promise<void> {
+  if (persistenceMode !== 'supabase') return
+  await deletePushSubscription(clientId)
 }
 
-function saveBookings(): void {
-  const cbObj: Record<string, string> = {}
-  for (const [k, v] of Array.from(clientBookings.entries())) cbObj[k] = v
-  persist(CLIENT_BOOK_FILE, cbObj)
-  const abObj: Record<string, Record<string, string>> = {}
-  for (const [k, v] of Array.from(activeBookings.entries())) abObj[k] = v
-  persist(ACTIVE_BOOK_FILE, abObj)
+function clientIdForBooking(bookingId: string): string | undefined {
+  return activeBookings.get(bookingId)?.clientId || Array.from(clientBookings.entries()).find(([, bid]) => bid === bookingId)?.[0]
 }
 
-// Inicializar a partir de disco (antes de iniciar o bot e sockets)
-for (const [k, v] of loadActiveBookings()) activeBookings.set(k, v)
-for (const [k, v] of loadClientBookings()) clientBookings.set(k, v)
+function publicBooking(booking: Record<string, any>): Record<string, unknown> {
+  return {
+    bookingId: booking.bookingId,
+    nome: booking.nome,
+    telefone: booking.telefone,
+    data: booking.data,
+    hora: booking.hora,
+    recolha: booking.recolha,
+    destino: booking.destino,
+    clientId: booking.clientId,
+    lang: booking.lang,
+    status: booking.status,
+    createdAt: booking.createdAt || undefined,
+    updatedAt: booking.updatedAt || undefined
+  }
+}
+
+/** Sanitiza input: converte para string, remove espaços extremos, limita tamanho */
+function sanitize(s: unknown, max = 200): string {
+  return String(s ?? '').trim().slice(0, max)
+}
+
+function requestIp(req: Request): string {
+  return req.ip || req.socket.remoteAddress || 'unknown'
+}
+
+function checkRateLimit(key: string, max = 5, windowMs = 10 * 60 * 1000): boolean {
+  const now = Date.now()
+  const entry = rateLimit.get(key)
+  if (!entry || now - entry.ts > windowMs) {
+    rateLimit.set(key, { count: 1, ts: now })
+    return true
+  }
+  if (entry.count >= max) return false
+  entry.count++
+  return true
+}
+
+function checkApiRateLimit(key: string, max = 30, windowMs = 60 * 1000): boolean {
+  const now = Date.now()
+  const entry = apiRateLimit.get(key)
+  if (!entry || now - entry.ts > windowMs) {
+    apiRateLimit.set(key, { count: 1, ts: now })
+    return true
+  }
+  if (entry.count >= max) return false
+  entry.count++
+  return true
+}
+
+function hashDriverToken(token: string): string {
+  return crypto.createHash('sha256').update(token, 'utf8').digest('hex')
+}
+
+function validDriverToken(booking: Record<string, any> | undefined, token: string): boolean {
+  if (!booking || !token || !booking.driverTokenHash) return false
+  const a = Buffer.from(String(booking.driverTokenHash), 'hex')
+  const b = Buffer.from(hashDriverToken(token), 'hex')
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
+
+function roomForDriver(bookingId: string): string {
+  return `driver:${bookingId}`
+}
+
+app.use('/api', (req, res, next) => {
+  const key = `${requestIp(req)}:${req.path}`
+  if (!checkApiRateLimit(key, 120, 60 * 1000)) return res.status(429).json({ ok: false, error: 'Demasiados pedidos. Tente novamente em instantes.' })
+  next()
+})
 
 // Limpar rate limit expirado a cada 15 min
 setInterval(() => {
   const cutoff = Date.now() - 10 * 60 * 1000
-  for (const [ip, entry] of Array.from(rateLimit.entries()))
-    if (entry.ts < cutoff) rateLimit.delete(ip)
+  for (const [key, entry] of Array.from(rateLimit.entries()))
+    if (entry.ts < cutoff) rateLimit.delete(key)
+  for (const [key, entry] of Array.from(apiRateLimit.entries()))
+    if (entry.ts < cutoff) apiRateLimit.delete(key)
 }, 15 * 60 * 1000)
 
 // Limpar reservas pendentes expiradas (> 24h) a cada 30 min
@@ -177,36 +285,13 @@ setInterval(() => {
         if (bid === bookingId) clientBookings.delete(cid)
       activeBookings.delete(bookingId)
       bookingMessages.delete(bookingId)
+      deletePersistedBooking(bookingId)
       console.log(`Reserva pendente expirada (>24h): ${bookingId}`)
       changed = true
     }
   }
-  if (changed) saveBookings()
+  if (changed) void saveBookings().catch(() => {})
 }, 30 * 60 * 1000)
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function clientIdForBooking(bookingId: string): string | undefined {
-  return Array.from(clientBookings.entries()).find(([, bid]) => bid === bookingId)?.[0]
-}
-
-/** Sanitiza input: converte para string, remove espaços extremos, limita tamanho */
-function sanitize(s: unknown, max = 200): string {
-  return String(s ?? '').trim().slice(0, max)
-}
-
-/** Verifica rate limit por IP: máx 5 reservas por 10 min */
-function checkRateLimit(ip: string): boolean {
-  const now    = Date.now()
-  const window = 10 * 60 * 1000
-  const entry  = rateLimit.get(ip)
-  if (!entry || now - entry.ts > window) {
-    rateLimit.set(ip, { count: 1, ts: now })
-    return true
-  }
-  if (entry.count >= 5) return false
-  entry.count++
-  return true
-}
 
 /** Envia Web Push para um cliente específico */
 async function sendPush(
@@ -225,7 +310,8 @@ async function sendPush(
     const status = (e as { statusCode?: number }).statusCode
     if (status === 410 || status === 404) {
       pushSubscriptions.delete(clientId)
-      savePushSubs()
+      deletePersistedPushSubscription(clientId)
+      void savePushSubs().catch(() => {})
       console.warn(`Push subscription expirada (${status}) removida: ${clientId}`)
     } else {
       console.error(`sendPush error [${status}]: ${String(e).slice(0, 120)}`)
@@ -493,8 +579,8 @@ function buildKeyboard(bookingId: string, recolha: string, destino: string, tele
 
 /** Edita a mensagem Telegram original com o novo estado — mantém os botões visíveis */
 async function editMsg(bookingId: string, statusLine: string): Promise<void> {
-  const msgId   = bookingMessages.get(bookingId)
   const booking = activeBookings.get(bookingId)
+  const msgId = bookingMessages.get(bookingId) || Number(booking?._telegramMessageId || 0)
   if (!bot || !TELEGRAM_CHAT_ID || !msgId || !booking) return
   try {
     const lang = booking.lang || 'pt'
@@ -509,30 +595,39 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
 }
 
 // ── Bot Telegram ─────────────────────────────────────────────────────────────
+function setupTelegram() {
 if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new Bot(TELEGRAM_TOKEN)
     
-    // Initialize bot asynchronously
-    initBot().catch(console.error)
-
+    // Webhook is preferred in production because it avoids 409 conflicts during deploys.
     async function initBot() {
-      // Delete any existing webhook to ensure polling works
-      await bot.api.deleteWebhook().catch(() => {})
-      
-      // Add delay to ensure webhook is fully deleted
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Start polling
-      bot.start().catch((err) => {
-        if (String(err).includes('409')) {
-          console.warn('Bot Telegram: Erro 409 ao iniciar - outra instância pode estar ativa')
-          // Não falhar completamente se for apenas conflito 409
-        } else {
-          console.error('Erro ao iniciar polling:', err)
-        }
-      })
+      if (TELEGRAM_WEBHOOK_URL && TELEGRAM_WEBHOOK_SECRET) {
+        await bot.api.setWebhook(TELEGRAM_WEBHOOK_URL, {
+          secret_token: TELEGRAM_WEBHOOK_SECRET,
+          drop_pending_updates: false,
+          allowed_updates: ['message', 'callback_query']
+        })
+        app.post('/telegram/webhook', express.json({ limit: '256kb' }), async (req: Request, res: Response) => {
+          const provided = String(req.get('X-Telegram-Bot-Api-Secret-Token') || '')
+          if (!provided || provided !== TELEGRAM_WEBHOOK_SECRET) return res.sendStatus(401)
+          try {
+            await bot!.handleUpdate(req.body)
+            res.sendStatus(200)
+          } catch (error) {
+            console.error('Telegram webhook error:', error)
+            res.sendStatus(500)
+          }
+        })
+        console.log('Telegram: Webhook configurado')
+        return
+      }
+      console.warn('Telegram: webhook não configurado; a usar polling (configure TELEGRAM_WEBHOOK_URL e TELEGRAM_WEBHOOK_SECRET para produção).')
+      await bot.api.deleteWebhook({ drop_pending_updates: false }).catch(() => {})
+      bot.start().catch((err) => console.error('Erro ao iniciar polling:', err))
     }
+
+    initBot().catch(err => console.error('Telegram init:', err))
 
     // Comandos de texto
     bot.on('message', async (ctx) => {
@@ -605,14 +700,14 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'accepted'
-        saveBookings()
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('accepted', lang)
           io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'accepted' }).catch(() => {})
         }
         // Broadcast status update to all sockets (including driver's tracking page)
-        io.emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
+        io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'accepted', message: statusMsg('accepted', lang) })
         await editMsg(bookingId, telegramStatusMsg('accepted', lang))
 
       // ── ❌ Recusar ─────────────────────────────────────────────────────────
@@ -622,7 +717,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'rejected'
-        saveBookings()
+        await saveBookings()
         await editMsg(bookingId, telegramStatusMsg('rejected', lang))
         if (clientId) {
           const msg = statusMsg('rejected', lang)
@@ -630,9 +725,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           sendPush(clientId, '691 Lisboa', msg, { bookingId, type: 'rejected' }).catch(() => {})
         }
         // Broadcast status update
-        io.emit('booking_status_update', { bookingId, status: 'rejected', message: statusMsg('rejected', lang) })
+        io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'rejected', message: statusMsg('rejected', lang) })
         bookingMessages.delete(bookingId)
-        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); bookingMessages.delete(bookingId); void deletePersistedBooking(bookingId).then(() => saveBookings()).catch(err => console.warn('Cleanup reserva:', err)) }, 5 * 60 * 1000)
 
       // ── 📍 Cheguei ─────────────────────────────────────────────────────────
       } else if (data.startsWith('arrived_')) {
@@ -643,7 +738,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'arrived'
-        saveBookings()
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('arrived', lang)
           io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -653,7 +748,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           console.warn(`[Telegram] arrived_: clientId não encontrado para ${bookingId}`)
         }
         // Broadcast status update
-        io.emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
+        io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'arrived', message: statusMsg('arrived', lang) })
         await editMsg(bookingId, telegramStatusMsg('arrived', lang))
 
       // ── 🚗 Motorista a caminho ────────────────────────────────────────────────────
@@ -664,14 +759,14 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'onway'
-        saveBookings()
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('onway', lang)
           io.to(clientId).emit('booking_status_update', { bookingId, status: 'onway', message: msg, timestamp: new Date().toISOString() })
           sendPush(clientId, '691 Lisboa 🚕', msg, { bookingId, type: 'onway' }).catch(() => {})
         }
         // Broadcast status update
-        io.emit('booking_status_update', { bookingId, status: 'onway', message: statusMsg('onway', lang) })
+        io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'onway', message: statusMsg('onway', lang) })
         await editMsg(bookingId, telegramStatusMsg('onway', lang))
 
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
@@ -683,7 +778,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
         const bk = activeBookings.get(bookingId)
         if (bk) bk.status = 'completed'
-        saveBookings()
+        await saveBookings()
         await editMsg(bookingId, telegramStatusMsg('completed', lang))
         if (clientId) {
           const msg = statusMsg('completed', lang)
@@ -694,21 +789,14 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           console.warn(`[Telegram] complete_: clientId não encontrado para ${bookingId}`)
         }
         // Broadcast status update
-        io.emit('booking_status_update', { bookingId, status: 'completed', message: statusMsg('completed', lang) })
+        io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'completed', message: statusMsg('completed', lang) })
         bookingMessages.delete(bookingId)
-        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
+        setTimeout(() => { activeBookings.delete(bookingId); if (clientId) clientBookings.delete(clientId); bookingMessages.delete(bookingId); void deletePersistedBooking(bookingId).then(() => saveBookings()).catch(err => console.warn('Cleanup reserva:', err)) }, 5 * 60 * 1000)
       }
     })
 
     bot.catch((err) => {
-      if (String(err).includes('409')) {
-        console.warn('Bot Telegram: Conflito 409 detectado - tentando reiniciar...')
-        setTimeout(() => {
-          bot?.start().catch(() => {})
-        }, 5000)
-      } else {
-        console.error('Erro no bot Telegram:', err)
-      }
+      console.error('Erro no bot Telegram:', err)
     })
 
     console.log('Bot Telegram inicializado (grammy)')
@@ -718,6 +806,7 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
 } else {
   console.log('TELEGRAM_BOT_TOKEN não configurado — bot inativo')
 }
+}
 
 // ── Socket.io ────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
@@ -725,6 +814,7 @@ io.on('connection', (socket) => {
 
   socket.on('register_client', (data: { clientId: string }) => {
     const clientId = sanitize(data.clientId, 64)
+    if (!/^client-[0-9a-f-]{36}$/i.test(clientId)) return
     socket.join(clientId)
     socket.data.clientId = clientId
     console.log(`Cliente registado: ${clientId} (push: ${pushSubscriptions.has(clientId) ? '✓' : '✗'})`)
@@ -732,6 +822,10 @@ io.on('connection', (socket) => {
 
   socket.on('restore_session', (data: { clientId: string }) => {
     const clientId  = sanitize(data.clientId, 64)
+    if (!/^client-[0-9a-f-]{36}$/i.test(clientId)) {
+      socket.emit('session_not_found')
+      return
+    }
     const bookingId = clientBookings.get(clientId)
     if (bookingId) {
       const booking = activeBookings.get(bookingId)
@@ -739,7 +833,7 @@ io.on('connection', (socket) => {
         socket.join(clientId)
         socket.data.clientId = clientId
         socket.emit('session_restored', {
-          booking,
+          booking: publicBooking(booking),
           status: booking.status || 'pending'
         })
         console.log(`Sessão restaurada: ${clientId} → ${bookingId}`)
@@ -755,36 +849,42 @@ io.on('connection', (socket) => {
   })
 
   // Motorista envia posição GPS em tempo real
-  socket.on('driver_location_update', (data: { lat: number; lng: number; bookingId: string }) => {
-    const bookingId = sanitize(String(data.bookingId || ''), 20)
-    if (!activeBookings.has(bookingId)) return
+  socket.on('driver_location_update', (data: { lat: number; lng: number; bookingId: string; driverToken: string }) => {
+    const bookingId = sanitize(String(data.bookingId || ''), 64)
+    const driverToken = sanitize(String(data.driverToken || ''), 128)
+    const booking = activeBookings.get(bookingId)
+    if (!validDriverToken(booking, driverToken)) return
     if (typeof data.lat !== 'number' || typeof data.lng !== 'number') return
-    const lat = Math.max(-90,  Math.min(90,  data.lat))
+    const lat = Math.max(-90, Math.min(90, data.lat))
     const lng = Math.max(-180, Math.min(180, data.lng))
     const clientId = clientIdForBooking(bookingId)
     if (!clientId) return
+    socket.join(roomForDriver(bookingId))
     io.to(clientId).emit('tracking_update', { lat, lng, bookingId, ts: Date.now() })
   })
 
-  // Driver checks booking status (for GPS tracking page)
-  socket.on('check_booking_status', (data: { bookingId: string }) => {
-    const bookingId = sanitize(String(data.bookingId || ''), 20)
+  // Driver checks booking status (for GPS tracking page) — requires private token.
+  socket.on('check_booking_status', (data: { bookingId: string; driverToken: string }) => {
+    const bookingId = sanitize(String(data.bookingId || ''), 64)
+    const driverToken = sanitize(String(data.driverToken || ''), 128)
     const booking = activeBookings.get(bookingId)
-    if (booking) {
-      socket.emit('booking_status_result', {
-        exists: true,
-        status: booking.status || 'pending',
-        message: statusMsg(booking.status || 'pending', booking.lang || 'pt')
-      })
-    } else {
+    if (!validDriverToken(booking, driverToken)) {
       socket.emit('booking_status_result', { exists: false })
+      return
     }
+    socket.join(roomForDriver(bookingId))
+    socket.data.driverBookingId = bookingId
+    socket.emit('booking_status_result', {
+      exists: true,
+      status: booking.status || 'pending',
+      message: statusMsg(booking.status || 'pending', booking.lang || 'pt')
+    })
   })
 
   // Cliente cancela reserva
   socket.on('cancel_booking', async (data) => {
     const clientId  = sanitize(data.clientId, 64)
-    const bookingId = sanitize(data.bookingId, 20)
+    const bookingId = sanitize(data.bookingId, 64)
 
     // Verificar que o socket é o dono desta reserva
     if (clientId !== socket.data.clientId) {
@@ -827,14 +927,14 @@ io.on('connection', (socket) => {
     const cancelMsg     = statusMsg('cancelled', cancelledLang)
     const bkCancel      = activeBookings.get(bookingId)
     if (bkCancel) bkCancel.status = 'cancelled'
-    saveBookings()
+    await saveBookings()
 
     bookingMessages.delete(bookingId)
     socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
     // Broadcast status update to driver's tracking page
-    io.emit('booking_status_update', { bookingId, status: 'cancelled', message: cancelMsg })
+    io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'cancelled', message: cancelMsg })
     // Manter em memória 5 min (consistente com reject/complete)
-    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId); saveBookings() }, 5 * 60 * 1000)
+    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId); bookingMessages.delete(bookingId); void deletePersistedBooking(bookingId).then(() => saveBookings()).catch(err => console.warn('Cleanup reserva:', err)) }, 5 * 60 * 1000)
   })
 })
 
@@ -844,7 +944,7 @@ app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || null })
 })
 
-app.post('/api/subscribe', express.json({ limit: '50kb' }), (req: Request, res: Response) => {
+app.post('/api/subscribe', express.json({ limit: '50kb' }), async (req: Request, res: Response) => {
   const raw = req.body || {}
   const clientId = sanitize(String(raw.clientId || ''), 64)
   const subscription = raw.subscription as webpush.PushSubscription
@@ -854,7 +954,7 @@ app.post('/api/subscribe', express.json({ limit: '50kb' }), (req: Request, res: 
     return res.status(400).json({ ok: false })
   }
   pushSubscriptions.set(clientId, subscription)
-  savePushSubs()
+  await savePushSubs()
   console.log('[Push] Subscription saved for client:', clientId.slice(0, 12) + '...')
   res.json({ ok: true })
 })
@@ -977,7 +1077,6 @@ app.get('/api/search', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/health', (_req: Request, res: Response) => res.send('OK'))
 
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
 app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
@@ -985,8 +1084,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const lang = raw.lang || 'pt'
   
   // Rate limiting por IP
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
-    || req.socket.remoteAddress || 'unknown'
+  const ip = requestIp(req)
   if (!checkRateLimit(ip)) {
     const rateLimitMsgs: Record<string, string> = {
       pt: 'Demasiados pedidos. Tente novamente em 10 minutos.',
@@ -1039,15 +1137,31 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   if (recolha.length < 3 || destino.length < 3)
     return res.status(400).json({ success: false, error: vm.address })
 
-  const bookingId  = '691-' + Date.now().toString().slice(-6)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) {
+    return res.status(400).json({ success: false, error: vm.missing })
+  }
+  const todayLisbon = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Lisbon', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  if (data < todayLisbon) return res.status(400).json({ success: false, error: vm.missing })
+
+  const existingBookingId = clientBookings.get(clientId)
+  if (existingBookingId) {
+    const existing = activeBookings.get(existingBookingId)
+    if (existing && ['pending', 'accepted', 'onway', 'arrived'].includes(String(existing.status))) {
+      return res.status(409).json({ success: false, error: 'Já tem uma reserva ativa.' , bookingId: existingBookingId })
+    }
+  }
+
+  const bookingId = `691-${crypto.randomBytes(12).toString('hex')}`
+  const driverToken = crypto.randomBytes(32).toString('hex')
+  const driverTokenHash = hashDriverToken(driverToken)
   const bookingData: Record<string, any> = {
-    bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
+    bookingId, driverToken, driverTokenHash, nome, telefone, data, hora, recolha, destino, clientId, lang,
     status: 'pending', _ts: String(Date.now()),
   }
 
   activeBookings.set(bookingId, bookingData)
   clientBookings.set(clientId, bookingId)
-  saveBookings()
+  await saveBookings()
   console.log('Nova reserva:', bookingId, nome, recolha, '→', destino)
 
   const successMsgs: Record<string, string> = {
@@ -1066,7 +1180,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   // Notificar cliente via socket
   io.to(clientId).emit('new_booking', {
-    ...bookingData,
+    ...publicBooking(bookingData),
     message: successMsgs[lang] || successMsgs.pt,
     timestamp: new Date().toISOString()
   })
@@ -1080,6 +1194,8 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
         { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending', bookingData.lang || 'pt') }
       )
       bookingMessages.set(bookingId, sent.message_id)
+      bookingData._telegramMessageId = sent.message_id
+      await saveBookings()
     } catch (error: unknown) {
       console.error('Erro ao enviar para Telegram:', error)
       // Fallback: registar no log — reserva continua ativa no sistema
@@ -1092,7 +1208,23 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 })
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-server.listen(PORT, () => {
-  console.log(`Servidor na porta ${PORT}`)
-  console.log(`Bot Telegram: ${bot ? 'Ativo' : 'Inativo'}`)
+async function bootstrap(): Promise<void> {
+  await initializePersistence()
+  setupTelegram()
+
+  app.get('/health', (_req: Request, res: Response) => {
+    if (!persistenceReady) return res.status(503).json({ ok: false, persistence: 'not-ready' })
+    res.json({ ok: true, persistence: persistenceMode })
+  })
+
+  server.listen(PORT, () => {
+    console.log(`Servidor na porta ${PORT}`)
+    console.log(`Persistência: ${persistenceMode}`)
+    console.log(`Bot Telegram: ${bot ? 'Ativo' : 'Inativo'}`)
+  })
+}
+
+bootstrap().catch(error => {
+  console.error('Falha fatal no arranque:', error)
+  process.exit(1)
 })
