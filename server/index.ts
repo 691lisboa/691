@@ -599,6 +599,9 @@ function setupTelegram() {
 if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
   try {
     bot = new Bot(TELEGRAM_TOKEN)
+
+    // Initialize grammy before webhook requests can be handled.
+    await bot.init()
     
     // Webhook is preferred in production because it avoids 409 conflicts during deploys.
     async function initBot() {
