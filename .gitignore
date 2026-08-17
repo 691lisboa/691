@@ -1,4 +1,16 @@
 .env
+.env.*
+!.env.example
+
 node_modules/
 
 data/
+
+.local/
+.upm/
+
+*.log
+server.log
+
+.DS_Store
+Thumbs.db
