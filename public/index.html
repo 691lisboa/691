@@ -297,6 +297,46 @@
             animation: none;
         }
 
+        .push-permission-btn {
+            width: 100%;
+            padding: 13px 16px;
+            margin-top: 10px;
+            background: transparent;
+            color: #d1d5db;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        .push-permission-btn:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: #6b7280;
+            color: #fff;
+        }
+
+        .push-permission-btn:active {
+            transform: translateY(1px);
+        }
+
+        .push-permission-btn.success {
+            border-color: #166534;
+            color: #86efac;
+            cursor: default;
+        }
+
+        .push-permission-help {
+            min-height: 18px;
+            margin-top: 7px;
+            color: #9ca3af;
+            font-size: 0.76rem;
+            line-height: 1.35;
+            text-align: center;
+        }
+
         /* Splash Screen */
         #splash {
             position: fixed;
@@ -1596,6 +1636,8 @@
                 </div>
 
                 <button type="submit" id="submit-btn" class="submit-btn">Reservar Taxi</button>
+                <button type="button" id="push-permission-btn" class="push-permission-btn" style="display:none;">🔔 Ativar notificações</button>
+                <div id="push-permission-help" class="push-permission-help" aria-live="polite"></div>
             </form>
 
             <div id="success-message" class="success-message">
@@ -2797,11 +2839,6 @@
             const t = translations[currentLang];
             let isValid = true;
 
-            // Request browser notification permission
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-
             // Name validation
             const nomeInput = document.getElementById('nome');
             const nomeError = document.getElementById('nome-error');
@@ -3096,29 +3133,75 @@
             return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
         }
 
+        let pushServiceWorkerRegistration = null;
+        let pushRegistrationBusy = false;
+
+        function getPushUiText() {
+            const map = {
+                pt: { enable: '🔔 Ativar notificações', active: '✅ Notificações ativas', blocked: '⚠️ Notificações bloqueadas', help: 'As notificações permitem receber atualizações da reserva mesmo fora da página.' },
+                en: { enable: '🔔 Enable notifications', active: '✅ Notifications enabled', blocked: '⚠️ Notifications blocked', help: 'Notifications let you receive booking updates even when you leave the page.' },
+                fr: { enable: '🔔 Activer les notifications', active: '✅ Notifications activées', blocked: '⚠️ Notifications bloquées', help: 'Les notifications permettent de recevoir les mises à jour de la réservation.' },
+                es: { enable: '🔔 Activar notificaciones', active: '✅ Notificaciones activas', blocked: '⚠️ Notificaciones bloqueadas', help: 'Las notificaciones permiten recibir actualizaciones de la reserva.' },
+                de: { enable: '🔔 Benachrichtigungen aktivieren', active: '✅ Benachrichtigungen aktiv', blocked: '⚠️ Benachrichtigungen blockiert', help: 'So erhalten Sie Buchungs-Updates auch ausserhalb der Seite.' },
+                it: { enable: '🔔 Attiva notifiche', active: '✅ Notifiche attive', blocked: '⚠️ Notifiche bloccate', help: 'Le notifiche permettono di ricevere gli aggiornamenti della prenotazione.' },
+                nl: { enable: '🔔 Meldingen inschakelen', active: '✅ Meldingen actief', blocked: '⚠️ Meldingen geblokkeerd', help: 'Meldingen laten u updates over uw reservering ontvangen.' },
+                pl: { enable: '🔔 Włącz powiadomienia', active: '✅ Powiadomienia aktywne', blocked: '⚠️ Powiadomienia zablokowane', help: 'Powiadomienia umożliwiają otrzymywanie aktualizacji rezerwacji.' },
+                ru: { enable: '🔔 Включить уведомления', active: '✅ Уведомления включены', blocked: '⚠️ Уведомления заблокированы', help: 'Уведомления позволяют получать обновления бронирования.' },
+                zh: { enable: '🔔 开启通知', active: '✅ 通知已开启', blocked: '⚠️ 通知已被阻止', help: '开启通知后，即使离开页面也能收到预订更新。' },
+                ja: { enable: '🔔 通知を有効にする', active: '✅ 通知が有効です', blocked: '⚠️ 通知がブロックされています', help: '通知を有効にすると予約状況を受け取れます。' }
+            };
+            return map[currentLang] || map.pt;
+        }
+
+        function updatePushButton(state, helpText = '') {
+            const btn = document.getElementById('push-permission-btn');
+            const help = document.getElementById('push-permission-help');
+            if (!btn) return;
+            const ui = getPushUiText();
+            btn.style.display = 'block';
+            btn.classList.toggle('success', state === 'active');
+            btn.disabled = state === 'active' || pushRegistrationBusy;
+            btn.textContent = state === 'active' ? ui.active : state === 'blocked' ? ui.blocked : ui.enable;
+            if (help) help.textContent = helpText || (state === 'active' ? '' : ui.help);
+        }
+
         async function registerPush(swReg) {
+            if (pushRegistrationBusy) return false;
+            pushRegistrationBusy = true;
             try {
                 console.log('[Push] Starting registration...');
-                
-                // Check notification permission first
-                if (!('Notification' in window)) {
-                    console.warn('[Push] Notifications not supported');
-                    return;
+                if (!('Notification' in window) || !('PushManager' in window)) {
+                    console.warn('[Push] Notifications/Push not supported');
+                    updatePushButton('blocked', 'Este navegador não suporta notificações Push neste dispositivo.');
+                    return false;
                 }
+
                 console.log('[Push] Notification permission:', Notification.permission);
-                
-                const keyRes = await fetch('/api/vapid-public-key');
+                if (Notification.permission === 'denied') {
+                    const ui = getPushUiText();
+                    updatePushButton('blocked', ui.help + ' Altere a permissão de notificações nas definições deste site e tente novamente.');
+                    return false;
+                }
+
+                const keyRes = await fetch('/api/vapid-public-key', { cache: 'no-store' });
+                if (!keyRes.ok) throw new Error(`VAPID key request failed: HTTP ${keyRes.status}`);
                 const { publicKey } = await keyRes.json();
                 console.log('[Push] VAPID public key received:', publicKey ? 'Yes' : 'No');
-                if (!publicKey) {
-                    console.warn('[Push] No VAPID public key - push disabled');
-                    return;
-                }
+                if (!publicKey) throw new Error('VAPID public key unavailable');
 
                 let sub = await swReg.pushManager.getSubscription();
                 console.log('[Push] Existing subscription:', sub ? 'Yes' : 'No');
-                
                 if (!sub) {
+                    if (Notification.permission !== 'granted') {
+                        const permission = await Notification.requestPermission();
+                        console.log('[Push] Permission after user action:', permission);
+                        if (permission !== 'granted') {
+                            const ui = getPushUiText();
+                            updatePushButton('blocked', ui.help + ' A permissão não foi concedida.');
+                            return false;
+                        }
+                    }
+
                     console.log('[Push] Creating new subscription...');
                     sub = await swReg.pushManager.subscribe({
                         userVisibleOnly: true,
@@ -3126,32 +3209,68 @@
                     });
                     console.log('[Push] Subscription created successfully');
                 }
-                
-                // Send to server
-                console.log('[Push] Sending subscription to server...');
+
                 const res = await fetch('/api/subscribe', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clientId, subscription: sub })
                 });
-                console.log('[Push] Server response:', res.ok ? 'OK' : 'Failed');
-                
-                // Ensure updated SW is controlling the page
+                if (!res.ok) {
+                    const body = await res.text().catch(() => '');
+                    throw new Error(`Subscribe failed: HTTP ${res.status}${body ? ` - ${body.slice(0,120)}` : ''}`);
+                }
+
                 if (swReg.waiting) swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
                 console.log('[Push] Registration complete');
+                updatePushButton('active');
+                return true;
             } catch (e) {
                 console.error('[Push] Registration failed:', e);
+                updatePushButton('enable', 'Não foi possível ativar as notificações. Tente novamente depois de permitir as notificações deste site.');
+                return false;
+            } finally {
+                pushRegistrationBusy = false;
+                if (Notification?.permission === 'granted') {
+                    const btn = document.getElementById('push-permission-btn');
+                    if (btn && btn.classList.contains('success')) btn.disabled = true;
+                }
             }
+        }
+
+        async function handlePushButtonClick() {
+            if (!pushServiceWorkerRegistration) return;
+            if ('Notification' in window && Notification.permission === 'denied') {
+                updatePushButton('blocked', 'Abra as definições de notificações do site, permita as notificações e volte a clicar neste botão.');
+                return;
+            }
+            await registerPush(pushServiceWorkerRegistration);
         }
 
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => {
+                    .then(async reg => {
+                        pushServiceWorkerRegistration = reg;
                         console.log('SW registered:', reg.scope);
-                        return registerPush(reg);
+
+                        const pushBtn = document.getElementById('push-permission-btn');
+                        if (pushBtn) pushBtn.addEventListener('click', handlePushButtonClick);
+
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            const existing = await reg.pushManager.getSubscription().catch(() => null);
+                            if (existing) {
+                                await registerPush(reg);
+                            } else {
+                                updatePushButton('enable');
+                            }
+                        } else {
+                            updatePushButton(Notification?.permission === 'denied' ? 'blocked' : 'enable');
+                        }
                     })
-                    .catch(err => console.warn('SW registration failed:', err));
+                    .catch(err => {
+                        console.warn('SW registration failed:', err);
+                        updatePushButton('blocked', 'Não foi possível registar o serviço de notificações.');
+                    });
             });
 
             // Recebe dados da notificação push quando o utilizador clica nela
