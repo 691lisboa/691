@@ -814,7 +814,9 @@ io.on('connection', (socket) => {
 
   socket.on('register_client', (data: { clientId: string }) => {
     const clientId = sanitize(data.clientId, 64)
-    if (!/^client-[0-9a-f-]{36}$/i.test(clientId)) return
+    // Accept the legacy client IDs already used by existing reservations,
+    // plus the newer UUID-based IDs. Keep the value bounded and room-safe.
+    if (!/^client-[A-Za-z0-9_-]{1,60}$/.test(clientId)) return
     socket.join(clientId)
     socket.data.clientId = clientId
     console.log(`Cliente registado: ${clientId} (push: ${pushSubscriptions.has(clientId) ? '✓' : '✗'})`)
@@ -849,7 +851,8 @@ io.on('connection', (socket) => {
 
   socket.on('restore_session', (data: { clientId: string }) => {
     const clientId  = sanitize(data.clientId, 64)
-    if (!/^client-[0-9a-f-]{36}$/i.test(clientId)) {
+    // Support both existing legacy client IDs and new UUID-based IDs.
+    if (!/^client-[A-Za-z0-9_-]{1,60}$/.test(clientId)) {
       socket.emit('session_not_found')
       return
     }
