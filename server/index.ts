@@ -820,6 +820,33 @@ io.on('connection', (socket) => {
     console.log(`Cliente registado: ${clientId} (push: ${pushSubscriptions.has(clientId) ? '✓' : '✗'})`)
   })
 
+  socket.on('register_booking_view', (data: { bookingId: string }) => {
+    const bookingId = sanitize(String(data?.bookingId || ''), 96)
+    if (!bookingId) {
+      socket.emit('booking_view_error', { error: 'Reserva inválida.' })
+      return
+    }
+
+    const booking = activeBookings.get(bookingId)
+    const clientId = clientIdForBooking(bookingId)
+
+    if (!booking || !clientId) {
+      socket.emit('booking_view_error', { error: 'Reserva não encontrada.' })
+      return
+    }
+
+    socket.join(clientId)
+    socket.data.clientId = clientId
+    socket.data.bookingId = bookingId
+
+    socket.emit('session_restored', {
+      booking: publicBooking(booking),
+      status: booking.status || 'pending'
+    })
+
+    console.log(`Vista da reserva registada: ${bookingId} → ${clientId}`)
+  })
+
   socket.on('restore_session', (data: { clientId: string }) => {
     const clientId  = sanitize(data.clientId, 64)
     if (!/^client-[0-9a-f-]{36}$/i.test(clientId)) {
@@ -883,14 +910,18 @@ io.on('connection', (socket) => {
 
   // Cliente cancela reserva
   socket.on('cancel_booking', async (data) => {
-    const clientId  = sanitize(data.clientId, 64)
-    const bookingId = sanitize(data.bookingId, 64)
+    const bookingId = sanitize(data.bookingId, 96)
+    const socketClientId = sanitize(socket.data.clientId, 64)
+    const payloadClientId = sanitize(data.clientId, 64)
 
-    // Verificar que o socket é o dono desta reserva
-    if (clientId !== socket.data.clientId) {
-      console.warn(`cancel_booking: clientId mismatch (socket=${socket.data.clientId}, payload=${clientId})`)
+    // A identidade usada para cancelar vem do socket autenticado/associado à reserva.
+    // O clientId no payload é apenas compatibilidade com clientes antigos.
+    if (!socketClientId || (payloadClientId && payloadClientId !== socketClientId)) {
+      console.warn(`cancel_booking: clientId mismatch (socket=${socketClientId || 'undefined'}, payload=${payloadClientId || 'undefined'})`)
       return
     }
+
+    const clientId = socketClientId
     const ownedBookingId = clientBookings.get(clientId)
     if (!ownedBookingId || ownedBookingId !== bookingId) {
       console.warn(`cancel_booking: bookingId mismatch para ${clientId}`)

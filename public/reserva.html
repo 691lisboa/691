@@ -243,8 +243,14 @@
     }
 
     socket.on('connect', () => {
-      socket.emit('register_client', { clientId });
-      socket.emit('restore_session', { clientId });
+      // Regista esta vista diretamente pela reserva. O servidor resolve o clientId
+      // associado à reserva e coloca este socket no mesmo room do cliente que criou a reserva.
+      if (bookingId) {
+        socket.emit('register_booking_view', { bookingId });
+      } else {
+        socket.emit('register_client', { clientId });
+        socket.emit('restore_session', { clientId });
+      }
     });
 
     socket.on('session_restored', (data) => {
@@ -289,6 +295,11 @@
     socket.on('booking_cancelled', (data) => {
       if (!data) return;
       applyBookingStatus('cancelled', data.bookingId);
+    });
+
+    socket.on('booking_view_error', (data) => {
+      console.warn('Falha ao registar vista da reserva:', data?.error || 'erro desconhecido');
+      applyBookingStatus('pending');
     });
 
     socket.on('tracking_update', (data) => {
