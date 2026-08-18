@@ -52,7 +52,7 @@
             align-items: flex-start;
             justify-content: center;
             overflow-x: hidden;
-            padding: 0 20px 20px;
+            padding: 0 20px 0;
         }
 
         /* Map background */
@@ -790,7 +790,7 @@
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             body {
-                padding: 0 12px 12px;
+                padding: 0 12px 0;
             }
 
             .container {
@@ -852,11 +852,11 @@
 
         @media (max-width: 480px) {
             body {
-                padding: 0 8px 8px;
+                padding: 0 8px 0;
             }
 
             .form-card {
-                padding: 12px 16px 32px;
+                padding: 12px 16px 0;
                 border-radius: 18px;
             }
 
@@ -1423,17 +1423,47 @@
       margin-top: 18px;
     }
 </style>
+
+<style id="691-final-footer-splash-fix">
+/* Final micro-fix:
+   - remove the initial standalone "691" splash
+   - keep the legal footer visually at the absolute bottom of the card */
+#splash {
+    display: none !important;
+}
+.form-card {
+    padding-bottom: 0 !important;
+}
+.page-footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+body {
+    padding-bottom: 0 !important;
+}
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 0 !important;
+    }
+    .form-card {
+        padding-bottom: 0 !important;
+    }
+}
+@media (max-width: 480px) {
+    body {
+        padding-bottom: 0 !important;
+    }
+    .form-card {
+        padding-bottom: 0 !important;
+    }
+}
+</style>
+
 </head>
 <body>
     <!-- Map Background -->
     <div id="map-bg"></div>
-
-    <!-- Splash Screen -->
-    <div id="splash">
-        <span class="splash-logo">691</span>
-    </div>
-
-    <!-- Language Toggle removed - automatic detection -->
+<!-- Language Toggle removed - automatic detection -->
 
     <!-- Discreet notification control -->
     <!-- Main Container -->
