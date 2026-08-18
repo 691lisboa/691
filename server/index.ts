@@ -738,39 +738,86 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         await ctx.reply(
           '<b>🚕 691 Lisboa — Central de Comando</b>\n\n' +
           '/start — Este menu\n' +
-          '/status — Reservas ativas\n' +
-          '/whatsapp — Contactar clientes via WhatsApp\n' +
+          '/status — Estado das reservas\n' +
+          '/whatsapp — Contactar clientes com reservas ativas\n' +
           'Aguarde novas reservas.',
           { parse_mode: 'HTML' }
         )
       } else if (text === '/status') {
-        const bookingList = activeBookings.size === 0
-          ? 'Nenhuma reserva ativa.'
-          : Array.from(activeBookings.values())
-              .map(b => `• <code>${esc(b.bookingId)}</code> — ${esc(b.nome)} (${esc(b.recolha)})`)
-              .join('\n')
-        const statusRows = Array.from(activeBookings.values()).map(b => [
-          { text: `🗑️ Fechar ${String(b.bookingId).slice(-8)}`, callback_data: `close_${b.bookingId}` }
-        ])
+        const allBookings = Array.from(activeBookings.values())
+        const liveBookings = allBookings.filter(b => !TERMINAL_BOOKING_STATUSES.has(String(b.status || 'pending') as BookingStatus))
+        const terminalBookings = allBookings.filter(b => TERMINAL_BOOKING_STATUSES.has(String(b.status || 'pending') as BookingStatus))
+
+        const statusIcon = (status: string): string => ({
+          pending: '🕐',
+          accepted: '✅',
+          onway: '🚗',
+          arrived: '📍',
+          completed: '🏁',
+          rejected: '❌',
+          cancelled: '🚫'
+        } as Record<string, string>)[status] || '•'
+
+        const statusLabel = (status: string): string => ({
+          pending: 'Pendente',
+          accepted: 'Aceite',
+          onway: 'A caminho',
+          arrived: 'Chegou',
+          completed: 'Concluída',
+          rejected: 'Recusada',
+          cancelled: 'Cancelada'
+        } as Record<string, string>)[status] || status
+
+        const formatStatusBooking = (b: Record<string, any>): string => {
+          const status = String(b.status || 'pending')
+          return `${statusIcon(status)} <code>${esc(b.bookingId)}</code> — <b>${esc(statusLabel(status))}</b> — ${esc(b.nome)} (${esc(b.recolha)})`
+        }
+
+        const sections: string[] = []
+        if (liveBookings.length) {
+          sections.push('<b>🚕 Reservas em curso</b>\n' + liveBookings.map(formatStatusBooking).join('\n'))
+        } else {
+          sections.push('<b>🚕 Reservas em curso</b>\nNenhuma.')
+        }
+
+        if (terminalBookings.length) {
+          sections.push('<b>🧹 Terminadas — a aguardar limpeza automática</b>\n' + terminalBookings.map(formatStatusBooking).join('\n'))
+        }
+
+        const statusRows = [
+          ...liveBookings.map(b => [
+            { text: `🗑️ Fechar ${String(b.bookingId).slice(-8)}`, callback_data: `close_${b.bookingId}` }
+          ]),
+          ...terminalBookings.map(b => [
+            { text: `🧹 Limpar ${String(b.bookingId).slice(-8)}`, callback_data: `close_${b.bookingId}` }
+          ])
+        ]
+
         await ctx.reply(
           `<b>📊 Status 691.pt</b>\n\n` +
           `👥 Clientes online: <b>${connectedClients.size}</b>\n` +
-          `🚕 Reservas ativas: <b>${activeBookings.size}</b>\n` +
-          `🤖 Bot: ✅ Ativo\n\n${bookingList}`,
+          `🚕 Em curso: <b>${liveBookings.length}</b>\n` +
+          `🧹 A aguardar limpeza: <b>${terminalBookings.length}</b>\n` +
+          `🤖 Bot: ✅ Ativo\n\n` +
+          sections.join('\n\n'),
           { parse_mode: 'HTML', reply_markup: statusRows.length ? { inline_keyboard: statusRows } : undefined }
         )
       } else if (text === '/whatsapp') {
-        if (activeBookings.size === 0) {
-          await ctx.reply('<b>💬 WhatsApp Clientes</b>\n\n❌ Nenhuma reserva ativa para contactar.', { parse_mode: 'HTML' })
+        const liveBookings = Array.from(activeBookings.values())
+          .filter(booking => !TERMINAL_BOOKING_STATUSES.has(String(booking.status || 'pending') as BookingStatus))
+
+        if (liveBookings.length === 0) {
+          await ctx.reply('<b>💬 WhatsApp Clientes</b>\n\n❌ Nenhuma reserva em curso para contactar.', { parse_mode: 'HTML' })
           return
         }
-        const rows = Array.from(activeBookings.values()).map(booking => [{
+
+        const rows = liveBookings.map(booking => [{
           text: `💬 ${booking.nome} (${booking.telefone})`,
           url: `https://wa.me/${formatWhatsAppNumber(booking.telefone)}`
         }])
         await ctx.reply(
           '<b>💬 WhatsApp Clientes</b>\n\n' +
-          `📱 <b>${activeBookings.size}</b> reserva(s) ativa(s):\n\n` +
+          `📱 <b>${liveBookings.length}</b> reserva(s) em curso:\n\n` +
           'Clique nos botões para abrir WhatsApp:',
           { parse_mode: 'HTML', reply_markup: { inline_keyboard: rows } }
         )
