@@ -6,7 +6,9 @@
   "scripts": {
     "start": "tsx server/index.ts",
     "dev": "tsx server/index.ts",
-    "build": "echo 'No build step required'"
+    "build": "node scripts/audit.mjs",
+    "check": "node scripts/audit.mjs",
+    "test": "node scripts/audit.mjs"
   },
   "dependencies": {
     "dotenv": "^17.3.1",

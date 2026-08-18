@@ -1,239 +1,95 @@
-# 🚕 691 Taxi - Serviço Premium
+# 691 Lisboa
 
-Aplicação moderna de serviço de taxi com design premium, comunicação em tempo real e integração com Telegram.
+Aplicação web de reservas de táxi com confirmação e gestão operacional via Telegram, estado em tempo real por Socket.IO, notificações Web Push e persistência Supabase.
 
-## ✨ Funcionalidades
+## Funcionalidades atuais
 
-### 🎨 Design Premium
-- **OLED UX**: Fundo preto puro com glassmorphism
-- **TAXI GREEN**: Esquema de cores verde oficial (#004d00)
-- **Mapa TomTom**: Estilo "Night" em fullscreen
-- **Animações suaves** e feedback visual avançado
+- Formulário de reserva em `public/index.html` com autocomplete TomTom para moradas.
+- Tradução automática coerente em 11 idiomas na interface principal, rodapé, páginas Legal/Privacidade, acompanhamento da reserva e fallback offline; os links internos preservam o idioma.
+- Estados da reserva: `pending → accepted → onway → arrived → completed`, com rejeição/cancelamento como estados terminais.
+- Bot Telegram administrativo limitado ao `TELEGRAM_CHAT_ID` configurado.
+- Cancelamento pelo cliente com confirmação do servidor e aviso no Telegram.
+- Web Push com validação do par VAPID e renovação automática de subscrições inválidas.
+- Persistência Supabase; o filesystem do Render não é usado como fonte de verdade.
+- Link privado `/reserva/:id?token=...` protegido por HMAC.
+- PWA com Service Worker e fallback offline.
 
-### 📱 PWA Completo
-- **Instalável** no iOS e Android
-- **Service Worker** para offline-first
-- **Splash screen** personalizado
-- **Notificações push** nativas
+A funcionalidade GPS foi removida por completo porque não é utilizada, reduzindo superfície de ataque, permissões e dependências externas desnecessárias.
 
-### 🚗 Funcionalidades Principais
-- **Reserva instantânea** com cálculo automático de preço
-- **GPS automático** para preenchimento de endereços
-- **Acompanhamento** em tempo real da viagem
+## Requisitos
 
-### 🤖 Integração Telegram
-- **Botões de ação rápida**:
-  - ✅ Confirmar
-  - 📍 Cheguei (com alerta sonoro no cliente)
-  - 🚀 Waze (abre rota)
-  - 🏁 Concluir
-
-### 💰 Sistema de Preços
-- **Cálculo via TomTom Routing API**
-
-## 🛠️ Stack Tecnológico
-
-### Frontend
-- **HTML** + **JavaScript** (arquivos estáticos em `public/`)
-- **Socket.io Client** para comunicação real-time
-
-### Backend
-- **Node.js** + **Express**
-- **TypeScript**
-- **Socket.io** para real-time
-- **Telegram Bot API**
-
-### PWA
-- **Service Worker** com cache strategies
-- **Web App Manifest**
-- **Push Notifications**
-
-## 🚀 Instalação
-
-### Pré-requisitos
 - Node.js 22.x
-- npm ou yarn
+- npm
+- Projeto Supabase com o esquema de `supabase_schema.sql`. Em bases já existentes, `supabase_migration_2026-08-18_hardening.sql` remove apenas a coluna/índice legado da antiga função GPS do motorista.
 
-### 1. Clonar o projeto
-```bash
-git clone https://github.com/691lisboa/691.git
-cd 691
+## Variáveis de ambiente
+
+Copiar `.env.example` para `.env` em desenvolvimento. Em produção, configurar as variáveis no Render.
+
+Obrigatórias para a configuração de produção usada pelo 691:
+
+```env
+NODE_ENV=production
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+TELEGRAM_WEBHOOK_URL=https://691.pt/telegram/webhook
+TELEGRAM_WEBHOOK_SECRET=
+BOOKING_ACCESS_SECRET=
+TOMTOM_API_KEY=
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_EMAIL=mailto:jose@79.pt
 ```
 
-### 2. Instalar dependências
+`BOOKING_ACCESS_SECRET` deve ser independente dos outros segredos e ter pelo menos 32 caracteres. Pode ser gerado com:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Não guardar segredos no Git.
+
+## Instalação e validação
+
 ```bash
 npm install
-```
-
-### 3. Configurar variáveis de ambiente
-```bash
-cp .env.example .env
-```
-
-Editar `.env` com suas credenciais:
-```env
-# TomTom Maps API (autocomplete/rotas)
-TOMTOM_API_KEY=your_tomtom_api_key_here
-
-# Telegram Bot
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-TELEGRAM_CHAT_ID=your_telegram_chat_id_here
-
-# Web Push (opcional)
-VAPID_PUBLIC_KEY=your_vapid_public_key_here
-VAPID_PRIVATE_KEY=your_vapid_private_key_here
-VAPID_EMAIL=mailto:jose@79.pt
-
-# App Configuration
-PORT=5000
-NODE_ENV=production
-```
-
-### 4. Iniciar desenvolvimento
-```bash
-npm run dev
-```
-
-A aplicação estará disponível em `http://localhost:5000`
-
-## 📱 Configuração do Telegram Bot
-
-### 1. Criar Bot no Telegram
-1. Fale com [@BotFather](https://t.me/BotFather)
-2. Use `/newbot`
-3. Siga as instruções
-4. Copie o token recebido
-
-### 2. Obter ID
-1. Fale com [@userinfobot](https://t.me/userinfobot)
-2. Envie qualquer mensagem para seu bot
-3. Copie o ID recebido
-
-### 3. Configurar Variáveis
-```env
-TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-TELEGRAM_CHAT_ID=123456789
-```
-
-## 🗺️ Configuração TomTom Maps
-
-### 1. Criar Conta TomTom
-1. Acesse [TomTom Developer Portal](https://developer.tomtom.com/)
-2. Crie uma conta gratuita
-3. Crie um novo projeto
-4. Copie a API Key
-
-### 2. Configurar Variável
-```env
-TOMTOM_API_KEY=your_tomtom_api_key_here
-```
-
-## 🚀 Deploy (Produção)
-
-### Render.com
-1. Conecte seu repositório GitHub ao Render
-2. Configure as variáveis de ambiente no painel
-3. Deploy automático será acionado
-
-### Variáveis de Produção
-```env
-NODE_ENV=production
-PORT=5000
-TELEGRAM_BOT_TOKEN=seu_token
-TELEGRAM_CHAT_ID=seu_chat_id
-TOMTOM_API_KEY=sua_api_key
-VAPID_PUBLIC_KEY=sua_vapid_public_key
-VAPID_PRIVATE_KEY=sua_vapid_private_key
-VAPID_EMAIL=mailto:jose@79.pt
-```
-
-## 📁 Estrutura do Projeto
-
-```
-691/
-├── server/               # Backend Node.js
-│   ├── index.ts         # Servidor principal
-├── public/              # Arquivos estáticos
-│   ├── manifest.json    # PWA manifest
-│   └── sw.js           # Service worker
-```
-
-## 🎯 Funcionalidades Detalhadas
-
-### Real-time Communication
-- **Socket.io** para comunicação bidirecional
-- **Status updates** instantâneos
-- **Driver location** tracking
-
-### Telegram Integration
-- **Rich messages** com Markdown
-- **Inline keyboards** para ações rápidas
-- **Location sharing** via Waze
-- **Status notifications** automáticas
-
-### PWA Features
-- **Offline support** com cache strategies
-- **Background sync** para mensagens
-- **Push notifications** para updates
-- **App-like experience** no mobile
-
-### Security
-- **XSS protection** no frontend
-
-## 📈 Monitoramento
-
-### Logs
-- **Structured logging** no backend
-- **Error tracking** centralizado
-- **Performance monitoring**
-
-### Analytics
-- **Trip analytics** dashboard
-- **User behavior** tracking
-- **Revenue metrics**
-
-## 🔧 Manutenção
-
-### Updates
-```bash
-# Update dependencies
-npm update
-
-# Build production
 npm run build
+npm test
+npm start
 ```
 
-### Backup
-```bash
-# (Opcional) Faça backup do diretório `data/` (estado runtime) e das variáveis `.env` em local seguro.
+`npm run build` executa uma auditoria estática: valida a sintaxe do backend, Service Worker e scripts inline, procura IDs HTML duplicados e verifica invariantes de segurança importantes.
+
+## Deploy no Render
+
+- Build command: `npm install && npm run build`
+- Start command: `npx tsx server/index.ts`
+- Node: 22.x
+
+O servidor falha o arranque se a persistência Supabase não estiver disponível ou se `BOOKING_ACCESS_SECRET` estiver ausente/inválido. Este comportamento é intencional para não arrancar em produção num estado inseguro.
+
+## Segurança operacional
+
+- `.env` está excluído do Git.
+- A chave `SUPABASE_SERVICE_ROLE_KEY` existe apenas no backend.
+- RLS está ativo nas tabelas Supabase e não existem policies públicas no esquema fornecido.
+- Reservas e cancelamentos exigem tokens privados além do identificador do cliente.
+- O bot Telegram ignora mensagens/comandos de chats não autorizados.
+- Transições de estado inválidas são rejeitadas pelo backend.
+- Dados pessoais não são escritos nos logs normais de criação de reservas.
+
+## Estrutura
+
+```text
+public/          frontend/PWA
+server/index.ts  Express, Socket.IO, Telegram e Web Push
+server/store.ts  persistência Supabase via REST
+scripts/audit.mjs verificações estáticas de build
+supabase_schema.sql esquema para instalação nova
 ```
 
-## 🤝 Contribuição
+## Preço da viagem
 
-1. Fork o projeto
-2. Crie feature branch: `git checkout -b feature/nova-funcionalidade`
-3. Commit changes: `git commit -m 'Add nova funcionalidade'`
-4. Push: `git push origin feature/nova-funcionalidade`
-5. Pull Request
-
-## 📄 Licença
-
-MIT License - ver [LICENSE](LICENSE) para detalhes
-
-## 🆘 Suporte
-
-- **Email**: support@691.pt
-- **Telegram**: @691support
-- **Issues**: [GitHub Issues](https://github.com/691lisboa/691/issues)
-
----
-
-## 🚀 Próximos Passos
-
-- [ ] Implementar pagamento integrado
-- [ ] Adicionar múltiplos motoristas
-- [ ] Sistema de avaliação
-- [ ] Analytics dashboard
-- [ ] Multi-language support
-
-**Feito com ❤️ para 691 Taxi**
+A aplicação continua a apresentar o preço final pelo taxímetro conforme o tarifário aplicável. A estimativa automática de preço deve ser integrada apenas quando estiverem definidos e validados todos os parâmetros tarifários que o serviço pretende aplicar; não deve ser inferida por aproximações no código.

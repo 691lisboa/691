@@ -1,0 +1,1569 @@
+        :root {
+            --taxi-green: #004d00;
+            --taxi-green-mid: #006600;
+            --taxi-green-bright: #00cc44;
+            --taxi-green-glow: rgba(0, 77, 0, 0.35);
+            --bg: #000000;
+            --card-bg: rgba(0, 0, 0, 0.55);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.45);
+            --border: rgba(0, 77, 0, 0.55);
+            /* legacy aliases */
+            --primary-color: #004d00;
+            --secondary-color: #003300;
+            --accent-color: #00cc44;
+            --border-color: rgba(0, 77, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Keep the centered layout from shifting horizontally when the scrollbar appears. */
+        html {
+            scrollbar-gutter: stable;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 0 20px 20px;
+        }
+
+        /* Map background */
+        #map-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.55;
+        }
+
+        #map-bg .leaflet-control-attribution {
+            background: rgba(0,0,0,0.58);
+            color: rgba(255,255,255,0.62);
+            font-size: 8px;
+            padding: 1px 4px;
+        }
+        #map-bg .leaflet-control-attribution a { color: rgba(255,255,255,0.78); }
+
+        #map-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-card {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 77, 0, 0.6);
+            border-radius: 24px;
+            padding: 16px 32px 10px;
+            box-shadow:
+                0 0 0 1px rgba(0, 77, 0, 0.15),
+                0 25px 50px rgba(0, 0, 0, 0.6),
+                0 0 80px rgba(0, 77, 0, 0.08);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            margin-top: 12px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+            width: 100%;
+        }
+
+        .logo h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #00cc44;
+            line-height: 1;
+        }
+
+        .logo p {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 12px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.72rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #004d00;
+            background: rgba(0, 77, 0, 0.07);
+            box-shadow: 0 0 0 3px rgba(0, 77, 0, 0.2), 0 0 20px rgba(0, 77, 0, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.22);
+        }
+
+        /* Hide default browser validation messages */
+        .form-group input:invalid {
+            box-shadow: none;
+        }
+
+        .form-group input:focus:invalid {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.07);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.08);
+        }
+
+        /* Custom validation messages */
+        .validation-message {
+            display: none;
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .form-group input.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.07);
+        }
+
+        .form-group input.error:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.08);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 24px rgba(0,77,0,0.4); }
+            50%       { box-shadow: 0 4px 36px rgba(0,204,68,0.55), 0 0 18px rgba(0,204,68,0.2); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* WhatsApp Chat Button - Above logo, right aligned */
+        .whatsapp-chat-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 28px auto;
+            padding: 12px 20px;
+            background: #004d00;
+            animation: pulse-glow 3s ease-in-out infinite;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: filter 0.3s, transform 0.2s, box-shadow 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            box-shadow: 0 4px 24px rgba(0,77,0,0.4);
+            align-self: flex-end;
+        }
+
+        .whatsapp-chat-btn:hover {
+            filter: brightness(1.4);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(0,77,0,0.6);
+            animation: none;
+        }
+
+        .whatsapp-chat-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.95);
+            animation: none;
+        }
+
+        .whatsapp-chat-btn .wa-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 2s infinite;
+            flex: 0 0 auto;
+        }
+
+        .whatsapp-chat-btn .wa-icon svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-3px); }
+            60% { transform: translateY(-2px); }
+        }
+
+        @media (max-width: 768px) {
+            .whatsapp-chat-btn {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 17px;
+            background: #004d00;
+            animation: pulse-glow 3s ease-in-out infinite;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: filter 0.3s, transform 0.2s, box-shadow 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 4px 24px rgba(0, 77, 0, 0.45);
+            margin-top: 12px;
+        }
+
+        .submit-btn:hover {
+            filter: brightness(1.4);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(0,77,0,0.6);
+            animation: none;
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.95);
+            animation: none;
+        }
+
+        .push-control {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            z-index: 10020;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 28px;
+        }
+
+        .push-control-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 999px;
+            background: rgba(10, 10, 10, 0.56);
+            color: rgba(255,255,255,0.72);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.76;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.20);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: opacity 0.18s ease, transform 0.18s ease, background 0.18s ease;
+        }
+
+        .push-control-btn:hover,
+        .push-control-btn:focus-visible {
+            opacity: 1;
+            transform: scale(1.04);
+            background: rgba(10, 10, 10, 0.72);
+            outline: none;
+        }
+
+        .push-control-btn.success {
+            color: rgba(255,255,255,0.42);
+            opacity: 0.48;
+            cursor: default;
+        }
+
+        .push-control-btn:disabled {
+            cursor: default;
+        }
+
+        .push-indicator {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #f59e0b;
+            display: none;
+            flex: 0 0 auto;
+            box-shadow: 0 0 0 2px rgba(245,158,11,0.12);
+        }
+
+        .push-indicator.show {
+            display: inline-block;
+        }
+
+        .push-permission-help {
+            display: none;
+            max-width: min(280px, calc(100vw - 70px));
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: rgba(10,10,10,0.82);
+            color: rgba(255,255,255,0.82);
+            font-size: 11px;
+            line-height: 1.25;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+        }
+
+        /* Success confirmation is an overlay so it never changes the card/footer height. */
+        .success-message {
+            position: absolute;
+            left: 24px;
+            right: 24px;
+            bottom: 168px;
+            z-index: 30;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.25;
+            font-weight: 700;
+            color: #f3f4f6;
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            visibility: hidden;
+            transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+        }
+
+        .success-message.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .booking-info-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .booking-banner-contacts {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .no-bookings {
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+
+        /* Booking Window */
+        .booking-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 3000;
+            padding: 96px 20px 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .booking-window.show {
+            display: flex;
+        }
+
+        /* Booking window floating actions (contact)
+           These should appear only when the booking window is open. */
+        #booking-contact-fab {
+            display: none;
+            z-index: 4001 !important;
+        }
+        #booking-window.show ~ #booking-contact-fab {
+            display: flex !important;
+        }
+
+        .booking-container {
+            background: rgba(4, 4, 4, 0.97);
+            border: 1px solid rgba(0,77,0,0.45);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.9), 0 0 40px rgba(0,77,0,0.1);
+        }
+
+        .booking-header {
+            background: rgba(0,77,0,0.12);
+            border-bottom: 1px solid rgba(0,77,0,0.35);
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-header h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .booking-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .booking-details-panel {
+            flex: 1;
+            padding: 20px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px;
+            overflow: hidden;
+            overflow-y: auto;
+        }
+
+        /* booking-info-card is now integrated into single card */
+        .booking-info-card {
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin-bottom: 0;
+        }
+        .booking-info-card > h4 { display: none; }
+
+        #booking-window-details { margin-bottom: 14px; }
+        #booking-window-status  { margin-bottom: 12px; }
+
+        /* ── Trip Card (Uber-style) ──────────────────────────────────── */
+        .trip-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .trip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 16px;
+            background: rgba(0,77,0,0.18);
+            border-bottom: none;
+        }
+
+        .trip-id-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            color: #00cc44;
+            background: rgba(0,204,68,0.1);
+            border: 1px solid rgba(0,204,68,0.28);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .trip-datetime {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+        }
+        .trip-date {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.55);
+            text-transform: capitalize;
+        }
+        .trip-time {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.03em;
+        }
+
+        .trip-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .trip-passenger {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 14px 16px;
+        }
+        .trip-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #004d00 0%, #00cc44 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+            letter-spacing: 0;
+        }
+        .trip-passenger-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+        .trip-passenger-phone {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.45);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        .trip-route {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .trip-route-row {
+            display: flex;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .trip-route-track {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 16px;
+            flex-shrink: 0;
+            padding-top: 3px;
+        }
+        .trip-dot-pickup {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #00cc44;
+            border: 2px solid rgba(0,204,68,0.35);
+            flex-shrink: 0;
+        }
+        .trip-connector {
+            width: 2px;
+            flex: 1;
+            min-height: 18px;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 3px,
+                transparent 3px, transparent 7px
+            );
+            margin: 5px 0;
+        }
+        .trip-dot-dest {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.85);
+            flex-shrink: 0;
+        }
+        .trip-route-info {
+            flex: 1;
+            padding-bottom: 14px;
+        }
+        .trip-route-row:last-child .trip-route-info {
+            padding-bottom: 0;
+        }
+        .trip-route-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        .trip-route-address {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.92);
+            line-height: 1.4;
+        }
+
+        /* WhatsApp Driver Button - Same style as main buttons */
+        .whatsapp-driver-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #004d00;
+            animation: pulse-glow 3s ease-in-out infinite;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: filter 0.3s, transform 0.2s, box-shadow 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            box-shadow: 0 4px 24px rgba(0, 77, 0, 0.45);
+        }
+
+        .whatsapp-driver-btn:hover {
+            filter: brightness(1.4);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(0,77,0,0.6);
+            animation: none;
+        }
+
+        .whatsapp-driver-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.95);
+            animation: none;
+        }
+
+        .whatsapp-driver-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .whatsapp-driver-btn {
+                padding: 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .booking-actions-panel {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(0,77,0,0.2);
+        }
+
+        .booking-actions-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .contact-icon {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .contact-text {
+            opacity: 0.9;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .booking-window {
+                padding: 86px 10px 10px;
+            }
+
+            .booking-container {
+                height: 95vh;
+                max-height: none;
+                border-radius: 15px;
+            }
+
+            .booking-content {
+                flex-direction: column;
+            }
+
+            .booking-details-panel {
+                flex: 1;
+                border-radius: 12px;
+                margin: 10px;
+            }
+
+            .booking-info-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .booking-info-card h4 {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .booking-actions-panel {
+                padding: 15px;
+            }
+
+            .booking-actions-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .cancel-btn {
+                padding: 15px;
+                font-size: 1rem;
+            }
+
+            .booking-status {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .booking-window {
+                padding: 76px 8px 8px;
+            }
+
+            .booking-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .booking-header {
+                padding: 12px;
+            }
+
+            .booking-header h3 {
+                font-size: 1rem;
+            }
+
+            .booking-details-panel {
+                padding: 12px;
+            }
+
+
+            .booking-info-card {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .booking-actions-panel {
+                padding: 12px;
+            }
+        }
+
+        /* Autocomplete */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(5,5,5,0.97);
+            border: 1px solid rgba(0,77,0,0.5);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            backdrop-filter: blur(20px);
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 11px 16px;
+            color: rgba(255,255,255,0.85);
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.875rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(0,77,0,0.2);
+            color: #ffffff;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 0 12px 12px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 16px 20px;
+                border-radius: 20px;
+            }
+
+            .logo h1 {
+                font-size: 2.2rem;
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .booking-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .booking-content {
+                flex-direction: column;
+            }
+
+            .booking-details-panel {
+                flex: none;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,77,0,0.2);
+                overflow-y: visible;
+            }
+
+
+            .booking-actions-panel {
+                padding: 15px;
+            }
+
+            .booking-actions-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .cancel-btn {
+                padding: 15px;
+                font-size: 1rem;
+            }
+
+            .booking-status {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0 8px 8px;
+            }
+
+            .form-card {
+                padding: 12px 16px 8px;
+                border-radius: 18px;
+            }
+
+            .logo h1 {
+                font-size: 2rem;
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        .booking-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.06em;
+        }
+        .booking-status.pending {
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.35);
+            color: #fbbf24;
+        }
+        .booking-status.accepted {
+            background: rgba(0,204,68,0.1);
+            border: 1px solid rgba(0,204,68,0.4);
+            color: #00cc44;
+        }
+        .booking-status.onway {
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.4);
+            color: #3b82f6;
+            animation: pulse-onway 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse-onway {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+            50%       { box-shadow: 0 0 0 6px rgba(59,130,246,0.12); }
+        }
+        .booking-status.arrived {
+            background: rgba(0,204,68,0.18);
+            border: 1px solid rgba(0,204,68,0.55);
+            color: #00e64d;
+            animation: pulse-arrived 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse-arrived {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,204,68,0); }
+            50%       { box-shadow: 0 0 0 6px rgba(0,204,68,0.12); }
+        }
+        .booking-status.rejected {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.35);
+            color: #f87171;
+        }
+        .booking-status.cancelled {
+            background: rgba(107,114,128,0.1);
+            border: 1px solid rgba(107,114,128,0.35);
+            color: #9ca3af;
+        }
+        .booking-status.completed {
+            background: rgba(96,165,250,0.1);
+            border: 1px solid rgba(96,165,250,0.35);
+            color: #60a5fa;
+        }
+
+        .datetime-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .datetime-inputs .form-group {
+            margin-bottom: 0;
+        }
+
+        .datetime-label {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* Contact icons - inside form card, centered */
+        .contact-fab {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .contact-icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-icon-btn svg { width: 15px; height: 15px; }
+
+        /* All contact buttons - Gray */
+        .contact-icon-btn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border-color: #6c757d;
+            color: white;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .contact-icon-btn:hover {
+            background: linear-gradient(135deg, #495057, #343a40);
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.5);
+        }
+
+        .booking-banner-contacts .contact-icon-btn {
+            width: 28px;
+            height: 28px;
+        }
+
+        .booking-banner-contacts .contact-icon-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Booking actions always at bottom */
+        .booking-actions-panel {
+            padding: 14px 20px;
+            border-top: 1px solid rgba(0,77,0,0.2);
+            background: rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 0 12px 12px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 16px 20px;
+                border-radius: 20px;
+            }
+
+            .logo h1 {
+                font-size: 2.2rem;
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .booking-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .booking-content {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .booking-details-panel {
+                flex: none;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,77,0,0.2);
+                overflow-y: visible;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0 8px 8px;
+            }
+
+            .form-card {
+                padding: 12px 16px 32px;
+                border-radius: 18px;
+            }
+
+            .logo h1 {
+                font-size: 2rem;
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .submit-btn {
+                padding: 16px;
+            }
+
+            .contact-fab {
+                margin-top: 20px;
+            }
+
+            .success-message {
+                bottom: 156px;
+            }
+
+            .page-footer {
+                margin-top: 16px;
+            }
+
+            .contact-icon-btn {
+                width: 34px;
+                height: 34px;
+            }
+
+            .contact-icon-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .booking-banner-contacts .contact-icon-btn {
+                width: 24px;
+                height: 24px;
+            }
+
+            .booking-banner-contacts .contact-icon-btn svg {
+                width: 10px;
+                height: 10px;
+            }
+
+            .booking-actions-row {
+                gap: 8px;
+            }
+        }
+
+        /* ── Mobile / Touch Globals ──────────────────────────────────────────── */
+        /* Remove 300ms tap delay globally */
+        html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+        button, a, input, select, textarea, label {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Momentum scroll + overscroll containment */
+        .booking-content, .booking-details-panel {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        /* Prevent iOS input font-size auto-zoom (needs >= 16px) */
+        @media (max-width: 768px) {
+            input, textarea, select { font-size: 16px !important; }
+        }
+        /* Dynamic viewport height — avoids address-bar resize jump */
+        @supports (height: 100dvh) {
+            .booking-window { height: 100dvh; }
+            @media (max-width: 768px) {
+                .booking-container { height: 100dvh; }
+            }
+        }
+        /* Safe-area insets for iPhone notch / home-bar */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .booking-actions-panel { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+            body { padding-bottom: env(safe-area-inset-bottom); }
+        }
+
+        /* iPhone notch and Dynamic Island optimization */
+        @supports (padding: env(safe-area-inset-top)) {
+            body {
+                padding-top: env(safe-area-inset-top);
+            }
+
+            .whatsapp-chat-btn {
+                padding: 10px 14px;
+                font-size: 0.7rem;
+            }
+
+            .booking-window {
+                padding-top: calc(96px + env(safe-area-inset-top));
+            }
+
+            @media (max-width: 768px) {
+                .booking-window {
+                    padding-top: calc(86px + env(safe-area-inset-top));
+                }
+            }
+
+            @media (max-width: 480px) {
+                .booking-window {
+                    padding-top: calc(76px + env(safe-area-inset-top));
+                }
+            }
+
+            /* Large phones with notch/Dynamic Island */
+            @media (min-width: 390px) and (max-width: 430px) {
+                body {
+                    padding-top: calc(75px + env(safe-area-inset-top));
+                }
+            }
+
+            @media (min-width: 431px) and (max-width: 480px) {
+                body {
+                    padding-top: calc(78px + env(safe-area-inset-top));
+                }
+            }
+        }
+
+        /* Respect system reduced-motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
+
+        /* Large phones optimization (6.5-6.8 inches: iPhone 14 Pro Max, Galaxy S23 Ultra, etc.) */
+        @media (min-width: 390px) and (max-width: 430px) {
+            body {
+                padding: 0 10px 10px;
+                align-items: flex-start;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 16px 18px;
+                border-radius: 20px;
+            }
+
+            .logo {
+                margin-bottom: 24px;
+            }
+
+            .logo h1 {
+                font-size: 2.4rem;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-group input {
+                padding: 13px 14px;
+            }
+
+            /* Keep date/time side by side on large phones */
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .submit-btn {
+                padding: 16px;
+                margin-top: 6px;
+            }
+
+            /* Adjust top elements for large phones */
+            .whatsapp-chat-btn {
+                padding: 9px 14px;
+                font-size: 0.7rem;
+            }
+
+            /* Status indicator adjustment */
+            .status-indicator {
+                bottom: 16px;
+                left: 16px;
+                padding: 7px 12px;
+            }
+
+            /* Contact FAB */
+            .contact-fab {
+                margin-top: 20px;
+            }
+
+            .page-footer {
+                margin-top: 16px;
+            }
+        }
+
+        /* iPhone 14/15 Pro Max specific optimizations (430px) */
+        @media (width: 430px) {
+            body {
+                padding: 0 12px 12px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .form-card {
+                padding: 16px 20px;
+                border-radius: 22px;
+            }
+
+            .logo {
+                margin-bottom: 22px;
+            }
+
+            .logo h1 {
+                font-size: 2.5rem;
+            }
+
+            .logo p {
+                font-size: 0.75rem;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 0.7rem;
+                margin-bottom: 5px;
+            }
+
+            .form-group input {
+                padding: 14px 15px;
+                font-size: 16px; /* Prevent iOS zoom */
+            }
+
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 15px;
+            }
+
+            .submit-btn {
+                padding: 16px;
+                font-size: 0.9rem;
+            }
+
+            /* Dynamic Island / Notch adjustments */
+            .whatsapp-chat-btn {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+            }
+
+            /* Bottom elements - account for home indicator */
+            .contact-fab {
+                margin-top: 20px;
+            }
+
+            .status-indicator {
+                bottom: calc(14px + env(safe-area-inset-bottom));
+                left: 14px;
+            }
+
+            .page-footer {
+                margin-top: 16px;
+            }
+        }
+
+        /* Extra large phones (6.7+ inches) */
+        @media (min-width: 431px) and (max-width: 480px) {
+            body {
+                padding: 0 12px 12px;
+            }
+
+            .form-card {
+                padding: 16px 22px;
+            }
+
+            .logo h1 {
+                font-size: 2.6rem;
+            }
+
+            /* Keep datetime side by side */
+            .datetime-inputs {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+        }
+
+        /* Minimal bottom footer: centered, compact and intentionally subtle. */
+        .contact-fab {
+            margin-top: 10px !important;
+            gap: 8px !important;
+            opacity: 0.62;
+        }
+
+        .contact-icon-btn {
+            width: 28px !important;
+            height: 28px !important;
+            border-color: rgba(255,255,255,0.12) !important;
+            background: rgba(70,70,70,0.55) !important;
+            color: rgba(255,255,255,0.72) !important;
+            box-shadow: none !important;
+        }
+
+        .contact-icon-btn svg {
+            width: 12px !important;
+            height: 12px !important;
+        }
+
+        .page-footer a.legal-link {
+            color: rgba(255,255,255,0.34);
+            text-decoration: none;
+        }
+        .page-footer a.legal-link:hover,
+        .page-footer a.legal-link:focus-visible {
+            color: rgba(255,255,255,0.62);
+            text-decoration: underline;
+        }
+
+        .page-footer {
+            margin: 6px auto 0 !important;
+            margin-bottom: 0 !important;
+            max-width: 92%;
+            text-align: center;
+            color: rgba(255,255,255,0.30) !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.01em;
+            opacity: 0.72;
+        }
+
+        @media (max-width: 480px) {
+            .contact-fab {
+                margin-top: 8px !important;
+                gap: 7px !important;
+            }
+
+            .contact-icon-btn {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .contact-icon-btn svg {
+                width: 11px !important;
+                height: 11px !important;
+            }
+
+            .page-footer {
+                margin-top: 5px !important;
+                margin-bottom: 0 !important;
+                font-size: 8px !important;
+                max-width: 88%;
+            }
+        }
+        /* Final visual polish: stable centering and minimal bottom spacing. */
+        html { scrollbar-gutter: stable; }
+        body { width: 100%; }
+        .page-footer { margin-bottom: 0 !important; }
+
+        @media (max-width: 480px) {
+            .form-card { padding-bottom: 0 !important; }
+            .page-footer { margin-bottom: 0 !important; }
+        }
+
+        /* Footer final: encostado ao fundo do cartão, sem alterar o restante do layout. */
+        .form-card { padding-bottom: 0 !important; }
+        .page-footer { margin-bottom: 0 !important; padding-bottom: 0 !important; line-height: 1.15; }
+
+        /* Contact buttons: slightly larger for easier recognition/tapping. */
+        #main-contact-fab .contact-icon-btn {
+            width: 44px !important;
+            height: 44px !important;
+        }
+        #main-contact-fab .contact-icon-btn svg {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        @media (max-width: 480px) {
+            #main-contact-fab .contact-icon-btn {
+                width: 42px !important;
+                height: 42px !important;
+            }
+            #main-contact-fab .contact-icon-btn svg {
+                width: 19px !important;
+                height: 19px !important;
+            }
+        }
+    
+        /* Botão Cancelar: mesma geometria dos restantes botões, sem artefactos nativos. */
+        .cancel-btn {
+            -webkit-appearance: none;
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 48px;
+            padding: 15px;
+            background: #991b1b;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            background-clip: padding-box;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.2;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(153, 27, 27, 0.32);
+            transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .cancel-btn:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 7px 24px rgba(153, 27, 27, 0.4);
+        }
+        .cancel-btn:active {
+            transform: translateY(0);
+            filter: brightness(0.96);
+        }
+        .cancel-btn:focus-visible {
+            outline: 3px solid rgba(248, 113, 113, 0.35);
+            outline-offset: 2px;
+        }
+
+/* Former inline declarations, externalized for a strict CSP. */
+#booking-info { display: none; }
+#window-cancel-btn { width: 100%; margin-top: 12px; }
+#whatsapp-section { display: none; margin-top: 16px; text-align: center; padding: 0 20px; }

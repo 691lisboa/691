@@ -1,9 +1,22 @@
-const CACHE = '691-v10'
+const CACHE = '691-v15'
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/offline.html'
+  '/index.css',
+  '/offline.html',
+  '/offline.css',
+  '/legal.html',
+  '/legal.css',
+  '/legal.js',
+  '/manifest.json',
+  '/favicon.svg',
+  '/icon.svg',
+  '/app.js',
+  '/reserva.js',
+  '/reserva.css',
+  '/push-map.js',
+  '/offline.js'
 ]
 
 self.addEventListener('install', (event) => {
@@ -39,34 +52,49 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response.ok) {
-            const copy = response.clone()
-            caches.open(CACHE).then(cache => cache.put('/index.html', copy))
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request)
+        if (response.ok && url.origin === self.location.origin) {
+          const cache = await caches.open(CACHE)
+          await cache.put(request, response.clone())
+          if (url.pathname === '/' || url.pathname === '/index.html') {
+            await cache.put('/index.html', response.clone())
           }
-          return response
-        })
-        .catch(() =>
-          caches.match('/index.html').then(
-            cached => cached || caches.match('/offline.html')
-          )
-        )
-    )
+        }
+        return response
+      } catch {
+        const exact = await caches.match(request)
+        if (exact) return exact
+        if (url.pathname === '/' || url.pathname === '/index.html') {
+          const home = await caches.match('/index.html')
+          if (home) return home
+        }
+        return (await caches.match('/offline.html')) || Response.error()
+      }
+    })())
     return
   }
+
+  const runtimeCacheOrigins = new Set([
+    self.location.origin,
+    'https://unpkg.com',
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com'
+  ])
 
   event.respondWith(
     caches.match(request)
       .then(cached => cached || fetch(request).then(response => {
-        if (response.ok && url.origin === self.location.origin) {
+        if (response.ok && runtimeCacheOrigins.has(url.origin)) {
           const copy = response.clone()
-          caches.open(CACHE).then(cache => cache.put(request, copy))
+          void caches.open(CACHE).then(cache => cache.put(request, copy))
         }
         return response
       }))
-      .catch(() => caches.match('/offline.html'))
+      // Offline HTML is only valid for navigation requests. Returning it for a
+      // failed JS/CSS/font request would produce MIME/syntax errors.
+      .catch(() => Response.error())
   )
 })
 

@@ -1,6 +1,3 @@
-import fs from 'fs'
-import path from 'path'
-
 export type BookingRecord = Record<string, any>
 export type PushSubscriptionRecord = Record<string, any>
 
@@ -11,17 +8,13 @@ type StoreConfig = {
 
 const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '')
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '')
-const EXPLICIT_FILESYSTEM_MODE = String(process.env.PERSISTENCE_MODE || '').toLowerCase() === 'filesystem'
-
 const supabase: StoreConfig | null = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
   ? { url: SUPABASE_URL, key: SUPABASE_SERVICE_ROLE_KEY }
   : null
 
-export const persistenceMode = supabase
-  ? 'supabase'
-  : (EXPLICIT_FILESYSTEM_MODE ? 'filesystem' : 'unconfigured')
+export const persistenceMode = supabase ? 'supabase' : 'unconfigured'
 
-if (!supabase && !EXPLICIT_FILESYSTEM_MODE) {
+if (!supabase) {
   console.warn('Persistência não configurada: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY em falta.')
 }
 
@@ -67,7 +60,6 @@ function rowToBooking(row: Record<string, any>): BookingRecord {
     clientId: row.client_id,
     lang: row.lang || 'pt',
     status: row.status || 'pending',
-    driverTokenHash: row.driver_token_hash || undefined,
     _telegramMessageId: row.telegram_message_id ?? undefined,
     _ts: row.created_at
       ? String(new Date(row.created_at).getTime())
@@ -97,9 +89,6 @@ function bookingToRow(booking: BookingRecord): Record<string, unknown> {
     client_id: String(booking.clientId || ''),
     lang: String(booking.lang || 'pt'),
     status: String(booking.status || 'pending'),
-    driver_token_hash: booking.driverTokenHash
-      ? String(booking.driverTokenHash)
-      : null,
     telegram_message_id: booking._telegramMessageId
       ? Number(booking._telegramMessageId)
       : null,
@@ -127,7 +116,7 @@ export async function loadPersistentState(): Promise<{
 
   const [bookingsResponse, pushResponse] = await Promise.all([
     supabaseRequest(
-      'bookings?select=booking_id,nome,telefone,data,hora,recolha,destino,client_id,lang,status,driver_token_hash,telegram_message_id,created_at,updated_at&order=created_at.asc'
+      'bookings?select=booking_id,nome,telefone,data,hora,recolha,destino,client_id,lang,status,telegram_message_id,created_at,updated_at&order=created_at.asc'
     ),
     supabaseRequest(
       'push_subscriptions?select=client_id,endpoint,subscription&order=created_at.asc'
@@ -264,6 +253,17 @@ export async function upsertPushSubscription(
     throw new Error('Push subscription sem endpoint')
   }
 
+  // A browser push endpoint must belong to a single clientId. If local storage was
+  // reset while the browser kept the same PushSubscription, remove the stale owner
+  // first so the endpoint unique constraint cannot break re-registration.
+  const endpointCleanup = await supabaseRequest(
+    `push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}&client_id=neq.${encodeURIComponent(clientId)}`,
+    { method: 'DELETE' }
+  )
+  if (!endpointCleanup.ok) {
+    throw supabaseError('Supabase stale push endpoint cleanup', endpointCleanup)
+  }
+
   const response = await supabaseRequest(
     'push_subscriptions?on_conflict=client_id',
     {
@@ -304,48 +304,6 @@ export async function deletePushSubscription(
     throw supabaseError(
       'Supabase push delete',
       response
-    )
-  }
-}
-
-export function loadFilesystemPushSubscriptions(
-  file: string
-): Map<string, PushSubscriptionRecord> {
-  try {
-    const raw = fs.readFileSync(file, 'utf-8')
-    const obj = JSON.parse(raw) as Record<
-      string,
-      PushSubscriptionRecord
-    >
-
-    return new Map(Object.entries(obj))
-  } catch {
-    return new Map()
-  }
-}
-
-export function saveFilesystemPushSubscriptions(
-  file: string,
-  subscriptions: Map<string, PushSubscriptionRecord>
-): void {
-  try {
-    const dir = path.dirname(file)
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-
-    const obj: Record<string, PushSubscriptionRecord> =
-      Object.fromEntries(subscriptions.entries())
-
-    fs.writeFileSync(
-      file,
-      JSON.stringify(obj)
-    )
-  } catch (error) {
-    console.warn(
-      'Erro ao guardar push subscriptions:',
-      error
     )
   }
 }

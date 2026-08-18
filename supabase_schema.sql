@@ -16,7 +16,6 @@ create table if not exists public.bookings (
     lang text not null default 'pt',
     status text not null default 'pending'
         check (status in ('pending','accepted','onway','arrived','completed','rejected','cancelled')),
-    driver_token_hash text,
     telegram_message_id bigint,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
@@ -31,7 +30,6 @@ create index if not exists idx_bookings_client_id on public.bookings (client_id)
 create index if not exists idx_bookings_status on public.bookings (status);
 create index if not exists idx_bookings_date on public.bookings (data);
 create index if not exists idx_bookings_created_at on public.bookings (created_at desc);
-create index if not exists idx_bookings_driver_token on public.bookings (driver_token_hash);
 
 create table if not exists public.push_subscriptions (
     id uuid primary key default gen_random_uuid(),

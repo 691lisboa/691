@@ -5,97 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>691 — Reserva Ativa</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="/socket.io/socket.io.js"></script>
-  <style>
-    :root {
-      --oled: rgba(0, 0, 0, 0.88);
-      --border: rgba(255, 255, 255, 0.12);
-      --text: rgba(255, 255, 255, 0.92);
-      --muted: rgba(255, 255, 255, 0.7);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; width: 100%; background: #000; }
-    #map {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-    }
-    .leaflet-control-container .leaflet-bottom { bottom: 110px; }
-    .trip-footer {
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      z-index: 5;
-      padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-      background: #000;
-      border: 1px solid rgba(0, 77, 0, 0.4);
-      border-radius: 12px 12px 0 0;
-      margin: 0 8px;
-      width: calc(100% - 16px);
-      max-width: 400px;
-    }
-    .trip-footer-inner {
-      max-width: 560px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      align-items: center;
-      justify-items: center;
-    }
-    .trip-status {
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      text-align: center;
-      transition: opacity .18s ease;
-    }
-    .trip-status.status-rejected,
-    .trip-status.status-cancelled {
-      color: rgba(255, 120, 120, 0.96);
-    }
-    .trip-status.status-completed {
-      color: rgba(120, 255, 160, 0.96);
-    }
-    .footer-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-    }
-    .action-btn {
-      height: 48px;
-      min-width: 48px;
-      padding: 0 16px;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      color: var(--text);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 14px;
-      line-height: 1;
-      transition: transform 0.15s ease, background 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .action-btn:active { transform: scale(0.98); }
-    .action-btn svg { width: 18px; height: 18px; }
-    @media (max-width: 420px) {
-      .trip-footer { padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); }
-      .action-btn { height: 46px; padding: 0 14px; }
-      .trip-status { font-size: 13px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/reserva.css">
 </head>
 <body>
   <div id="map"></div>
@@ -104,14 +17,14 @@
     <div class="trip-footer-inner">
       <div id="trip-status" class="trip-status" aria-live="polite">A aguardar confirmação</div>
       <div class="footer-actions">
-        <a class="action-btn" href="tel:+351928158158"
+        <a id="btn-call" class="action-btn" href="tel:+351928158158"
            aria-label="Chamar +351 928 158 158" title="+351 928 158 158">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.42 2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z" />
           </svg>
           <span id="btn-call-label">Chamada</span>
         </a>
-        <a class="action-btn"
+        <a id="btn-whatsapp" class="action-btn"
            href="https://wa.me/351928158158"
            target="_blank" rel="noopener"
            aria-label="Abrir WhatsApp"
@@ -125,193 +38,6 @@
     </div>
   </div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const forceLang = params.get('lang');
-    const lang = (forceLang === 'en' || forceLang === 'pt')
-      ? forceLang
-      : (navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'pt';
-
-    const translations = {
-      pt: {
-        status: {
-          pending: 'A aguardar confirmação',
-          accepted: 'Reserva aceite',
-          onway: 'Motorista a caminho',
-          arrived: 'Motorista chegou',
-          completed: 'Viagem concluída',
-          rejected: 'Reserva recusada',
-          cancelled: 'Reserva cancelada'
-        },
-        call: 'Chamada',
-        signal: 'WhatsApp'
-      },
-      en: {
-        status: {
-          pending: 'Awaiting confirmation',
-          accepted: 'Booking accepted',
-          onway: 'Driver is on the way',
-          arrived: 'Driver has arrived',
-          completed: 'Trip completed',
-          rejected: 'Booking declined',
-          cancelled: 'Booking cancelled'
-        },
-        call: 'Call',
-        signal: 'WhatsApp'
-      }
-    };
-
-    const t = translations[lang] || translations.pt;
-    document.documentElement.lang = lang;
-
-    const statusEl = document.getElementById('trip-status');
-    const callLabel = document.getElementById('btn-call-label');
-    const signalLabel = document.getElementById('btn-signal-label');
-
-    if (callLabel) callLabel.textContent = t.call;
-    if (signalLabel) signalLabel.textContent = t.signal;
-
-    function applyBookingStatus(status, eventBookingId = '') {
-      if (!statusEl) return;
-
-      if (eventBookingId && bookingId && eventBookingId !== bookingId) return;
-
-      const safeStatus = Object.prototype.hasOwnProperty.call(t.status, status)
-        ? status
-        : 'pending';
-
-      statusEl.textContent = t.status[safeStatus];
-      statusEl.dataset.status = safeStatus;
-      statusEl.className = `trip-status status-${safeStatus}`;
-
-      const terminal = safeStatus === 'completed' || safeStatus === 'rejected' || safeStatus === 'cancelled';
-      document.title = terminal
-        ? `691 — ${t.status[safeStatus]}`
-        : '691 — Reserva Ativa';
-    }
-
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const bookingIdFromPath =
-      pathParts.length >= 2 && pathParts[0] === 'reserva'
-        ? pathParts[1]
-        : '';
-    const bookingId = bookingIdFromPath || params.get('id') || '';
-    const accessToken = params.get('token') || '';
-
-    // Default until the server restores the real persisted state.
-    applyBookingStatus('pending');
-
-    // Leaflet map
-    const map = L.map('map', {
-      zoomControl: true,
-      attributionControl: true
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-    }).addTo(map);
-
-    map.setView([38.7169, -9.1399], 13);
-
-    let driverMarker = null;
-
-    function updateDriverMarker(lat, lng) {
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-
-      const icon = L.divIcon({
-        className: '',
-        html: '<div style="background:#facc15;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 10px rgba(250,204,21,0.45)"></div>',
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
-      });
-
-      if (driverMarker) {
-        driverMarker.setLatLng([lat, lng]);
-      } else {
-        driverMarker = L.marker([lat, lng], { icon }).addTo(map);
-      }
-
-      map.setView([lat, lng], Math.max(map.getZoom(), 15));
-    }
-
-    const socket = io();
-
-    let clientId = localStorage.getItem('691_clientId');
-    if (!clientId) {
-      clientId = `client-${crypto.randomUUID()}`;
-      localStorage.setItem('691_clientId', clientId);
-    }
-
-    socket.on('connect', () => {
-      // Regista esta vista diretamente pela reserva. O servidor resolve o clientId
-      // associado à reserva e coloca este socket no mesmo room do cliente que criou a reserva.
-      if (bookingId) {
-        socket.emit('register_booking_view', { bookingId, accessToken });
-      } else {
-        socket.emit('register_client', { clientId });
-        socket.emit('restore_session', { clientId });
-      }
-    });
-
-    socket.on('session_restored', (data) => {
-      if (!data) return;
-
-      const restoredBookingId = data.booking?.bookingId || '';
-      applyBookingStatus(
-        data.status || data.booking?.status || 'pending',
-        restoredBookingId
-      );
-    });
-
-    socket.on('session_not_found', () => {
-      applyBookingStatus('pending');
-    });
-
-    socket.on('booking_accepted', (data) => {
-      if (!data) return;
-      applyBookingStatus('accepted', data.bookingId);
-    });
-
-    socket.on('booking_rejected', (data) => {
-      if (!data) return;
-      applyBookingStatus('rejected', data.bookingId);
-    });
-
-    socket.on('booking_status_update', (data) => {
-      if (!data) return;
-      applyBookingStatus(data.status || 'pending', data.bookingId);
-    });
-
-    socket.on('driver_arrived', (data) => {
-      if (!data) return;
-      applyBookingStatus('arrived', data.bookingId);
-    });
-
-    socket.on('booking_completed', (data) => {
-      if (!data) return;
-      applyBookingStatus('completed', data.bookingId);
-    });
-
-    socket.on('booking_cancelled', (data) => {
-      if (!data) return;
-      applyBookingStatus('cancelled', data.bookingId);
-    });
-
-    socket.on('booking_view_error', (data) => {
-      console.warn('Falha ao registar vista da reserva:', data?.error || 'erro desconhecido');
-      applyBookingStatus('pending');
-    });
-
-    socket.on('tracking_update', (data) => {
-      if (!data || !data.bookingId) return;
-      if (bookingId && data.bookingId !== bookingId) return;
-      updateDriverMarker(Number(data.lat), Number(data.lng));
-    });
-
-    socket.on('connect_error', () => {
-      // Keep the currently known state; do not overwrite a confirmed status.
-    });
-  </script>
+  <script src="/reserva.js"></script>
 </body>
 </html>
