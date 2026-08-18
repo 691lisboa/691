@@ -29,8 +29,6 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
   - 🏁 Concluir
 
 ### 💰 Sistema de Preços
-- **Base**: €3.25
-- **Por km**: €0.90
 - **Cálculo via TomTom Routing API**
 
 ## 🛠️ Stack Tecnológico
@@ -181,7 +179,6 @@ VAPID_EMAIL=mailto:jose@79.pt
 
 ### Security
 - **XSS protection** no frontend
-- **Rate limiting** (implementar)
 
 ## 📈 Monitoramento
 

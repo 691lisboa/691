@@ -34,6 +34,22 @@ self.addEventListener('activate', (e) => {
 //  - socket.io / api  → network only (never cache)
 //  - navigation       → network first → cache → offline.html
 //  - assets           → cache first → network
+// NETWORK_FIRST_HTML
+self.addEventListener('fetch', (event) => {
+  const request = event.request
+  if (request.method === 'GET' && request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone()
+          caches.open(CACHE).then(cache => cache.put('/index.html', copy))
+          return response
+        })
+        .catch(() => caches.match('/index.html'))
+    )
+  }
+})
+
 self.addEventListener('fetch', (e) => {
   const url = e.request.url
 
