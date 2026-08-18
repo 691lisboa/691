@@ -2373,19 +2373,16 @@
                 socket.emit('register_client', { clientId });
                 // Tentar restaurar sessão após refresh
                 socket.emit('restore_session', { clientId });
-                // Re-enviar push subscription ao servidor (pode ter reiniciado e perdido a sub)
-                if ('serviceWorker' in navigator && 'PushManager' in window) {
-                    navigator.serviceWorker.ready.then(reg =>
-                        reg.pushManager.getSubscription()
-                    ).then(sub => {
-                        if (sub) {
-                            fetch('/api/subscribe', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ clientId, subscription: sub })
-                            }).catch(() => {});
-                        }
-                    }).catch(() => {});
+                // Sincronizar Push com o servidor usando sempre a VAPID atualmente configurada.
+                if (
+                    'serviceWorker' in navigator &&
+                    'PushManager' in window &&
+                    'Notification' in window &&
+                    Notification.permission === 'granted'
+                ) {
+                    navigator.serviceWorker.ready
+                        .then(reg => registerPush(reg))
+                        .catch(err => console.warn('[Push] Sync on connect failed:', err));
                 }
             });
 
@@ -2441,6 +2438,23 @@
                         displayBooking(booking);
                         if (booking.status && booking.status !== 'pending') updateBookingStatus(booking.status);
                                             } catch { localStorage.removeItem('691_booking'); }
+                }
+            });
+
+            socket.on('push_subscription_invalid', async (data) => {
+                console.warn('[Push] Server rejected old subscription:', data?.status);
+                if (
+                    'serviceWorker' in navigator &&
+                    'PushManager' in window &&
+                    'Notification' in window &&
+                    Notification.permission === 'granted'
+                ) {
+                    try {
+                        const reg = await navigator.serviceWorker.ready;
+                        await registerPush(reg, true);
+                    } catch (error) {
+                        console.warn('[Push] Automatic subscription renewal failed:', error);
+                    }
                 }
             });
 
@@ -2989,37 +3003,47 @@
             }
         });
 
-        // Window cancel button
-        const windowCancelBtn = document.getElementById('window-cancel-btn');
-        if (windowCancelBtn) windowCancelBtn.addEventListener('click', () => {
-            if (currentBooking) {
-                socket.emit('cancel_booking', {
-                    bookingId: currentBooking.bookingId,
-                    name: currentBooking.nome,
-                    phone: currentBooking.telefone,
-                    clientId: clientId
-                });
+        async function cancelCurrentBooking() {
+            if (!currentBooking || !socket) return;
+
+            const bookingId = currentBooking.bookingId;
+            const t = translations[currentLang] || translations.pt;
+
+            socket.timeout(10000).emit('cancel_booking', {
+                bookingId,
+                name: currentBooking.nome,
+                phone: currentBooking.telefone,
+                clientId
+            }, (err, result) => {
+                if (err) {
+                    console.error('Cancelamento sem resposta do servidor:', err);
+                    alert(t?.errorConnection || 'Não foi possível cancelar a reserva. Tente novamente.');
+                    return;
+                }
+
+                if (!result?.ok) {
+                    console.warn('Cancelamento recusado pelo servidor:', result?.error);
+                    alert(result?.error || 'Não foi possível cancelar a reserva.');
+                    return;
+                }
+
                 localStorage.removeItem('691_booking');
                 updateBookingStatus('cancelled');
-                setTimeout(() => { hideBooking(); }, 2000);
-            }
-        });
+                setTimeout(() => { hideBooking(); }, 1200);
+            });
+        }
+
+        // Window cancel button
+        const windowCancelBtn = document.getElementById('window-cancel-btn');
+        if (windowCancelBtn) {
+            windowCancelBtn.addEventListener('click', cancelCurrentBooking);
+        }
 
         // Original cancel button
         const cancelBtn = document.getElementById('cancel-btn');
-        if (cancelBtn) cancelBtn.addEventListener('click', () => {
-            if (currentBooking) {
-                socket.emit('cancel_booking', {
-                    bookingId: currentBooking.bookingId,
-                    name: currentBooking.nome,
-                    phone: currentBooking.telefone,
-                    clientId: clientId
-                });
-                localStorage.removeItem('691_booking');
-                updateBookingStatus('cancelled');
-                setTimeout(() => { hideBooking(); }, 2000);
-            }
-        });
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', cancelCurrentBooking);
+        }
 
         // GPS geolocation → reverse geocode via Nominatim
         function setupGpsButton() {
@@ -3133,6 +3157,22 @@
         let pushServiceWorkerRegistration = null;
         let pushRegistrationBusy = false;
 
+        function pushSubscriptionMatchesVapidKey(subscription, publicKey) {
+            try {
+                const currentKey = subscription?.options?.applicationServerKey;
+                if (!currentKey) return false;
+                const current = new Uint8Array(currentKey);
+                const expected = urlBase64ToUint8Array(publicKey);
+                if (current.length !== expected.length) return false;
+                for (let i = 0; i < current.length; i++) {
+                    if (current[i] !== expected[i]) return false;
+                }
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
         function getPushUiText() {
             const map = {
                 pt: { enable: '🔔 Ativar notificações', active: '✅ Notificações ativas', blocked: '⚠️ Notificações bloqueadas', help: 'As notificações permitem receber atualizações da reserva mesmo fora da página.' },
@@ -3176,7 +3216,7 @@
             }
         }
 
-        async function registerPush(swReg) {
+        async function registerPush(swReg, forceRenew = false) {
             if (pushRegistrationBusy) return false;
             pushRegistrationBusy = true;
             try {
@@ -3202,6 +3242,17 @@
 
                 let sub = await swReg.pushManager.getSubscription();
                 console.log('[Push] Existing subscription:', sub ? 'Yes' : 'No');
+
+                if (sub && (forceRenew || !pushSubscriptionMatchesVapidKey(sub, publicKey))) {
+                    console.warn('[Push] Existing subscription uses an old/invalid VAPID key. Recreating...');
+                    try {
+                        await sub.unsubscribe();
+                    } catch (unsubscribeError) {
+                        console.warn('[Push] Could not unsubscribe old subscription:', unsubscribeError);
+                    }
+                    sub = null;
+                }
+
                 if (!sub) {
                     if (Notification.permission !== 'granted') {
                         const permission = await Notification.requestPermission();

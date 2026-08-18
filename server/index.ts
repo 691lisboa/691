@@ -155,14 +155,34 @@ app.get('/api/reverse-geocode', async (req: Request, res: Response) => {
   }
 })
 
-if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+function vapidKeyPairMatches(publicKey: string, privateKey: string): boolean {
+  try {
+    const ecdh = crypto.createECDH('prime256v1')
+    ecdh.setPrivateKey(Buffer.from(privateKey, 'base64url'))
+    const derivedPublicKey = ecdh.getPublicKey(undefined, 'uncompressed')
+    const configuredPublicKey = Buffer.from(publicKey, 'base64url')
+
+    return (
+      derivedPublicKey.length === configuredPublicKey.length &&
+      crypto.timingSafeEqual(derivedPublicKey, configuredPublicKey)
+    )
+  } catch {
+    return false
+  }
+}
+
+const VAPID_READY =
+  Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) &&
+  vapidKeyPairMatches(VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+
+if (VAPID_READY) {
   webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
-  console.log('Web Push (VAPID) configurado com chaves válidas')
+  console.log('Web Push (VAPID) configurado com par de chaves válido')
   console.log('[VAPID] Public key preview:', VAPID_PUBLIC_KEY.slice(0, 20) + '...')
+} else if (VAPID_PUBLIC_KEY || VAPID_PRIVATE_KEY) {
+  console.error('[VAPID] ERRO: a chave pública e a chave privada não pertencem ao mesmo par. Web Push desativado até corrigir as variáveis no Render.')
 } else {
   console.warn('VAPID keys não configuradas — Web Push inativo')
-  console.warn('[VAPID] Public key exists:', !!VAPID_PUBLIC_KEY)
-  console.warn('[VAPID] Private key exists:', !!VAPID_PRIVATE_KEY)
 }
 
 // ── Estado em memória + persistência ────────────────────────────────────────
@@ -358,21 +378,37 @@ async function sendPush(
   data: Record<string, unknown> = {}
 ): Promise<void> {
   const sub = pushSubscriptions.get(clientId)
-  if (!sub) { console.warn(`sendPush: sem subscrição para ${clientId}`); return }
-  if (!VAPID_PUBLIC_KEY) { console.warn('sendPush: VAPID não configurado'); return }
+  if (!sub) {
+    console.warn(`sendPush: sem subscrição para ${clientId}`)
+    return
+  }
+  if (!VAPID_READY) {
+    console.warn('sendPush: VAPID não configurado ou par de chaves inválido')
+    return
+  }
+
   try {
     await webpush.sendNotification(sub, JSON.stringify({ title, body, data }))
     console.log(`Push enviado [${data.type || '?'}] → ${clientId.slice(0, 12)}…`)
   } catch (e: unknown) {
-    const status = (e as { statusCode?: number }).statusCode
-    if (status === 410 || status === 404) {
+    const status = Number((e as { statusCode?: number }).statusCode || 0)
+    const invalidSubscription = [400, 401, 403, 404, 410].includes(status)
+
+    if (invalidSubscription) {
       pushSubscriptions.delete(clientId)
-      deletePersistedPushSubscription(clientId)
-      void savePushSubs().catch(() => {})
-      console.warn(`Push subscription expirada (${status}) removida: ${clientId}`)
-    } else {
-      console.error(`sendPush error [${status}]: ${String(e).slice(0, 120)}`)
+      try {
+        await deletePersistedPushSubscription(clientId)
+      } catch (deleteError) {
+        console.warn(`Push: falha ao remover subscrição inválida de ${clientId}:`, deleteError)
+      }
+
+      // Se a página estiver aberta, força uma nova subscrição com a VAPID atual.
+      io.to(clientId).emit('push_subscription_invalid', { status })
+      console.warn(`Push subscription inválida (${status}) removida e renovação pedida: ${clientId}`)
+      return
     }
+
+    console.error(`sendPush error [${status || '?'}]: ${String(e).slice(0, 160)}`)
   }
 }
 
@@ -1038,70 +1074,115 @@ io.on('connection', (socket) => {
   })
 
   // Cliente cancela reserva
-  socket.on('cancel_booking', async (data) => {
-    const bookingId = sanitize(data.bookingId, 96)
+  socket.on('cancel_booking', async (data, acknowledge?: (result: { ok: boolean; error?: string }) => void) => {
+    const bookingId = sanitize(data?.bookingId, 96)
     const socketClientId = sanitize(socket.data.clientId, 64)
-    const payloadClientId = sanitize(data.clientId, 64)
+    const payloadClientId = sanitize(data?.clientId, 64)
 
-    // A identidade usada para cancelar vem do socket autenticado/associado à reserva.
-    // O clientId no payload é apenas compatibilidade com clientes antigos.
-    if (!socketClientId || (payloadClientId && payloadClientId !== socketClientId)) {
-      console.warn(`cancel_booking: clientId mismatch (socket=${socketClientId || 'undefined'}, payload=${payloadClientId || 'undefined'})`)
+    const fail = (error: string) => {
+      console.warn(`cancel_booking: ${error} (booking=${bookingId || 'undefined'}, socketClient=${socketClientId || 'undefined'})`)
+      acknowledge?.({ ok: false, error })
+    }
+
+    if (!bookingId || !socketClientId) {
+      fail('dados de cancelamento inválidos')
+      return
+    }
+
+    if (payloadClientId && payloadClientId !== socketClientId) {
+      fail('clientId mismatch')
       return
     }
 
     const clientId = socketClientId
-    const ownedBookingId = clientBookings.get(clientId)
-    if (!ownedBookingId || ownedBookingId !== bookingId) {
-      console.warn(`cancel_booking: bookingId mismatch para ${clientId}`)
+    const booking = activeBookings.get(bookingId)
+
+    // A reserva é do cliente se o próprio registo da reserva contém este clientId.
+    // Isto evita falhas por um apontador clientBookings desatualizado após refresh/deploy.
+    if (!booking || String(booking.clientId) !== clientId) {
+      fail('reserva não encontrada ou não pertence ao cliente')
       return
     }
 
-    const booking = activeBookings.get(bookingId)
-    const hasMsgId = bookingMessages.has(bookingId)
-
-    // Notificar Telegram ANTES de apagar da memória
-    // Editar mensagem original (marca como cancelada no histórico)
-    if (booking && hasMsgId) {
-      const lang = booking.lang || 'pt'
-      await editMsg(bookingId, telegramStatusMsg('cancelled', lang)).catch(() => {})
-    }
-    // Enviar SEMPRE uma nova mensagem — edições não geram notificação no Telegram
-    if (bot && TELEGRAM_CHAT_ID) {
-      const lang = booking?.lang || 'pt'
-      const cancelTitle = lang === 'en' ? '🚫 BOOKING CANCELLED BY CLIENT' : '🚫 RESERVA CANCELADA PELO CLIENTE'
-      await bot.api.sendMessage(
-        Number(TELEGRAM_CHAT_ID),
-        `<b>${cancelTitle}</b>\n` +
-        `<b>ID:</b> <code>${esc(bookingId)}</code>\n` +
-        `<b>👤</b> ${esc(booking?.nome || data.name || '—')} — ` +
-        `<a href="tel:${esc(booking?.telefone || data.phone || '')}">${esc(booking?.telefone || data.phone || '—')}</a>\n` +
-        `<b>📍</b> ${esc(booking?.recolha || '—')}\n` +
-        `<b>🎯</b> ${esc(booking?.destino || '—')}`,
-        { parse_mode: 'HTML' }
-      ).catch(console.error)
+    if (['completed', 'rejected', 'cancelled'].includes(String(booking.status))) {
+      fail('reserva já terminada')
+      return
     }
 
-    // Ler lang antes de alterar estado
-    const cancelledLang = activeBookings.get(bookingId)?.lang || 'pt'
-    const cancelMsg     = statusMsg('cancelled', cancelledLang)
-    const bkCancel      = activeBookings.get(bookingId)
-    if (bkCancel) bkCancel.status = 'cancelled'
+    // Repara o apontador em memória caso tenha ficado desatualizado.
+    if (clientBookings.get(clientId) !== bookingId) {
+      clientBookings.set(clientId, bookingId)
+      console.log(`cancel_booking: clientBookings reparado para ${clientId} → ${bookingId}`)
+    }
+
+    const lang = booking.lang || 'pt'
+    const cancelMsg = statusMsg('cancelled', lang)
+
+    // Atualizar primeiro o estado e persistir.
+    booking.status = 'cancelled'
     await saveBookings()
 
+    // Atualiza a mensagem original no Telegram sem botões ativos.
+    const msgId = bookingMessages.get(bookingId) || Number(booking._telegramMessageId || 0)
+    if (bot && TELEGRAM_CHAT_ID && msgId) {
+      try {
+        await bot.api.editMessageText(
+          Number(TELEGRAM_CHAT_ID),
+          msgId,
+          buildMessage(booking, '🚫 RESERVA CANCELADA PELO CLIENTE'),
+          { parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
+        )
+      } catch (error) {
+        console.warn('[Telegram] Não foi possível editar a reserva cancelada:', String(error).slice(0, 120))
+      }
+    }
+
+    // Envia também uma NOVA mensagem para gerar notificação visível no Telegram.
+    if (bot && TELEGRAM_CHAT_ID) {
+      try {
+        await bot.api.sendMessage(
+          Number(TELEGRAM_CHAT_ID),
+          buildMessage(booking, '🚫 RESERVA CANCELADA PELO CLIENTE'),
+          { parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
+        )
+        console.log(`[Telegram] Cancelamento do cliente recebido: ${bookingId}`)
+      } catch (error) {
+        console.error('[Telegram] Falha ao enviar cancelamento do cliente:', error)
+      }
+    }
+
     bookingMessages.delete(bookingId)
-    socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
-    // Broadcast status update to driver's tracking page
-    io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'cancelled', message: cancelMsg })
-    // Manter em memória 5 min (consistente com reject/complete)
-    setTimeout(() => { activeBookings.delete(bookingId); clientBookings.delete(clientId); bookingMessages.delete(bookingId); void deletePersistedBooking(bookingId).then(() => saveBookings()).catch(err => console.warn('Cleanup reserva:', err)) }, 5 * 60 * 1000)
+
+    socket.emit('booking_cancelled', {
+      bookingId,
+      message: cancelMsg,
+      timestamp: new Date().toISOString()
+    })
+
+    io.to(roomForDriver(bookingId)).emit('booking_status_update', {
+      bookingId,
+      status: 'cancelled',
+      message: cancelMsg
+    })
+
+    acknowledge?.({ ok: true })
+
+    // Mantém estado terminal por 5 minutos para reconexões/refresh.
+    setTimeout(() => {
+      activeBookings.delete(bookingId)
+      if (clientBookings.get(clientId) === bookingId) clientBookings.delete(clientId)
+      bookingMessages.delete(bookingId)
+      void deletePersistedBooking(bookingId)
+        .then(() => saveBookings())
+        .catch(err => console.warn('Cleanup reserva:', err))
+    }, 5 * 60 * 1000)
   })
 })
 
 // ── Web Push endpoints ────────────────────────────────────────────────────────
 app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
   console.log('[VAPID] Public key requested:', VAPID_PUBLIC_KEY ? 'Sending key...' : 'No key available')
-  res.json({ publicKey: VAPID_PUBLIC_KEY || null })
+  res.json({ publicKey: VAPID_READY ? VAPID_PUBLIC_KEY : null })
 })
 
 app.post('/api/subscribe', express.json({ limit: '50kb' }), async (req: Request, res: Response) => {

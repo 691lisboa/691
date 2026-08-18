@@ -1,4 +1,4 @@
-const CACHE = '691-v9'
+const CACHE = '691-v10'
 
 const STATIC_ASSETS = [
   '/',
@@ -68,4 +68,61 @@ self.addEventListener('fetch', (event) => {
       }))
       .catch(() => caches.match('/offline.html'))
   )
+})
+
+
+// Web Push notifications
+self.addEventListener('push', (event) => {
+  event.waitUntil((async () => {
+    let payload = {}
+    try {
+      payload = event.data ? event.data.json() : {}
+    } catch {
+      payload = { title: '691 Lisboa', body: event.data ? event.data.text() : '' }
+    }
+
+    const title = payload.title || '691 Lisboa'
+    const body = payload.body || ''
+    const data = payload.data || {}
+
+    await self.registration.showNotification(title, {
+      body,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      tag: data.bookingId ? `691-${data.bookingId}` : '691-status',
+      renotify: true,
+      data
+    })
+
+    // Update an already-open client immediately as well.
+    const windows = await self.clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    })
+
+    for (const client of windows) {
+      client.postMessage({ type: 'PUSH_STATUS', data })
+    }
+  })())
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    })
+
+    for (const client of windows) {
+      if ('focus' in client) {
+        await client.focus()
+        return
+      }
+    }
+
+    if (self.clients.openWindow) {
+      await self.clients.openWindow('/')
+    }
+  })())
 })
