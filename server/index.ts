@@ -307,38 +307,14 @@ async function sendPush(
     await webpush.sendNotification(sub, JSON.stringify({ title, body, data }))
     console.log(`Push enviado [${data.type || '?'}] → ${clientId.slice(0, 12)}…`)
   } catch (e: unknown) {
-    const pushError = e as { statusCode?: number; body?: unknown }
-    const status = pushError.statusCode
-    const providerBody = String(pushError.body || '').trim()
-
-    // 404/410 mean the browser subscription is no longer usable.
-    // 403 is also discarded so stale/invalid subscriptions do not retry forever.
-    if (status === 410 || status === 404 || status === 403) {
+    const status = (e as { statusCode?: number }).statusCode
+    if (status === 410 || status === 404) {
       pushSubscriptions.delete(clientId)
-
-      try {
-        await deletePersistedPushSubscription(clientId)
-      } catch (cleanupError) {
-        console.warn(
-          `[Push] Falha ao remover subscrição inválida ${clientId}:`,
-          String(cleanupError).slice(0, 120)
-        )
-      }
-
-      if (providerBody) {
-        console.warn(`[Push] Provider response [${status}]: ${providerBody.slice(0, 250)}`)
-      }
-
-      console.warn(
-        `[Push] Subscrição removida após HTTP ${status}: ${clientId.slice(0, 12)}…`
-      )
+      deletePersistedPushSubscription(clientId)
+      void savePushSubs().catch(() => {})
+      console.warn(`Push subscription expirada (${status}) removida: ${clientId}`)
     } else {
-      console.error(
-        `sendPush error [${status || 'desconhecido'}]: ${String(e).slice(0, 250)}`
-      )
-      if (providerBody) {
-        console.error(`[Push] Provider body: ${providerBody.slice(0, 250)}`)
-      }
+      console.error(`sendPush error [${status}]: ${String(e).slice(0, 120)}`)
     }
   }
 }
@@ -580,6 +556,7 @@ function buildKeyboard(bookingId: string, recolha: string, destino: string, tele
     if (whatsappUrl) {
       rows.push([{ text: buttonText('whatsapp', language), url: whatsappUrl }])
     }
+    rows.push([{ text: buttonText('close', language), callback_data: `close_${bookingId}` }])
   } else {
     // Depois de aceitar: Waze, Motorista a caminho, Cheguei, Concluir
     // Linha 1: Waze + Motorista a caminho
@@ -596,6 +573,7 @@ function buildKeyboard(bookingId: string, recolha: string, destino: string, tele
     if (whatsappUrl) {
       rows.push([{ text: buttonText('whatsapp', language), url: whatsappUrl }])
     }
+    rows.push([{ text: buttonText('close', language), callback_data: `close_${bookingId}` }])
   }
   
   return { inline_keyboard: rows }
@@ -618,57 +596,31 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
   }
 }
 
+// Fecho administrativo: remove imediatamente a reserva da memória e do Supabase.
+async function closeBookingAdmin(bookingId: string): Promise<boolean> {
+  const booking = activeBookings.get(bookingId)
+  if (!booking) return false
+  const clientId = clientIdForBooking(bookingId)
 
-type BookingStatus =
-  | 'pending'
-  | 'accepted'
-  | 'onway'
-  | 'arrived'
-  | 'completed'
-  | 'rejected'
-  | 'cancelled'
+  // Primeiro remove da persistência; só depois altera o cache em memória.
+  await deletePersistedBooking(bookingId)
+  activeBookings.delete(bookingId)
+  bookingMessages.delete(bookingId)
 
-const allowedBookingTransitions: Record<BookingStatus, BookingStatus[]> = {
-  pending: ['accepted', 'rejected', 'cancelled'],
-  accepted: ['onway', 'arrived', 'completed', 'cancelled'],
-  onway: ['arrived', 'completed', 'cancelled'],
-  arrived: ['completed', 'cancelled'],
-  completed: [],
-  rejected: [],
-  cancelled: []
+  // Se houver outra reserva ativa do mesmo cliente (por exemplo, testes antigos),
+  // mantém o apontador para essa reserva em vez de o deixar sem sessão.
+  if (clientId) {
+    const remaining = Array.from(activeBookings.values()).find(b => String(b.clientId) === String(clientId))
+    if (remaining) clientBookings.set(clientId, String(remaining.bookingId))
+    else clientBookings.delete(clientId)
+  }
+  return true
 }
 
-async function changeBookingStatus(
-  bookingId: string,
-  nextStatus: BookingStatus
-): Promise<Record<string, any> | null> {
-  const booking = activeBookings.get(bookingId)
-
-  if (!booking) {
-    console.warn(`[Status] Reserva não encontrada: ${bookingId}`)
-    return null
-  }
-
-  const currentStatus = String(booking.status || 'pending') as BookingStatus
-
-  if (currentStatus === nextStatus) return booking
-
-  const allowed = allowedBookingTransitions[currentStatus] || []
-  if (!allowed.includes(nextStatus)) {
-    console.warn(`[Status] Transição inválida ${currentStatus} → ${nextStatus}: ${bookingId}`)
-    return null
-  }
-
-  const previousStatus = currentStatus
-  booking.status = nextStatus
-
-  try {
-    await saveBookings()
-    return booking
-  } catch (error) {
-    booking.status = previousStatus
-    throw error
-  }
+function authorizedTelegramChat(ctx: any): boolean {
+  if (!TELEGRAM_CHAT_ID) return false
+  const chatId = ctx?.callbackQuery?.message?.chat?.id ?? ctx?.chat?.id
+  return String(chatId ?? '') === String(TELEGRAM_CHAT_ID)
 }
 
 // ── Bot Telegram ─────────────────────────────────────────────────────────────
@@ -727,12 +679,15 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
           : Array.from(activeBookings.values())
               .map(b => `• <code>${b.bookingId}</code> — ${esc(b.nome)} (${esc(b.recolha)})`)
               .join('\n')
+        const statusRows = Array.from(activeBookings.values()).map(b => [
+          { text: `🗑️ Fechar ${String(b.bookingId).slice(-8)}`, callback_data: `close_${b.bookingId}` }
+        ])
         await ctx.reply(
           `<b>📊 Status 691.pt</b>\n\n` +
           `👥 Clientes online: <b>${connectedClients.size}</b>\n` +
           `🚕 Reservas ativas: <b>${activeBookings.size}</b>\n` +
           `🤖 Bot: ✅ Ativo\n\n${bookingList}`,
-          { parse_mode: 'HTML' }
+          { parse_mode: 'HTML', reply_markup: statusRows.length ? { inline_keyboard: statusRows } : undefined }
         )
 
       } else if (text === '/whatsapp') {
@@ -776,8 +731,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
-        const bk = await changeBookingStatus(bookingId, 'accepted')
-        if (!bk) return
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'accepted'
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('accepted', lang)
           io.to(clientId).emit('booking_accepted', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -792,8 +748,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const bookingId = data.slice(7)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
-        const bk = await changeBookingStatus(bookingId, 'rejected')
-        if (!bk) return
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'rejected'
+        await saveBookings()
         await editMsg(bookingId, telegramStatusMsg('rejected', lang))
         if (clientId) {
           const msg = statusMsg('rejected', lang)
@@ -812,8 +769,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
-        const bk = await changeBookingStatus(bookingId, 'arrived')
-        if (!bk) return
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'arrived'
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('arrived', lang)
           io.to(clientId).emit('driver_arrived', { bookingId, message: msg, timestamp: new Date().toISOString() })
@@ -832,8 +790,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         console.log(`[Telegram] Motorista a caminho clicado para reserva: ${bookingId}`)
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
-        const bk = await changeBookingStatus(bookingId, 'onway')
-        if (!bk) return
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'onway'
+        await saveBookings()
         if (clientId) {
           const msg = statusMsg('onway', lang)
           io.to(clientId).emit('booking_status_update', { bookingId, status: 'onway', message: msg, timestamp: new Date().toISOString() })
@@ -843,6 +802,41 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         io.to(roomForDriver(bookingId)).emit('booking_status_update', { bookingId, status: 'onway', message: statusMsg('onway', lang) })
         await editMsg(bookingId, telegramStatusMsg('onway', lang))
 
+      // ── 🗑️ Fechar reserva (administrativo) ─────────────────────────────────
+      } else if (data.startsWith('close_')) {
+        if (!authorizedTelegramChat(ctx)) {
+          await ctx.answerCallbackQuery({ text: 'Não autorizado.', show_alert: true })
+          return
+        }
+        const bookingId = data.slice(6)
+        const booking = activeBookings.get(bookingId)
+        if (!booking) {
+          await ctx.answerCallbackQuery({ text: 'Reserva já fechada.', show_alert: false })
+          return
+        }
+        const clientId = clientIdForBooking(bookingId)
+        const lang = booking.lang || 'pt'
+        const msgId = bookingMessages.get(bookingId) || Number(booking._telegramMessageId || 0)
+        const closed = await closeBookingAdmin(bookingId)
+        if (!closed) return
+        if (bot && TELEGRAM_CHAT_ID && msgId) {
+          try {
+            await bot.api.editMessageText(
+              Number(TELEGRAM_CHAT_ID), msgId,
+              buildMessage(booking, '🗑️ Reserva Fechada pelo motorista'),
+              { parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
+            )
+          } catch (e) {
+            console.warn('Não foi possível editar mensagem da reserva fechada:', String(e).slice(0, 100))
+          }
+        }
+        if (clientId) {
+          io.to(clientId).emit('booking_closed', { bookingId, message: statusMsg('cancelled', lang), timestamp: new Date().toISOString() })
+          clientBookings.delete(clientId)
+        }
+        await ctx.answerCallbackQuery({ text: 'Reserva fechada e removida.', show_alert: false })
+        console.log(`[Telegram] Reserva fechada administrativamente: ${bookingId}`)
+
       // ── 🏁 Concluir ────────────────────────────────────────────────────────
       } else if (data.startsWith('complete_')) {
         const bookingId = data.slice(9)
@@ -850,8 +844,9 @@ if (TELEGRAM_TOKEN && TELEGRAM_TOKEN !== 'your_telegram_bot_token_here') {
         const clientId  = clientIdForBooking(bookingId)
         const lang      = activeBookings.get(bookingId)?.lang || 'pt'
         console.log(`[Telegram] ClientId encontrado: ${clientId}, Lang: ${lang}`)
-        const bk = await changeBookingStatus(bookingId, 'completed')
-        if (!bk) return
+        const bk = activeBookings.get(bookingId)
+        if (bk) bk.status = 'completed'
+        await saveBookings()
         await editMsg(bookingId, telegramStatusMsg('completed', lang))
         if (clientId) {
           const msg = statusMsg('completed', lang)
@@ -1031,24 +1026,10 @@ io.on('connection', (socket) => {
 
     // Ler lang antes de alterar estado
     const cancelledLang = activeBookings.get(bookingId)?.lang || 'pt'
-    const cancelMsg = statusMsg('cancelled', cancelledLang)
-    const bkCancel = activeBookings.get(bookingId)
-
-    if (!bkCancel) {
-      console.warn(`[Cancel] Reserva não encontrada: ${bookingId}`)
-      return
-    }
-
-    const previousStatus = String(bkCancel.status || 'pending')
-    bkCancel.status = 'cancelled'
-
-    try {
-      await saveBookings()
-    } catch (error) {
-      bkCancel.status = previousStatus
-      console.error(`[Cancel] Falha ao persistir ${bookingId}; estado revertido`)
-      return
-    }
+    const cancelMsg     = statusMsg('cancelled', cancelledLang)
+    const bkCancel      = activeBookings.get(bookingId)
+    if (bkCancel) bkCancel.status = 'cancelled'
+    await saveBookings()
 
     bookingMessages.delete(bookingId)
     socket.emit('booking_cancelled', { bookingId, message: cancelMsg, timestamp: new Date().toISOString() })
@@ -1065,52 +1046,17 @@ app.get('/api/vapid-public-key', (_req: Request, res: Response) => {
   res.json({ publicKey: VAPID_PUBLIC_KEY || null })
 })
 
-
-function isValidPushSubscription(value: unknown): value is webpush.PushSubscription {
-  if (!value || typeof value !== 'object') return false
-
-  const sub = value as Record<string, any>
-  if (typeof sub.endpoint !== 'string' || !sub.endpoint.startsWith('https://')) return false
-  if (!sub.keys || typeof sub.keys !== 'object') return false
-
-  return (
-    typeof sub.keys.p256dh === 'string' &&
-    sub.keys.p256dh.length > 0 &&
-    typeof sub.keys.auth === 'string' &&
-    sub.keys.auth.length > 0
-  )
-}
-
 app.post('/api/subscribe', express.json({ limit: '50kb' }), async (req: Request, res: Response) => {
   const raw = req.body || {}
   const clientId = sanitize(String(raw.clientId || ''), 64)
-  const subscription = raw.subscription
-
-  console.log('[Push] Subscribe request:', {
-    clientId: clientId ? 'Yes' : 'No',
-    subscription: subscription ? 'Yes' : 'No'
-  })
-
-  if (!/^client-[A-Za-z0-9_-]{1,60}$/.test(clientId)) {
-    console.warn('[Push] Subscribe failed: invalid clientId')
+  const subscription = raw.subscription as webpush.PushSubscription
+  console.log('[Push] Subscribe request:', { clientId: clientId ? 'Yes' : 'No', subscription: subscription ? 'Yes' : 'No' })
+  if (!clientId || !subscription) {
+    console.warn('[Push] Subscribe failed: missing clientId or subscription')
     return res.status(400).json({ ok: false })
   }
-
-  if (!isValidPushSubscription(subscription)) {
-    console.warn('[Push] Subscribe failed: invalid subscription')
-    return res.status(400).json({ ok: false })
-  }
-
   pushSubscriptions.set(clientId, subscription)
-
-  try {
-    await savePushSubs()
-  } catch (error) {
-    pushSubscriptions.delete(clientId)
-    console.error('[Push] Falha ao persistir subscription:', error)
-    return res.status(503).json({ ok: false, error: 'push-persistence-failed' })
-  }
-
+  await savePushSubs()
   console.log('[Push] Subscription saved for client:', clientId.slice(0, 12) + '...')
   res.json({ ok: true })
 })
@@ -1317,19 +1263,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   activeBookings.set(bookingId, bookingData)
   clientBookings.set(clientId, bookingId)
-
-  try {
-    await saveBookings()
-  } catch (error) {
-    activeBookings.delete(bookingId)
-    clientBookings.delete(clientId)
-    console.error(`[Reserva] Falha ao persistir ${bookingId}; reserva revertida`)
-    return res.status(503).json({
-      success: false,
-      error: 'Não foi possível guardar a reserva. Tente novamente.'
-    })
-  }
-
+  await saveBookings()
   console.log('Nova reserva:', bookingId, nome, recolha, '→', destino)
 
   const successMsgs: Record<string, string> = {
