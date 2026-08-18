@@ -71,7 +71,7 @@ if (!appJs.includes('accessToken: result.accessToken')) fail('booking access tok
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-v15'")) fail('service worker cache version not bumped')
+if (!sw.includes("const CACHE = '691-v16'")) fail('service worker cache version not bumped')
 if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
 if (!sw.includes("'https://unpkg.com'") || !sw.includes("'https://fonts.googleapis.com'")) fail('safe runtime caching for external UI assets missing')
 if (!index.includes('integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="')) fail('Leaflet CSS SRI missing')

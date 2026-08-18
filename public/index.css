@@ -1567,3 +1567,20 @@
 #booking-info { display: none; }
 #window-cancel-btn { width: 100%; margin-top: 12px; }
 #whatsapp-section { display: none; margin-top: 16px; text-align: center; padding: 0 20px; }
+/* Final visual rhythm: clearer separation between the primary action,
+   secondary contact actions and the discreet legal footer. */
+#main-contact-fab {
+    margin-top: 18px !important;
+}
+.page-footer {
+    margin-top: 12px !important;
+}
+@media (max-width: 480px) {
+    #main-contact-fab {
+        margin-top: 16px !important;
+    }
+    .page-footer {
+        margin-top: 10px !important;
+    }
+}
+

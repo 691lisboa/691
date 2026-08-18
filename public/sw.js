@@ -1,4 +1,4 @@
-const CACHE = '691-v15'
+const CACHE = '691-v16'
 
 const STATIC_ASSETS = [
   '/',
