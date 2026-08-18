@@ -1513,30 +1513,33 @@
         /* Footer final: encostado ao fundo do cartão, sem alterar o restante do layout. */
         .form-card { padding-bottom: 0 !important; }
         .page-footer { margin-bottom: 0 !important; padding-bottom: 0 !important; line-height: 1.15; }
+
+        /* Contact buttons: slightly larger for easier recognition/tapping. */
+        #main-contact-fab .contact-icon-btn {
+            width: 44px !important;
+            height: 44px !important;
+        }
+        #main-contact-fab .contact-icon-btn svg {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        @media (max-width: 480px) {
+            #main-contact-fab .contact-icon-btn {
+                width: 42px !important;
+                height: 42px !important;
+            }
+            #main-contact-fab .contact-icon-btn svg {
+                width: 19px !important;
+                height: 19px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Map Background -->
     <div id="map-bg"></div>
 
-    <!-- Splash Screen -->
-    <div id="splash">
-        <span class="splash-logo">691</span>
-    </div>
-
     <!-- Language Toggle removed - automatic detection -->
-
-    <!-- Discreet notification control -->
-    <div class="push-control" id="push-control" aria-live="polite">
-        <button type="button"
-                id="push-permission-btn"
-                class="push-control-btn"
-                style="display:none;"
-                aria-label="Ativar notificações"
-                title="Ativar notificações">🔔</button>
-        <span id="push-permission-indicator" class="push-indicator" aria-hidden="true"></span>
-        <span id="push-permission-help" class="push-permission-help" role="status"></span>
-    </div>
 
     <!-- Main Container -->
     <div class="container">
