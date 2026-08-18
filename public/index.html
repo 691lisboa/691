@@ -2873,7 +2873,7 @@ body {
                 if (response.ok) {
                     const result = await response.json();
                     console.log('Resultado:', result);
-                    const bookingData = { ...data, bookingId: result.bookingId };
+                    const bookingData = { ...data, bookingId: result.bookingId, accessToken: result.accessToken || '' };
                     const successMsg = document.getElementById('success-message');
                     if (successMsg) successMsg.classList.add('show');
                     displayBooking(bookingData);

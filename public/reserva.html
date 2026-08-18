@@ -196,6 +196,7 @@
         ? pathParts[1]
         : '';
     const bookingId = bookingIdFromPath || params.get('id') || '';
+    const accessToken = params.get('token') || '';
 
     // Default until the server restores the real persisted state.
     applyBookingStatus('pending');
@@ -246,7 +247,7 @@
       // Regista esta vista diretamente pela reserva. O servidor resolve o clientId
       // associado à reserva e coloca este socket no mesmo room do cliente que criou a reserva.
       if (bookingId) {
-        socket.emit('register_booking_view', { bookingId });
+        socket.emit('register_booking_view', { bookingId, accessToken });
       } else {
         socket.emit('register_client', { clientId });
         socket.emit('restore_session', { clientId });

@@ -15,8 +15,5 @@
       "src": "/(.*)",
       "dest": "server/index.ts"
     }
-  ],
-  "env": {
-    "NODE_VERSION": "18"
-  }
+  ]
 }

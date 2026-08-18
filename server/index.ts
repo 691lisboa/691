@@ -20,6 +20,32 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'geolocation=(self), notifications=(self), camera=(), microphone=()')
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      "object-src 'none'",
+      "script-src 'self' 'unsafe-inline' https://cdn.socket.io https://unpkg.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https://fonts.gstatic.com https://unpkg.com",
+      "connect-src 'self' https: wss: ws:",
+      "worker-src 'self' blob:",
+      "manifest-src 'self'"
+    ].join('; ')
+  )
+  next()
+})
+
 app.disable('x-powered-by')
 app.set('trust proxy', 1)
 const server = createServer(app)
@@ -51,6 +77,36 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
 const VAPID_EMAIL       = process.env.VAPID_EMAIL || 'mailto:jose@79.pt'
 const TELEGRAM_WEBHOOK_URL = String(process.env.TELEGRAM_WEBHOOK_URL || '')
 const TELEGRAM_WEBHOOK_SECRET = String(process.env.TELEGRAM_WEBHOOK_SECRET || '')
+const BOOKING_ACCESS_SECRET = String(
+  process.env.BOOKING_ACCESS_SECRET ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VAPID_PRIVATE_KEY ||
+  process.env.TELEGRAM_BOT_TOKEN ||
+  ''
+)
+
+if (!BOOKING_ACCESS_SECRET) {
+  throw new Error('BOOKING_ACCESS_SECRET não configurado.')
+}
+
+function bookingAccessToken(bookingId: string): string {
+  return crypto
+    .createHmac('sha256', BOOKING_ACCESS_SECRET)
+    .update(String(bookingId))
+    .digest('base64url')
+}
+
+function validBookingAccessToken(bookingId: string, token: string): boolean {
+  const provided = String(token || '')
+  if (!provided) return false
+
+  const expected = bookingAccessToken(bookingId)
+  const a = Buffer.from(provided, 'utf8')
+  const b = Buffer.from(expected, 'utf8')
+
+  return a.length === b.length && crypto.timingSafeEqual(a, b)
+}
+
 
 // ── Reverse geocode cache (Nominatim) ─────────────────────────────────────────
 // Key: "lat,lng" rounded; Value: { addr, ts }
@@ -206,6 +262,7 @@ function publicBooking(booking: Record<string, any>): Record<string, unknown> {
     clientId: booking.clientId,
     lang: booking.lang,
     status: booking.status,
+    accessToken: bookingAccessToken(String(booking.bookingId)),
     createdAt: booking.createdAt || undefined,
     updatedAt: booking.updatedAt || undefined
   }
@@ -890,10 +947,11 @@ io.on('connection', (socket) => {
     console.log(`Cliente registado: ${clientId} (push: ${pushSubscriptions.has(clientId) ? '✓' : '✗'})`)
   })
 
-  socket.on('register_booking_view', (data: { bookingId: string }) => {
+  socket.on('register_booking_view', (data: { bookingId: string; accessToken?: string }) => {
     const bookingId = sanitize(String(data?.bookingId || ''), 96)
-    if (!bookingId) {
-      socket.emit('booking_view_error', { error: 'Reserva inválida.' })
+    const accessToken = sanitize(String(data?.accessToken || ''), 128)
+    if (!bookingId || !validBookingAccessToken(bookingId, accessToken)) {
+      socket.emit('booking_view_error', { error: 'Acesso à reserva inválido.' })
       return
     }
 
@@ -1062,7 +1120,14 @@ app.post('/api/subscribe', express.json({ limit: '50kb' }), async (req: Request,
 })
 
 // ── Booking details page (tracking only) ─────────────────────────────────────
-app.get('/reserva/:id', (_req: Request, res: Response) => {
+app.get('/reserva/:id', (req: Request, res: Response) => {
+  const bookingId = sanitize(String(req.params.id || ''), 96)
+  const accessToken = sanitize(String(req.query.token || ''), 128)
+
+  if (!bookingId || !validBookingAccessToken(bookingId, accessToken)) {
+    return res.status(404).send('Reserva não encontrada.')
+  }
+
   res.sendFile(path.join(__dirname, '../public/reserva.html'))
 })
 
@@ -1306,7 +1371,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
     console.log('Telegram não configurado — reserva registada apenas no sistema')
   }
 
-  res.json({ success: true, bookingId, clientsConnected: connectedClients.size })
+  res.json({ success: true, bookingId, accessToken: bookingAccessToken(bookingId), clientsConnected: connectedClients.size })
 })
 
 // ── Start ─────────────────────────────────────────────────────────────────────

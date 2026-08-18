@@ -51,7 +51,7 @@ Aplicação moderna de serviço de taxi com design premium, comunicação em tem
 ## 🚀 Instalação
 
 ### Pré-requisitos
-- Node.js 18+
+- Node.js 22.x
 - npm ou yarn
 
 ### 1. Clonar o projeto
