@@ -824,7 +824,8 @@
                 recolha: formData.get('recolha'),
                 destino: formData.get('destino'),
                 clientId: clientId,
-                lang: currentLang
+                lang: currentLang,
+                source: new URLSearchParams(window.location.search).get('src') || new URLSearchParams(window.location.search).get('utm_source') || 'direct'
             };
 
             try {

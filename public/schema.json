@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.org",
+  "@type": "TaxiService",
+  "name": "691 Táxi Lisboa",
+  "url": "https://691.pt/",
+  "telephone": "+351928158158",
+  "areaServed": [{"@type":"City","name":"Lisboa"},{"@type":"Country","name":"Portugal"}],
+  "availableLanguage": ["Portuguese", "English"],
+  "description": "Reserva direta de táxi em Lisboa para deslocações locais, aeroporto e viagens reservadas em Portugal."
+}

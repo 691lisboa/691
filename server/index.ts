@@ -575,8 +575,8 @@ function buildMessage(b: Record<string, string>, statusLine = ''): string {
 ` +
     `<b>📅 Data/Hora:</b> ${dateStr}
 ` +
-    `<b>🕐 Pedido às:</b> ${timeStr}
-` +
+    `<b>🕐 Pedido às:</b> ${timeStr}\n` +
+    `<b>📣 Origem:</b> ${esc(b.source || 'direct')}\n` +
     `<b>🔑 ID:</b> <code>${esc(b.bookingId)}</code>`
   )
 }
@@ -1313,6 +1313,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const recolha  = sanitize(raw.recolha, 300)
   const destino  = sanitize(raw.destino, 300)
   const clientId = sanitize(raw.clientId, 64)
+  const source   = sanitize(raw.source || 'direct', 80)
   if (!/^client-[A-Za-z0-9_-]{1,60}$/.test(clientId))
     return res.status(400).json({ success: false, error: vm.missing })
 
@@ -1341,7 +1342,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   const bookingId = `691-${crypto.randomBytes(12).toString('hex')}`
   const bookingData: Record<string, any> = {
-    bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang,
+    bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang, source,
     status: 'pending', _ts: String(Date.now()),
   }
 

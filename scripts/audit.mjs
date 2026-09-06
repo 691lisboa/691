@@ -138,3 +138,14 @@ for (const asset of ["'/index.css'", "'/reserva.css'", "'/legal.css'", "'/offlin
 }
 
 console.log('691 static audit: OK')
+
+for (const file of ['public/robots.txt','public/sitemap.xml','public/schema.json','public/landing.css']) {
+  if (!fs.existsSync(path.join(root, file)) || !read(file).trim()) fail(`${file}: SEO asset missing or empty`)
+}
+for (const dir of ['taxi-lisboa','taxi-aeroporto-lisboa','lisbon-airport-taxi','viagens-portugal']) {
+  const file = `public/${dir}/index.html`
+  const html = read(file)
+  if (!/<title>[^<]+<\/title>/.test(html) || !html.includes('name="description"') || !html.includes('rel="canonical"')) fail(`${file}: SEO metadata incomplete`)
+}
+if (!index.includes('691 Táxi Lisboa | Reserva Direta Online')) fail('homepage SEO title missing')
+if (!appJs.includes("get('src')") || !server.includes("const source   = sanitize(raw.source || 'direct', 80)")) fail('booking source attribution missing')

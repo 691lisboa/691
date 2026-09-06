@@ -1584,3 +1584,9 @@
     }
 }
 
+
+
+/* SEO service navigation: intentionally quiet so the booking flow remains primary. */
+.seo-links { margin-top: 18px; text-align: center; font-size: .72rem; line-height: 1.7; color: rgba(255,255,255,.34); }
+.seo-links a { color: rgba(255,255,255,.52); text-decoration: none; }
+.seo-links a:hover { color: #00cc44; }

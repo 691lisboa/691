@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /reserva/
+
+Sitemap: https://691.pt/sitemap.xml
