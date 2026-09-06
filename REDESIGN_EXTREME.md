@@ -26,4 +26,11 @@ Redesign comercial mobile-first do 691.pt, preservando o backend e os fluxos exi
 `npm run build` => `691 static audit: OK`
 
 ## Nota
-As fotografias de destinos usam URLs Unsplash e o rodapé inclui crédito. A fotografia principal do táxi é local (`/assets/taxi-691.webp`).
+As fotografias críticas são locais (`/assets/destinations/*.webp`) e a fotografia principal do táxi continua local (`/assets/taxi-691.webp`). Não há dependência de URLs externas para os cartões/hero das páginas principais.
+
+## Correção v3
+- corrigido conflito do `body` legado que colocava header/main/footer lado a lado
+- desktop e mobile voltam a ocupar 100% da largura corretamente
+- fotografias de Lisboa, Sintra, Fátima e Évora passam a assets locais
+- cartões sem imagem/cinzentos eliminados
+- responsive reforçado em 980 / 680 / 390 px
