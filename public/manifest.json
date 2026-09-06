@@ -1,7 +1,7 @@
 {
-  "name": "691 Lisboa",
-  "short_name": "691",
-  "description": "Táxi 691 Lisboa — Reserve o seu táxi premium",
+  "name": "691.pt Lisboa",
+  "short_name": "691.pt",
+  "description": "691.pt Táxi Lisboa — reserva direta em Lisboa, aeroporto e Portugal",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
