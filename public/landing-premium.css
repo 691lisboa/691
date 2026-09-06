@@ -1,5 +1,5 @@
 :root{--yellow:#ffd426;--ink:#0b1015;--green:#18c861;--muted:#69747e;--max:1120px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.lp-wrap{width:min(var(--max),calc(100% - 36px));margin:auto}.lp-header{position:absolute;z-index:5;left:0;right:0;top:0}.lp-header-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0}.lp-brand{font-size:2.1rem;font-weight:900;letter-spacing:-.07em;color:#fff;text-decoration:none}.lp-brand span{color:var(--green)}.lp-home{color:#fff;text-decoration:none;font-size:.85rem;font-weight:700;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12)}.lp-hero{min-height:580px;position:relative;background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end}.lp-hero:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,8,12,.88),rgba(2,8,12,.34)),linear-gradient(0deg,rgba(2,8,12,.56),transparent 55%)}.lp-hero-content{position:relative;z-index:1;padding:140px 0 72px;max-width:760px}.lp-eyebrow{font-size:.7rem;font-weight:850;letter-spacing:.18em;color:rgba(255,255,255,.78)}.lp-hero h1{font-size:clamp(2.8rem,7vw,5.4rem);line-height:.95;letter-spacing:-.055em;margin:14px 0 20px}.lp-hero p{font-size:1.12rem;max-width:670px;color:rgba(255,255,255,.84)}.lp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.lp-btn{display:inline-flex;min-height:50px;padding:0 22px;align-items:center;justify-content:center;border-radius:13px;text-decoration:none;font-weight:800}.lp-primary{background:var(--yellow);color:#111}.lp-wa{background:var(--green);color:#fff}.lp-section{padding:72px 0}.lp-section h2{font-size:clamp(2rem,4vw,3rem);letter-spacing:-.04em;margin:0 0 10px}.lp-section>div>p{color:var(--muted);max-width:760px}.lp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}.lp-card{background:#f5f7f8;border:1px solid #edf0f2;border-radius:18px;padding:24px;box-shadow:0 10px 26px rgba(11,16,21,.04);transition:transform .2s ease,box-shadow .2s ease}.lp-card:hover{transform:translateY(-3px);box-shadow:0 18px 34px rgba(11,16,21,.08)}.lp-card h3{margin:0 0 8px}.lp-card p{margin:0;color:var(--muted);font-size:.92rem}.lp-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}.lp-photo{min-height:250px;border-radius:18px;background-size:cover;background-position:center;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:18px;color:#fff;text-decoration:none;box-shadow:0 15px 34px rgba(20,30,38,.08);transition:transform .2s ease,box-shadow .2s ease}.lp-photo:hover{transform:translateY(-3px);box-shadow:0 20px 38px rgba(20,30,38,.12)}.lp-photo:before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(2,6,8,.84),transparent 72%)}.lp-photo div{position:relative;z-index:1}.lp-photo h3,.lp-photo p{margin:0}.lp-photo p{font-size:.76rem;color:rgba(255,255,255,.82)}.lp-cta{background:#0b1015;color:#fff;padding:58px 0}.lp-cta-inner{display:flex;justify-content:space-between;gap:30px;align-items:center}.lp-cta h2{margin:0 0 8px;font-size:2rem}.lp-cta p{margin:0;color:#aab2ba}.lp-footer{background:#080c10;color:#79838c;padding:24px 0;font-size:.73rem}.lp-footer a{color:#b9c0c6}.mobile-dual{display:none}.photo-sintra{background-image:url('/assets/destinations/sintra.webp')}.photo-fatima{background-image:url('/assets/destinations/fatima.webp')}.photo-evora{background-image:url('/assets/destinations/evora.webp')}.photo-lisbon{background-image:url('/assets/destinations/lisboa.webp')}
-@media(max-width:700px){body{padding-bottom:72px}.lp-wrap{width:min(var(--max),calc(100% - 28px))}.lp-hero{min-height:520px}.lp-hero-content{padding:115px 0 48px}.lp-hero h1{font-size:3rem}.lp-grid,.lp-photo-grid{grid-template-columns:1fr}.lp-photo{min-height:210px}.lp-section{padding:48px 0}.lp-cta-inner{display:block}.lp-cta .lp-actions{margin-top:22px}.mobile-dual{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:1.1fr .9fr;gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #e5e8eb;backdrop-filter:blur(14px);box-shadow:0 -10px 30px rgba(0,0,0,.08)}.mobile-dual a{min-height:48px;border-radius:12px;display:grid;place-items:center;text-decoration:none;font-weight:800;font-size:.84rem}.mobile-dual .book{background:#111;color:#fff}.mobile-dual .wa{background:var(--green);color:#fff}}
+@media(max-width:700px){body{padding-bottom:0}.lp-wrap{width:min(var(--max),calc(100% - 28px))}.lp-hero{min-height:520px}.lp-hero-content{padding:115px 0 48px}.lp-hero h1{font-size:3rem}.lp-grid,.lp-photo-grid{grid-template-columns:1fr}.lp-photo{min-height:210px}.lp-section{padding:48px 0}.lp-cta-inner{display:block}.lp-cta .lp-actions{margin-top:22px}.mobile-dual{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:1.1fr .9fr;gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #e5e8eb;backdrop-filter:blur(14px);box-shadow:0 -10px 30px rgba(0,0,0,.08)}.mobile-dual a{min-height:48px;border-radius:12px;display:grid;place-items:center;text-decoration:none;font-weight:800;font-size:.84rem}.mobile-dual .book{background:#111;color:#fff}.mobile-dual .wa{background:var(--green);color:#fff}}
 
 /* Local destination photography: no third-party image dependency. */
 body{width:100%;overflow-x:hidden}.photo-sintra{background-image:url('/assets/destinations/sintra.webp')}.photo-fatima{background-image:url('/assets/destinations/fatima.webp')}.photo-evora{background-image:url('/assets/destinations/evora.webp')}.photo-lisbon{background-image:url('/assets/destinations/lisboa.webp')}
@@ -16,3 +16,48 @@ body{width:100%;overflow-x:hidden}.photo-sintra{background-image:url('/assets/de
 .lp-hero h1{font-weight:820}
 .lp-card{box-shadow:0 10px 24px rgba(11,16,21,.04)}
 .lp-cta{background:#0a0f14}
+
+/* V9 cleanup */
+.mobile-dual{display:none!important}
+
+
+/* V11 subpage luxury polish */
+body{background:linear-gradient(180deg,#fff 0%,#f7f9fb 100%)}
+.lp-header-inner{padding-top:22px;padding-bottom:14px}
+.lp-brand,.lp-home,.lp-btn,.lp-card,.lp-photo{transition:all .22s ease}
+.lp-home{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.14)}
+.lp-home:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
+.lp-hero:before{background:radial-gradient(circle at 18% 22%, rgba(24,200,97,.11), transparent 28%),linear-gradient(90deg,rgba(2,8,12,.9),rgba(2,8,12,.28)),linear-gradient(0deg,rgba(2,8,12,.62),transparent 58%)}
+.lp-eyebrow{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
+.lp-eyebrow:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 6px rgba(24,200,97,.16)}
+.lp-hero h1{text-wrap:balance;text-shadow:0 10px 28px rgba(0,0,0,.2)}
+.lp-hero p{text-shadow:0 8px 22px rgba(0,0,0,.18)}
+.lp-btn{min-height:54px;border-radius:14px}
+.lp-btn:hover{transform:translateY(-2px);filter:brightness(1.02)}
+.lp-card{border-radius:22px;border:1px solid #edf1f4;box-shadow:0 14px 28px rgba(11,16,21,.05)}
+.lp-card:hover{box-shadow:0 20px 38px rgba(11,16,21,.09)}
+.lp-photo{border:1px solid rgba(255,255,255,.36)}
+.lp-photo:hover{transform:translateY(-5px);box-shadow:0 24px 44px rgba(20,30,38,.14)}
+.lp-cta{background:linear-gradient(180deg,#0b1015 0%,#091017 100%)}
+.lp-footer{padding:28px 0}
+@media(max-width:700px){
+  .lp-eyebrow{font-size:.62rem;padding:7px 11px}
+  .lp-btn{min-height:50px}
+}
+
+
+/* V12 — subpage contact and accessibility finish */
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none}
+.lp-contact-actions{display:flex;align-items:center;gap:9px}
+.lp-contact-pill{min-height:42px;display:inline-flex;align-items:center;gap:8px;padding:0 13px;border-radius:999px;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);font-size:.78rem;font-weight:800;transition:transform .18s ease,background .18s ease}
+.lp-contact-pill svg{width:17px;height:17px;flex:0 0 17px}
+.lp-contact-pill:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
+.lp-brand:focus-visible,.lp-contact-pill:focus-visible,.lp-btn:focus-visible,.lp-card:focus-visible,.lp-photo:focus-visible{outline:3px solid rgba(24,200,97,.72);outline-offset:3px}
+@media(max-width:700px){
+  .lp-contact-actions{gap:8px}
+  .lp-contact-pill{width:42px;min-height:42px;padding:0;justify-content:center}
+  .lp-contact-pill span{display:none}
+  .lp-contact-pill svg{width:18px;height:18px}
+}
+@media(hover:none){.lp-contact-pill:hover,.lp-btn:hover,.lp-card:hover,.lp-photo:hover{transform:none!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
