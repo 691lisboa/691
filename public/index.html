@@ -33,7 +33,7 @@
 <body class="premium-site">
 <div aria-hidden="true" id="map-bg"></div>
 <header class="site-header">
-<a aria-label="691.pt Táxi Lisboa" class="site-brand" href="/"><span class="brand-691">691<span class="brand-dot">.</span><span class="brand-pt">pt</span></span><span class="brand-copy"><strong data-mkt="brandTaxi">Táxi 691.pt</strong><small data-mkt="brandTag">Lisboa · Reserva direta</small></span></a>
+<a aria-label="691.pt Táxi Lisboa" class="site-brand" href="/"><span class="brand-691">691<span class="brand-dot">.</span><span class="brand-pt">pt</span></span><span class="brand-copy"><strong data-mkt="brandTaxi">Táxi Lisboa</strong><small data-mkt="brandTag">Reserva direta</small></span></a>
 <nav aria-label="Navegação principal" class="desktop-nav">
 <a data-mkt="navHome" href="#reservar">Início</a><a data-mkt="navAirport" href="/taxi-aeroporto-lisboa/">Aeroporto</a><a data-mkt="navLisbon" href="/taxi-lisboa/">Lisboa</a><a data-mkt="navPortugal" href="/viagens-portugal/">Viagens por Portugal</a>
 </nav>
@@ -45,7 +45,7 @@
 <div class="hero-grid">
 <div class="hero-copy">
 <div class="hero-kicker" data-mkt="heroKicker">LISBOA · AEROPORTO · PORTUGAL</div>
-<h1 data-mkt="heroTitle">Táxi 691.pt.<br/>Reserva direta.</h1>
+<h1 data-mkt="heroTitle">Táxi em Lisboa.<br/>Reserva direta.</h1>
 <p data-mkt="heroSubtitle">Lisboa, aeroporto e viagens por Portugal.</p>
 <div class="hero-trust">
 <div><span>⚡</span><strong data-mkt="trustFast">Reserva rápida</strong><small data-mkt="trustFastSub">Em poucos segundos</small></div>
@@ -187,15 +187,15 @@
 <div class="booking-container premium-booking-container">
 <div class="booking-header premium-booking-header">
 <div class="booking-header-copy">
-<span class="booking-eyebrow">691.pt</span>
+<span class="booking-eyebrow" id="booking-window-eyebrow">Acompanhar reserva</span>
 <h3 id="booking-window-title">🚕 Reserva Ativa</h3>
 <p class="booking-header-sub">Estado em tempo real da sua reserva</p>
 </div>
-<div class="booking-live-pill pending" id="booking-live-pill">⏳ Aguardando confirmação</div>
+<div aria-label="691.pt" class="booking-brand-mark">691<span>.</span>pt</div>
 </div>
 <div class="booking-content premium-booking-content">
-<div class="booking-details-panel premium-booking-panel">
-<div class="booking-info-card">
+<section class="booking-details-panel premium-booking-panel booking-main-column">
+<div class="booking-info-card booking-info-card-main">
 <div class="booking-summary-head">
 <div>
 <span class="booking-section-kicker">DETALHES DA RESERVA</span>
@@ -203,16 +203,24 @@
 </div>
 </div>
 <div id="booking-window-details"></div>
+</div>
+</section>
+<aside class="booking-side-column">
+<div class="booking-status-card">
+<span class="booking-status-kicker" id="booking-status-kicker">ESTADO DA VIAGEM</span>
+<div class="booking-live-pill pending" id="booking-live-pill">⏳ Aguardando confirmação</div>
+<div class="booking-status pending" id="booking-window-status">⏳ Aguardando confirmação...</div>
+<p class="booking-status-note" id="booking-summary-note">Recebemos o seu pedido. Aguarde a confirmação.</p>
 <div class="booking-progress" id="booking-progress" aria-label="Progresso da reserva">
 <div class="booking-progress-step is-active" data-step="pending"><span>1</span><small id="progress-pending">Pedido</small></div>
 <div class="booking-progress-step" data-step="accepted"><span>2</span><small id="progress-accepted">Aceite</small></div>
 <div class="booking-progress-step" data-step="onway"><span>3</span><small id="progress-onway">A caminho</small></div>
 <div class="booking-progress-step" data-step="arrived"><span>4</span><small id="progress-arrived">Chegou</small></div>
 </div>
-<div class="booking-status pending" id="booking-window-status">⏳ Aguardando confirmação...</div>
-<p class="booking-status-note" id="booking-summary-note">Recebemos o seu pedido. Aguarde a confirmação.</p>
-<button class="cancel-btn" id="window-cancel-btn">❌ Cancelar Reserva</button>
 </div>
+<div class="booking-contact-card">
+<span class="booking-status-kicker" id="booking-contact-kicker">CONTACTO</span>
+<p class="booking-contact-note" id="booking-contact-note">Se precisar, fale diretamente connosco.</p>
 <div class="whatsapp-section" id="whatsapp-section">
 <a class="whatsapp-driver-btn" href="https://wa.me/351928158158" rel="noopener" target="_blank">
 <svg fill="currentColor" viewbox="0 0 24 24">
@@ -221,11 +229,14 @@
 <span id="whatsapp-driver-text">Falar com o Motorista</span>
 </a>
 </div>
+<button class="cancel-btn" id="window-cancel-btn">❌ Cancelar Reserva</button>
+</div>
+</aside>
 </div>
 </div>
 </div>
 <nav aria-label="Ações rápidas" class="mobile-action-bar"><a class="mobile-book" data-mkt="bookTaxi" href="#reservar">Reservar táxi</a><a class="mobile-wa" href="https://wa.me/351928158158?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20um%20t%C3%A1xi." rel="noopener" target="_blank">WhatsApp</a></nav>
-<footer class="premium-footer"><div class="section-wrap footer-inner"><div><strong>691.pt Táxi Lisboa</strong><p data-mkt="footerTag">Reserva direta em Lisboa, aeroporto e viagens por Portugal.</p></div><div><a href="legal.html" id="premium-footer-legal">Informação Legal</a><a href="legal.html#privacidade">Privacidade</a><a href="https://www.livroreclamacoes.pt/Inicio/" rel="noopener" target="_blank">Livro de Reclamações</a></div></div><div class="photo-credit">© 2026 691 Lisboa</div></footer>
+<footer class="premium-footer"><div class="section-wrap footer-inner"><div><strong>691 Táxi Lisboa</strong><p data-mkt="footerTag">Reserva direta em Lisboa, aeroporto e viagens por Portugal.</p></div><div><a href="legal.html" id="premium-footer-legal">Informação Legal</a><a href="legal.html#privacidade">Privacidade</a><a href="https://www.livroreclamacoes.pt/Inicio/" rel="noopener" target="_blank">Livro de Reclamações</a></div></div><div class="photo-credit">© 2026 691 Lisboa</div></footer>
 <script src="/app.js"></script><script src="/push-map.js"></script><script src="/marketing.js"></script>
 </body>
 </html>

@@ -138,3 +138,155 @@ body.premium-site>.site-header,body.premium-site>.premium-footer{flex:none}
 
 /* V6 final micro-polish */
 .premium-site .service-card,.premium-site .destination-card{transition:transform .22s ease,box-shadow .22s ease}.premium-site .service-card:hover,.premium-site .destination-card:hover{box-shadow:0 20px 40px rgba(20,30,38,.12)}.premium-site .site-brand{filter:drop-shadow(0 6px 20px rgba(0,0,0,.16))}.premium-site .mobile-action-bar{box-shadow:0 -12px 34px rgba(0,0,0,.08)!important}.premium-site .booking-live-pill,.premium-site .trip-status-pill{letter-spacing:-.01em}
+
+
+/* V7 sober final layout */
+.premium-site .site-brand .brand-copy strong{letter-spacing:-.02em}
+.premium-site .hero-copy h1{max-width:10ch}
+.premium-site .autocomplete-list{background:#fff;border:1px solid #dbe3e8!important;border-top:none!important;box-shadow:0 18px 40px rgba(15,23,42,.14);backdrop-filter:none}
+.premium-site .autocomplete-item{color:#16202a!important;border-bottom:1px solid #eef2f5}
+.premium-site .autocomplete-item:hover,.premium-site .autocomplete-item.active{background:#f2f7f4!important;color:#091018!important}
+.premium-site .booking-window{background:rgba(5,10,14,.94)!important;padding:56px 20px 24px!important;align-items:center!important}
+.premium-site .premium-booking-container{max-width:1080px!important;max-height:min(88vh,780px)!important;height:auto!important;background:linear-gradient(180deg,rgba(9,13,18,.98),rgba(7,10,14,.98))!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 34px 80px rgba(0,0,0,.55)!important}
+.premium-site .premium-booking-header{padding:22px 24px 14px!important;background:transparent!important;border-bottom:1px solid rgba(255,255,255,.07)!important;align-items:flex-start!important}
+.premium-site .booking-header-copy{display:flex;flex-direction:column;gap:6px}
+.premium-site .booking-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8fc0a4}
+.premium-site .booking-header-sub{margin:0;color:rgba(255,255,255,.62);font-size:.95rem}
+.premium-site .booking-brand-mark{font-size:1.5rem;font-weight:900;letter-spacing:-.06em;color:#fff;line-height:1}
+.premium-site .booking-brand-mark span{color:#18c861}
+.premium-site .premium-booking-content{display:grid!important;grid-template-columns:minmax(0,1.3fr) minmax(320px,.82fr);gap:18px;padding:18px 24px 24px!important;overflow:auto}
+.premium-site .booking-main-column,.premium-site .booking-side-column{min-width:0}
+.premium-site .booking-details-panel{padding:0!important;background:transparent!important;border:none!important;overflow:visible!important}
+.premium-site .booking-info-card-main,.premium-site .booking-status-card,.premium-site .booking-contact-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+.premium-site .booking-side-column{display:flex;flex-direction:column;gap:16px}
+.premium-site .booking-summary-head{margin-bottom:16px}
+.premium-site .booking-section-kicker,.premium-site .booking-status-kicker{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8ba0ae;margin-bottom:10px}
+.premium-site .booking-status-card .booking-live-pill{margin-bottom:14px;display:inline-flex;align-self:flex-start}
+.premium-site .booking-status-card .booking-status{margin-bottom:8px}
+.premium-site .booking-status-note{margin:0 0 18px;color:rgba(255,255,255,.72);line-height:1.5}
+.premium-site .booking-progress{margin-top:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.premium-site .booking-progress-step{min-height:82px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:14px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+.premium-site .booking-progress-step span{margin-bottom:8px}
+.premium-site .booking-progress-step small{line-height:1.2}
+.premium-site .booking-contact-note{margin:0 0 16px;color:rgba(255,255,255,.72)}
+.premium-site .booking-contact-card .whatsapp-section{margin-bottom:14px}
+.premium-site .booking-contact-card .whatsapp-driver-btn{width:100%;justify-content:center;background:#18c861!important;box-shadow:0 18px 34px rgba(24,200,97,.2)!important;animation:none!important}
+.premium-site .booking-contact-card .cancel-btn{width:100%;margin-top:0}
+.premium-site .premium-footer .footer-inner strong{letter-spacing:-.02em}
+@media (max-width: 900px){
+  .premium-site .premium-booking-content{grid-template-columns:1fr!important}
+  .premium-site .premium-booking-container{max-width:760px!important}
+}
+@media (max-width: 700px){
+  .premium-site .booking-window{padding:10px 10px 86px!important;align-items:flex-start!important}
+  .premium-site .premium-booking-container{max-height:none!important;border-radius:18px!important}
+  .premium-site .premium-booking-header{padding:18px 16px 12px!important}
+  .premium-site .premium-booking-content{padding:12px 16px 16px!important;gap:12px}
+  .premium-site .booking-info-card-main,.premium-site .booking-status-card,.premium-site .booking-contact-card{padding:18px}
+  .premium-site .booking-progress{grid-template-columns:1fr 1fr}
+}
+
+
+/* V8 — restrained premium finish */
+:root{--v8-surface:#0b1116;--v8-card:#111820;--v8-card-2:#151d25;--v8-line:rgba(255,255,255,.08);--v8-muted:rgba(255,255,255,.62);--v8-green:#18c861}
+.premium-site .site-header{padding-top:22px}
+.premium-site .site-brand{gap:14px}
+.premium-site .brand-copy small{margin-top:5px;letter-spacing:.03em}
+.premium-site .hero-copy h1{font-weight:820;letter-spacing:-.06em}
+.premium-site .hero-copy>p{max-width:38ch}
+.premium-site .form-card{box-shadow:0 28px 70px rgba(0,0,0,.24)!important;border:1px solid rgba(255,255,255,.56)!important}
+.premium-site .form-group input{transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.premium-site .service-card,.premium-site .destination-card{box-shadow:0 12px 30px rgba(20,30,38,.08)}
+.premium-site .service-card:hover,.premium-site .destination-card:hover{transform:translateY(-3px)!important}
+.premium-site .confidence-strip{border-top:1px solid #eef1f3;border-bottom:1px solid #eef1f3}
+.premium-site .premium-footer{padding-top:38px}
+.premium-site .footer-inner{align-items:center}
+
+/* Autocomplete: solid, high-contrast, no smoky overlay. */
+.premium-site .autocomplete-items{background:#fff!important;border:1px solid #dfe5e9!important;border-top:0!important;border-radius:0 0 14px 14px!important;box-shadow:0 18px 42px rgba(15,23,42,.14)!important;backdrop-filter:none!important;overflow:hidden!important}
+.premium-site .autocomplete-items>div{background:#fff!important;color:#111820!important;border-bottom:1px solid #edf1f3!important;line-height:1.35!important;padding:13px 15px!important}
+.premium-site .autocomplete-items>div:last-child{border-bottom:0!important}
+.premium-site .autocomplete-items>div:hover{background:#f2f7f4!important}
+
+/* Active booking is a self-contained application layer: hide the site chrome behind it. */
+.premium-site .booking-window.show~.mobile-action-bar,.premium-site .booking-window.show~.premium-footer{display:none!important}
+.premium-site .booking-window.show{inset:0!important;width:100vw!important;height:100dvh!important;z-index:20000!important;overflow:auto!important;background:#080d12!important;backdrop-filter:none!important;padding:28px!important;align-items:center!important;justify-content:center!important}
+.premium-site .booking-window.show:before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 75% 10%,rgba(24,200,97,.07),transparent 34%),radial-gradient(circle at 10% 90%,rgba(255,255,255,.035),transparent 28%)}
+.premium-site .premium-booking-container{position:relative;z-index:1;width:min(1120px,100%)!important;max-width:1120px!important;max-height:none!important;height:auto!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+.premium-site .premium-booking-header{padding:0 0 20px!important;margin-bottom:18px!important;background:transparent!important;border-bottom:1px solid var(--v8-line)!important;align-items:flex-end!important}
+.premium-site .booking-header-copy{gap:7px!important}
+.premium-site .booking-eyebrow{color:#77d79d!important;font-size:.68rem!important;letter-spacing:.18em!important}
+.premium-site .booking-header h3{font-size:clamp(2rem,4vw,3.2rem)!important;line-height:.98!important;letter-spacing:-.055em!important;font-weight:800!important;color:#fff!important}
+.premium-site .booking-header-sub{color:var(--v8-muted)!important;font-size:.96rem!important}
+.premium-site .booking-brand-mark{font-size:1.75rem!important;color:#fff!important;opacity:.92}
+.premium-site .booking-brand-mark span{color:var(--v8-green)!important}
+.premium-site .premium-booking-content{display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(310px,.78fr)!important;gap:18px!important;padding:0!important;overflow:visible!important}
+.premium-site .booking-info-card-main,.premium-site .booking-status-card,.premium-site .booking-contact-card{background:var(--v8-card)!important;border:1px solid var(--v8-line)!important;border-radius:20px!important;box-shadow:0 18px 48px rgba(0,0,0,.18)!important}
+.premium-site .booking-info-card-main{padding:22px!important}
+.premium-site .booking-status-card,.premium-site .booking-contact-card{padding:20px!important}
+.premium-site .booking-section-kicker,.premium-site .booking-status-kicker{color:#81909d!important;font-size:.66rem!important;letter-spacing:.16em!important;margin-bottom:9px!important}
+.premium-site #booking-details-title{font-size:1.18rem!important;font-weight:760!important;letter-spacing:-.025em!important;color:#fff!important}
+.premium-site .trip-card{background:var(--v8-card-2)!important;border:1px solid rgba(255,255,255,.065)!important;border-radius:16px!important;margin-bottom:0!important;box-shadow:none!important}
+.premium-site .trip-header{background:transparent!important;padding:14px 16px!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+.premium-site .trip-id-pill{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;font-size:.68rem!important;letter-spacing:.04em!important;color:#8ee3ad!important;background:rgba(24,200,97,.1)!important;border-color:rgba(24,200,97,.22)!important}
+.premium-site .trip-passenger{padding:16px!important}
+.premium-site .trip-avatar{background:#1f8c4b!important;width:38px!important;height:38px!important}
+.premium-site .trip-route{padding:16px!important}
+.premium-site .trip-route-label{color:#788692!important}
+.premium-site .trip-route-address{font-size:.9rem!important;color:#f0f4f7!important}
+.premium-site .booking-live-pill{min-height:34px!important;padding:0 11px!important;border-radius:999px!important;font-size:.74rem!important;letter-spacing:0!important;margin-bottom:14px!important;background:rgba(255,255,255,.055)!important;border-color:rgba(255,255,255,.09)!important;color:#dbe2e7!important}
+.premium-site .booking-live-pill.accepted,.premium-site .booking-live-pill.onway,.premium-site .booking-live-pill.arrived,.premium-site .booking-live-pill.completed{background:rgba(24,200,97,.11)!important;border-color:rgba(24,200,97,.22)!important;color:#a6edc1!important}
+.premium-site .booking-live-pill.rejected,.premium-site .booking-live-pill.cancelled{background:rgba(231,90,90,.1)!important;border-color:rgba(231,90,90,.2)!important;color:#f2b5b5!important}
+.premium-site #booking-window-status{padding:0!important;margin:0 0 8px!important;background:transparent!important;border:0!important;border-radius:0!important;color:#fff!important;font-size:1.45rem!important;line-height:1.05!important;font-weight:780!important;letter-spacing:-.035em!important}
+.premium-site #booking-window-status.accepted,.premium-site #booking-window-status.onway,.premium-site #booking-window-status.arrived,.premium-site #booking-window-status.completed,.premium-site #booking-window-status.rejected,.premium-site #booking-window-status.cancelled{background:transparent!important;border:0!important;color:#fff!important}
+.premium-site .booking-status-note{color:var(--v8-muted)!important;font-size:.88rem!important;margin-bottom:18px!important}
+
+/* Progress: a restrained timeline. Completed/current stages visibly advance. */
+.premium-site .booking-progress{position:relative!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;margin:6px 0 0!important;padding-top:4px!important}
+.premium-site .booking-progress:before{content:'';position:absolute;left:10%;right:10%;top:18px;height:2px;background:rgba(255,255,255,.09);z-index:0}
+.premium-site .booking-progress-step{position:relative!important;z-index:1!important;min-height:58px!important;padding:0 4px!important;background:transparent!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;text-align:center!important;color:#72808c!important}
+.premium-site .booking-progress-step span{width:30px!important;height:30px!important;margin:0 0 8px!important;border:2px solid #2b3640!important;background:#111820!important;color:#8996a1!important;box-shadow:0 0 0 4px #111820!important}
+.premium-site .booking-progress-step small{font-size:.68rem!important;font-weight:650!important;line-height:1.15!important;color:inherit!important}
+.premium-site .booking-progress-step.is-complete,.premium-site .booking-progress-step.is-active{color:#e8f7ee!important}
+.premium-site .booking-progress-step.is-complete span{background:#1f8c4b!important;border-color:#1f8c4b!important;color:#fff!important;box-shadow:0 0 0 4px #111820!important}
+.premium-site .booking-progress-step.is-active span{background:var(--v8-green)!important;border-color:var(--v8-green)!important;color:#06150c!important;box-shadow:0 0 0 5px rgba(24,200,97,.13)!important}
+.premium-site .booking-progress-step.is-terminal{color:#f1b1b1!important}
+.premium-site .booking-progress-step.is-terminal span{background:#a84545!important;border-color:#a84545!important;color:#fff!important}
+.premium-site .booking-progress[data-status="accepted"]:after,.premium-site .booking-progress[data-status="onway"]:after,.premium-site .booking-progress[data-status="arrived"]:after,.premium-site .booking-progress[data-status="completed"]:after{content:'';position:absolute;left:10%;top:18px;height:2px;background:var(--v8-green);z-index:0}
+.premium-site .booking-progress[data-status="accepted"]:after{width:26.66%}
+.premium-site .booking-progress[data-status="onway"]:after{width:53.33%}
+.premium-site .booking-progress[data-status="arrived"]:after,.premium-site .booking-progress[data-status="completed"]:after{width:80%}
+
+.premium-site .booking-contact-note{color:var(--v8-muted)!important;font-size:.86rem!important;margin-bottom:14px!important}
+.premium-site .booking-contact-card .whatsapp-section{display:block!important;margin:0 0 10px!important;padding:0!important}
+.premium-site .booking-contact-card .whatsapp-driver-btn{min-height:50px!important;border-radius:13px!important;background:var(--v8-green)!important;color:#07170d!important;font-weight:800!important;box-shadow:none!important}
+.premium-site .booking-contact-card .cancel-btn{min-height:46px!important;border-radius:13px!important;background:rgba(255,255,255,.055)!important;color:#e6ebef!important;font-weight:700!important;box-shadow:none!important}
+.premium-site .booking-contact-card .cancel-btn:hover{background:rgba(255,255,255,.08)!important}
+
+@media(max-width:900px){
+  .premium-site .booking-window.show{align-items:flex-start!important;padding:22px 16px 96px!important}
+  .premium-site .premium-booking-content{grid-template-columns:1fr!important}
+  .premium-site .booking-side-column{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}
+}
+@media(max-width:620px){
+  .premium-site .booking-window.show{padding:16px 10px 28px!important}
+  .premium-site .premium-booking-header{align-items:flex-start!important;padding-bottom:16px!important}
+  .premium-site .booking-brand-mark{font-size:1.45rem!important}
+  .premium-site .booking-header h3{font-size:2.15rem!important}
+  .premium-site .premium-booking-content{gap:12px!important}
+  .premium-site .booking-side-column{grid-template-columns:1fr!important;gap:12px!important}
+  .premium-site .booking-info-card-main,.premium-site .booking-status-card,.premium-site .booking-contact-card{border-radius:17px!important;padding:17px!important}
+  .premium-site .booking-progress-step small{font-size:.62rem!important}
+  .premium-site .booking-progress-step span{width:28px!important;height:28px!important}
+  .premium-site .booking-progress:before,.premium-site .booking-progress[data-status]:after{top:17px!important}
+}
+
+
+/* V8.1 final coherence */
+.premium-site .eyebrow:before{background:var(--p-green)!important}
+.premium-site .hero-trust span{color:#7fe0a4!important}
+.premium-site .yellow-cta{background:#fff!important;color:#0b1015!important;box-shadow:0 10px 28px rgba(0,0,0,.16)!important}
+body.premium-site.booking-active{overflow:hidden!important;padding-bottom:0!important}
+body.premium-site.booking-active>.premium-footer,body.premium-site.booking-active>.mobile-action-bar{display:none!important}
+body.premium-site.booking-active>main,body.premium-site.booking-active>.site-header{pointer-events:none}
+body.premium-site.booking-active>.booking-window{pointer-events:auto}
