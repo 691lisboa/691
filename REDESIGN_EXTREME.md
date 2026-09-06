@@ -34,3 +34,15 @@ As fotografias críticas são locais (`/assets/destinations/*.webp`) e a fotogra
 - fotografias de Lisboa, Sintra, Fátima e Évora passam a assets locais
 - cartões sem imagem/cinzentos eliminados
 - responsive reforçado em 980 / 680 / 390 px
+
+
+## V14 — quiet luxury final pass (2026-09-06)
+- Homepage hero simplified: no oversized title/subtitle, preserving the taxi photo and booking focus.
+- Phone/Instagram controls reduced to compact icon-only actions in the top-right corner.
+- English capability copy simplified to “Falamos inglês / English spoken”.
+- Removed duplicate bottom contact controls from the main form.
+- WhatsApp CTA copy centered independently of the icon.
+- Autocomplete forced to an opaque white surface with high-contrast text and elevated stacking.
+- Desktop/mobile spacing tightened for a calmer, more professional visual hierarchy.
+- Subpage header contact actions made icon-only for consistency.
+- Build audit remains green.

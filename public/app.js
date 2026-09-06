@@ -166,6 +166,7 @@
                             item.style.borderBottom = '1px solid #eef2f5';
                             item.style.color = '#0b1015';
                             item.style.fontSize = '0.9rem';
+                            item.style.background = '#ffffff';
                             const strong = document.createElement('strong');
                             strong.textContent = suggestion.substring(0, value.length);
                             strong.style.fontWeight = '700';
@@ -183,7 +184,7 @@
                             });
 
                             item.addEventListener('mouseleave', function() {
-                                this.style.background = 'transparent';
+                                this.style.background = '#ffffff';
                             });
 
                             autocompleteContainer.appendChild(item);
@@ -221,7 +222,7 @@
                 
                 function removeActive(items) {
                     for (let item of items) {
-                        item.style.background = 'transparent';
+                        item.style.background = '#ffffff';
                     }
                 }
             });

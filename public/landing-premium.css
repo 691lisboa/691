@@ -61,3 +61,17 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
 }
 @media(hover:none){.lp-contact-pill:hover,.lp-btn:hover,.lp-card:hover,.lp-photo:hover{transform:none!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* V14 — subpage icon-only contact finish */
+.lp-contact-actions{gap:7px!important}
+.lp-contact-pill{
+  width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;
+  padding:0!important;justify-content:center!important;border-radius:50%!important
+}
+.lp-contact-pill span{display:none!important}
+.lp-contact-pill svg{width:16px!important;height:16px!important}
+.mobile-dual{display:none!important}
+@media(max-width:700px){
+  .lp-contact-pill{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important}
+}
