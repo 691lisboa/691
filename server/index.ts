@@ -591,6 +591,25 @@ function formatWhatsAppNumber(telefone: string): string {
 
 const wazeUrlCache = new Map<string, string>()
 
+async function tomTomPosition(url: string): Promise<{ lat: number; lon: number } | null> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 4000)
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+    if (!response.ok) return null
+    const body = await response.json() as {
+      results?: Array<{ position?: { lat?: number; lon?: number } }>
+    }
+    const position = body.results?.[0]?.position
+    const lat = Number(position?.lat)
+    const lon = Number(position?.lon)
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null
+    return { lat, lon }
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 async function buildWazeUrl(address: string): Promise<string> {
   const cleanAddress = String(address || '').trim()
   const fallback = `https://www.waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes`
@@ -603,29 +622,26 @@ async function buildWazeUrl(address: string): Promise<string> {
   if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return fallback
 
   try {
-    const url =
+    // Sem radius: a recolha continua favorecida pela proximidade de Lisboa,
+    // mas o destino pode estar em qualquer ponto de Portugal.
+    const searchUrl =
       `https://api.tomtom.com/search/2/search/${encodeURIComponent(cleanAddress)}.json` +
       `?key=${TOMTOM_KEY}&language=pt-PT&countrySet=PT&limit=1` +
-      `&lat=38.7169&lon=-9.1399&radius=120000`
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 4500)
-    let response: Response
-    try {
-      response = await fetch(url, { signal: controller.signal })
-    } finally {
-      clearTimeout(timeout)
-    }
-    if (!response.ok) return fallback
+      `&lat=38.7169&lon=-9.1399`
 
-    const body = await response.json() as {
-      results?: Array<{ position?: { lat?: number; lon?: number } }>
-    }
-    const position = body.results?.[0]?.position
-    const lat = Number(position?.lat)
-    const lon = Number(position?.lon)
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return fallback
+    let position = await tomTomPosition(searchUrl)
 
-    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${lat},${lon}`)}&navigate=yes`
+    // Segundo método para moradas postais que o fuzzy search não resolva bem.
+    if (!position) {
+      const geocodeUrl =
+        `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(cleanAddress)}.json` +
+        `?key=${TOMTOM_KEY}&language=pt-PT&countrySet=PT&limit=1`
+      position = await tomTomPosition(geocodeUrl)
+    }
+
+    if (!position) return fallback
+
+    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${position.lat},${position.lon}`)}&navigate=yes`
     if (wazeUrlCache.size > 250) wazeUrlCache.clear()
     wazeUrlCache.set(cleanAddress, resolved)
     return resolved
@@ -643,6 +659,14 @@ async function buildKeyboard(bookingId: string, recolha: string, destino: string
   const wazeUrl = current === 'accepted' || current === 'onway' || current === 'arrived'
     ? await buildWazeUrl(wazeAddress)
     : ''
+  const wazeLabel = current === 'arrived' ? '🚀 Waze · Destino' : '🚀 Waze · Recolha'
+
+  // Assim que a reserva está aceite, pré-resolve o destino em segundo plano.
+  // Quando o motorista carregar em "Cheguei", o botão de destino já tende a estar pronto.
+  if ((current === 'accepted' || current === 'onway') && destino) {
+    void buildWazeUrl(destino)
+  }
+
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
   const rows: any[][] = []
 
@@ -653,7 +677,7 @@ async function buildKeyboard(bookingId: string, recolha: string, destino: string
     ])
   } else if (current === 'accepted') {
     rows.push([
-      { text: buttonText('waze'), url: wazeUrl },
+      { text: wazeLabel, url: wazeUrl },
       { text: buttonText('onway'), callback_data: `onway_${bookingId}` }
     ])
     rows.push([
@@ -661,13 +685,13 @@ async function buildKeyboard(bookingId: string, recolha: string, destino: string
       { text: buttonText('complete'), callback_data: `complete_${bookingId}` }
     ])
   } else if (current === 'onway') {
-    rows.push([{ text: buttonText('waze'), url: wazeUrl }])
+    rows.push([{ text: wazeLabel, url: wazeUrl }])
     rows.push([
       { text: buttonText('arrived'), callback_data: `arrived_${bookingId}` },
       { text: buttonText('complete'), callback_data: `complete_${bookingId}` }
     ])
   } else if (current === 'arrived') {
-    rows.push([{ text: buttonText('waze'), url: wazeUrl }])
+    rows.push([{ text: wazeLabel, url: wazeUrl }])
     rows.push([{ text: buttonText('complete'), callback_data: `complete_${bookingId}` }])
   }
 
