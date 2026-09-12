@@ -589,12 +589,60 @@ function formatWhatsAppNumber(telefone: string): string {
   return digits
 }
 
-function buildKeyboard(bookingId: string, recolha: string, destino: string, telefone?: string, status?: string) {
+const wazeUrlCache = new Map<string, string>()
+
+async function buildWazeUrl(address: string): Promise<string> {
+  const cleanAddress = String(address || '').trim()
+  const fallback = `https://www.waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes`
+  if (!cleanAddress) return fallback
+
+  const cached = wazeUrlCache.get(cleanAddress)
+  if (cached) return cached
+
+  const TOMTOM_KEY = process.env.TOMTOM_API_KEY
+  if (!TOMTOM_KEY || TOMTOM_KEY === 'your_tomtom_api_key_here') return fallback
+
+  try {
+    const url =
+      `https://api.tomtom.com/search/2/search/${encodeURIComponent(cleanAddress)}.json` +
+      `?key=${TOMTOM_KEY}&language=pt-PT&countrySet=PT&limit=1` +
+      `&lat=38.7169&lon=-9.1399&radius=120000`
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 4500)
+    let response: Response
+    try {
+      response = await fetch(url, { signal: controller.signal })
+    } finally {
+      clearTimeout(timeout)
+    }
+    if (!response.ok) return fallback
+
+    const body = await response.json() as {
+      results?: Array<{ position?: { lat?: number; lon?: number } }>
+    }
+    const position = body.results?.[0]?.position
+    const lat = Number(position?.lat)
+    const lon = Number(position?.lon)
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return fallback
+
+    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${lat},${lon}`)}&navigate=yes`
+    if (wazeUrlCache.size > 250) wazeUrlCache.clear()
+    wazeUrlCache.set(cleanAddress, resolved)
+    return resolved
+  } catch (error) {
+    console.warn('[Waze] Falha ao resolver coordenadas; a usar morada:', String(error).slice(0, 120))
+    return fallback
+  }
+}
+
+async function buildKeyboard(bookingId: string, recolha: string, destino: string, telefone?: string, status?: string) {
   const current = normalizeBookingStatus(status)
   if (TERMINAL_BOOKING_STATUSES.has(current)) return { inline_keyboard: [] as any[][] }
 
   const wazeAddress = current === 'arrived' ? destino : recolha
-  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(wazeAddress)}&navigate=yes`
+  const wazeUrl = current === 'accepted' || current === 'onway' || current === 'arrived'
+    ? await buildWazeUrl(wazeAddress)
+    : ''
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
   const rows: any[][] = []
 
@@ -634,10 +682,11 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
   const msgId = bookingMessages.get(bookingId) || Number(booking?._telegramMessageId || 0)
   if (!bot || !TELEGRAM_CHAT_ID || !msgId || !booking) return
   try {
+    const replyMarkup = await buildKeyboard(bookingId, booking.recolha, booking.destino, booking.telefone, booking.status)
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
-      { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, booking.recolha, booking.destino, booking.telefone, booking.status) }
+      { parse_mode: 'HTML', reply_markup: replyMarkup }
     )
   } catch (e) {
     console.warn('editMessageText falhou (pode já ter sido editada):', String(e).slice(0, 80))
@@ -1378,10 +1427,11 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   if (bot && TELEGRAM_CHAT_ID) {
     let sentMessageId = 0
     try {
+      const replyMarkup = await buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending')
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),
-        { parse_mode: 'HTML', reply_markup: buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending') }
+        { parse_mode: 'HTML', reply_markup: replyMarkup }
       )
       sentMessageId = sent.message_id
     } catch (error: unknown) {
