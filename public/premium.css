@@ -1010,3 +1010,21 @@ body.premium-site{padding-bottom:0!important}
     margin-top:-10px!important;
   }
 }
+
+
+/* V21 — tiny final nudge */
+@media(max-width:680px){
+  .premium-site .premium-hero{
+    background-position:58% -30px!important;
+    background-size:auto 414px!important;
+  }
+  .premium-site .hero-overlay{
+    background:linear-gradient(180deg,rgba(2,8,10,.02) 0,rgba(2,8,10,.07) 118px,rgba(4,10,13,.25) 220px,#06100b 366px)!important;
+  }
+  .premium-site .hero-copy{
+    min-height:228px!important;
+  }
+  .premium-site .booking-shell{
+    margin-top:-12px!important;
+  }
+}
