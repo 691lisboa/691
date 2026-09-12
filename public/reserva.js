@@ -199,6 +199,11 @@
   socket.on('driver_arrived', data => data && applyBookingStatus('arrived', data.bookingId))
   socket.on('booking_completed', data => data && applyBookingStatus('completed', data.bookingId))
   socket.on('booking_cancelled', data => data && applyBookingStatus('cancelled', data.bookingId))
+  socket.on('booking_closed', data => {
+    if (!data || (bookingId && data.bookingId !== bookingId)) return
+    localStorage.removeItem('691_booking')
+    window.location.replace('/')
+  })
   socket.on('booking_view_error', data => {
     console.warn('Falha ao registar vista da reserva:', data?.error || 'erro desconhecido')
     applyBookingStatus('pending')

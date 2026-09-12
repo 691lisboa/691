@@ -1,4 +1,4 @@
-const CACHE = '691-final-20260912-1'
+const CACHE = '691-final-20260912-2'
 
 const STATIC_ASSETS = [
   '/',

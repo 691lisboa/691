@@ -404,6 +404,20 @@
                 }
             });
 
+            // Fecho manual no Telegram: voltar imediatamente ao formulário principal.
+            socket.on('booking_closed', (data) => {
+                if (!currentBooking || !data || currentBooking.bookingId !== data.bookingId) return;
+                localStorage.removeItem('691_booking');
+                hideBooking();
+                if (window.location.pathname !== '/') {
+                    window.history.replaceState({}, '', '/');
+                }
+                window.requestAnimationFrame(() => {
+                    const target = document.getElementById('reservar') || document.body;
+                    target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+                });
+            });
+
             socket.on('booking_completed', (data) => {
                 if (currentBooking && currentBooking.bookingId === data.bookingId) {
                     localStorage.removeItem('691_booking');
@@ -845,6 +859,22 @@
                                 playSound();
             }
         }
+
+        function syncCurrentBooking() {
+            if (!socket || !socket.connected || !currentBooking?.bookingId) return;
+            socket.emit('restore_session', {
+                clientId,
+                accessToken: currentBooking.accessToken || ''
+            });
+        }
+
+        // Em mobile, o browser pode suspender o socket enquanto está em segundo plano.
+        // Ao voltar à app/browser, confirmamos novamente se a reserva continua ativa.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') syncCurrentBooking();
+        });
+        window.addEventListener('pageshow', () => syncCurrentBooking());
+        window.addEventListener('focus', () => syncCurrentBooking());
 
         // Hide booking
         function hideBooking() {
