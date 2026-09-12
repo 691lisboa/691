@@ -94,12 +94,25 @@
 
         // Autocomplete: TomTom Search API (proxy /api/search) com fallback local
         let _acTimer = null;
+        function normalizeSuggestion(raw) {
+            if (typeof raw === 'string') {
+                return { label: raw, lat: '', lon: '' };
+            }
+            if (!raw || typeof raw !== 'object') {
+                return { label: '', lat: '', lon: '' };
+            }
+            return {
+                label: String(raw.label || raw.address || raw.name || '').trim(),
+                lat: raw.lat ?? '',
+                lon: raw.lon ?? ''
+            };
+        }
         async function fetchSuggestions(query) {
             try {
                 const res = await fetch('/api/search?q=' + encodeURIComponent(query));
                 if (res.ok) {
                     const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) return data;
+                    if (Array.isArray(data) && data.length > 0) return data.map(normalizeSuggestion).filter(item => item.label);
                 }
             } catch { /* ignore */ }
             // fallback: endereços locais
@@ -107,9 +120,9 @@
                 // Attempt lazy load once when needed
                 await loadAddressesJs();
             }
-            if (typeof window.searchAddresses === 'function') return window.searchAddresses(query);
+            if (typeof window.searchAddresses === 'function') return window.searchAddresses(query).map(normalizeSuggestion).filter(item => item.label);
             const q = String(query || '').toLowerCase();
-            return portugueseAddresses.filter(addr => addr.toLowerCase().includes(q)).slice(0, 10);
+            return portugueseAddresses.filter(addr => addr.toLowerCase().includes(q)).slice(0, 10).map(normalizeSuggestion).filter(item => item.label);
         }
 
         function setupAddressAutocomplete() {
@@ -121,19 +134,41 @@
             if (destinationInput) destinationInput.addEventListener('focus', () => { loadAddressesJs(); }, { once: true });
 
             [pickupInput, destinationInput].forEach(input => {
+                if (!input) return;
                 let currentFocus = -1;
+                const formGroup = input.closest('.form-group') || input.parentElement;
+
+                function setStoredCoords(targetInput, suggestion) {
+                    if (!targetInput?.dataset) return;
+                    if (!suggestion || !suggestion.lat || !suggestion.lon) {
+                        delete targetInput.dataset.lat;
+                        delete targetInput.dataset.lon;
+                        return;
+                    }
+                    targetInput.dataset.lat = String(suggestion.lat);
+                    targetInput.dataset.lon = String(suggestion.lon);
+                }
+
+                function openDropdown() {
+                    autocompleteContainer.style.display = 'block';
+                    formGroup?.classList.add('autocomplete-open');
+                }
+
+                function closeDropdown() {
+                    autocompleteContainer.style.display = 'none';
+                    formGroup?.classList.remove('autocomplete-open');
+                }
 
                 // Create autocomplete container
                 const autocompleteContainer = document.createElement('div');
                 autocompleteContainer.className = 'autocomplete-items premium-autocomplete-dropdown';
                 autocompleteContainer.style.position = 'absolute';
-                autocompleteContainer.style.top = '100%';
+                autocompleteContainer.style.top = 'calc(100% + 6px)';
                 autocompleteContainer.style.left = '0';
                 autocompleteContainer.style.right = '0';
                 autocompleteContainer.style.background = '#ffffff';
                 autocompleteContainer.style.border = '1px solid #dbe2e8';
-                autocompleteContainer.style.borderTop = 'none';
-                autocompleteContainer.style.borderRadius = '0 0 16px 16px';
+                autocompleteContainer.style.borderRadius = '16px';
                 autocompleteContainer.style.maxHeight = '260px';
                 autocompleteContainer.style.overflowY = 'auto';
                 autocompleteContainer.style.zIndex = '9999';
@@ -144,9 +179,10 @@
                 input.parentElement.appendChild(autocompleteContainer);
 
                 input.addEventListener('input', function() {
+                    setStoredCoords(input, null);
                     const value = this.value.trim();
                     if (!value || value.length < 2) {
-                        autocompleteContainer.style.display = 'none';
+                        closeDropdown();
                         return;
                     }
 
@@ -154,12 +190,14 @@
                     _acTimer = setTimeout(async () => {
                         const suggestions = await fetchSuggestions(value);
                         if (suggestions.length === 0) {
-                            autocompleteContainer.style.display = 'none';
+                            closeDropdown();
                             return;
                         }
 
+                        currentFocus = -1;
                         autocompleteContainer.replaceChildren();
-                        suggestions.forEach(suggestion => {
+                        suggestions.forEach((suggestion) => {
+                            const label = String(suggestion.label || '');
                             const item = document.createElement('div');
                             item.style.padding = '12px 15px';
                             item.style.cursor = 'pointer';
@@ -168,15 +206,16 @@
                             item.style.fontSize = '0.9rem';
                             item.style.background = '#ffffff';
                             const strong = document.createElement('strong');
-                            strong.textContent = suggestion.substring(0, value.length);
+                            strong.textContent = label.substring(0, value.length);
                             strong.style.fontWeight = '700';
                             strong.style.color = '#0b1015';
                             item.appendChild(strong);
-                            item.appendChild(document.createTextNode(suggestion.substring(value.length)));
+                            item.appendChild(document.createTextNode(label.substring(value.length)));
 
                             item.addEventListener('click', function() {
-                                input.value = suggestion;
-                                autocompleteContainer.style.display = 'none';
+                                input.value = label;
+                                setStoredCoords(input, suggestion);
+                                closeDropdown();
                             });
 
                             item.addEventListener('mouseenter', function() {
@@ -190,7 +229,7 @@
                             autocompleteContainer.appendChild(item);
                         });
 
-                        autocompleteContainer.style.display = 'block';
+                        openDropdown();
                     }, 300);
                 });
                 
@@ -208,7 +247,7 @@
                             items[currentFocus].click();
                         }
                     } else if (e.keyCode === 27) { // ESC
-                        autocompleteContainer.style.display = 'none';
+                        closeDropdown();
                     }
                 });
                 
@@ -229,10 +268,12 @@
             
             // Close autocomplete when clicking outside
             document.addEventListener('click', function(e) {
-                if (!e.target.matches('#recolha, #destino')) {
-                    const autocompleteItems = document.querySelectorAll('.autocomplete-items');
-                    autocompleteItems.forEach(item => {
+                if (!e.target.closest('#recolha, #destino, .premium-autocomplete-dropdown')) {
+                    document.querySelectorAll('.autocomplete-items').forEach(item => {
                         item.style.display = 'none';
+                    });
+                    document.querySelectorAll('.form-group.autocomplete-open').forEach(item => {
+                        item.classList.remove('autocomplete-open');
                     });
                 }
             });
@@ -953,6 +994,10 @@
                 hora: formData.get('hora'),
                 recolha: formData.get('recolha'),
                 destino: formData.get('destino'),
+                recolhaLat: document.getElementById('recolha')?.dataset?.lat || '',
+                recolhaLon: document.getElementById('recolha')?.dataset?.lon || '',
+                destinoLat: document.getElementById('destino')?.dataset?.lat || '',
+                destinoLon: document.getElementById('destino')?.dataset?.lon || '',
                 clientId: clientId,
                 lang: currentLang,
                 source: new URLSearchParams(window.location.search).get('src') || new URLSearchParams(window.location.search).get('utm_source') || 'direct'

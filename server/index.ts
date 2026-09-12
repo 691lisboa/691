@@ -591,6 +591,22 @@ function formatWhatsAppNumber(telefone: string): string {
 
 const wazeUrlCache = new Map<string, string>()
 
+function parseCoordinateValue(value: unknown, kind: 'lat' | 'lon'): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const n = Number(value)
+  if (!Number.isFinite(n)) return null
+  if (kind === 'lat' && (n < -90 || n > 90)) return null
+  if (kind === 'lon' && (n < -180 || n > 180)) return null
+  return n
+}
+
+function positionFromParts(latValue: unknown, lonValue: unknown): { lat: number; lon: number } | null {
+  const lat = parseCoordinateValue(latValue, 'lat')
+  const lon = parseCoordinateValue(lonValue, 'lon')
+  if (lat === null || lon === null) return null
+  return { lat, lon }
+}
+
 async function tomTomPosition(url: string): Promise<{ lat: number; lon: number } | null> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 4000)
@@ -610,10 +626,14 @@ async function tomTomPosition(url: string): Promise<{ lat: number; lon: number }
   }
 }
 
-async function buildWazeUrl(address: string): Promise<string> {
+async function buildWazeUrl(address: string, directPosition?: { lat: number; lon: number } | null): Promise<string> {
   const cleanAddress = String(address || '').trim()
   const fallback = `https://www.waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes`
   if (!cleanAddress) return fallback
+
+  if (directPosition) {
+    return `https://www.waze.com/ul?ll=${encodeURIComponent(`${directPosition.lat},${directPosition.lon}`)}&q=${encodeURIComponent(cleanAddress)}&navigate=yes`
+  }
 
   const cached = wazeUrlCache.get(cleanAddress)
   if (cached) return cached
@@ -641,7 +661,7 @@ async function buildWazeUrl(address: string): Promise<string> {
 
     if (!position) return fallback
 
-    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${position.lat},${position.lon}`)}&navigate=yes`
+    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${position.lat},${position.lon}`)}&q=${encodeURIComponent(cleanAddress)}&navigate=yes`
     if (wazeUrlCache.size > 250) wazeUrlCache.clear()
     wazeUrlCache.set(cleanAddress, resolved)
     return resolved
@@ -651,20 +671,30 @@ async function buildWazeUrl(address: string): Promise<string> {
   }
 }
 
-async function buildKeyboard(bookingId: string, recolha: string, destino: string, telefone?: string, status?: string) {
+async function buildKeyboard(
+  bookingId: string,
+  recolha: string,
+  destino: string,
+  telefone?: string,
+  status?: string,
+  recolhaPosition?: { lat: number; lon: number } | null,
+  destinoPosition?: { lat: number; lon: number } | null
+) {
   const current = normalizeBookingStatus(status)
   if (TERMINAL_BOOKING_STATUSES.has(current)) return { inline_keyboard: [] as any[][] }
 
-  const wazeAddress = current === 'arrived' ? destino : recolha
+  const usingDestino = current === 'arrived'
+  const wazeAddress = usingDestino ? destino : recolha
+  const wazePosition = usingDestino ? destinoPosition : recolhaPosition
   const wazeUrl = current === 'accepted' || current === 'onway' || current === 'arrived'
-    ? await buildWazeUrl(wazeAddress)
+    ? await buildWazeUrl(wazeAddress, wazePosition)
     : ''
-  const wazeLabel = current === 'arrived' ? '🚀 Waze · Destino' : '🚀 Waze · Recolha'
+  const wazeLabel = usingDestino ? '🚀 Waze · Destino' : '🚀 Waze · Recolha'
 
   // Assim que a reserva está aceite, pré-resolve o destino em segundo plano.
   // Quando o motorista carregar em "Cheguei", o botão de destino já tende a estar pronto.
   if ((current === 'accepted' || current === 'onway') && destino) {
-    void buildWazeUrl(destino)
+    void buildWazeUrl(destino, destinoPosition)
   }
 
   const whatsappUrl = telefone ? `https://wa.me/${formatWhatsAppNumber(telefone)}` : null
@@ -706,7 +736,15 @@ async function editMsg(bookingId: string, statusLine: string): Promise<void> {
   const msgId = bookingMessages.get(bookingId) || Number(booking?._telegramMessageId || 0)
   if (!bot || !TELEGRAM_CHAT_ID || !msgId || !booking) return
   try {
-    const replyMarkup = await buildKeyboard(bookingId, booking.recolha, booking.destino, booking.telefone, booking.status)
+    const replyMarkup = await buildKeyboard(
+      bookingId,
+      booking.recolha,
+      booking.destino,
+      booking.telefone,
+      booking.status,
+      positionFromParts(booking.recolhaLat, booking.recolhaLon),
+      positionFromParts(booking.destinoLat, booking.destinoLon)
+    )
     await bot.api.editMessageText(
       Number(TELEGRAM_CHAT_ID), msgId,
       buildMessage(booking, statusLine),
@@ -1307,11 +1345,26 @@ app.get('/api/search', async (req: Request, res: Response) => {
       const street = a.streetName || ''
       const num    = a.streetNumber ? ` ${a.streetNumber}` : ''
       const city   = a.municipality || a.municipalitySubdivision || ''
-      if (poi)    return `${poi}${street ? ' – ' + street + num : ''}${city ? ', ' + city : ''}`
-      if (street) return `${street}${num}${city ? ', ' + city : ''}`
-      return a.freeformAddress || ''
-    }).filter(Boolean)
-    return res.json(Array.from(new Set(results)))
+      const label = poi
+        ? `${poi}${street ? ' – ' + street + num : ''}${city ? ', ' + city : ''}`
+        : (street ? `${street}${num}${city ? ', ' + city : ''}` : (a.freeformAddress || ''))
+      const position = (item.position || {}) as Record<string, unknown>
+      const lat = Number(position.lat)
+      const lon = Number(position.lon)
+      return {
+        label,
+        lat: Number.isFinite(lat) ? lat : null,
+        lon: Number.isFinite(lon) ? lon : null,
+      }
+    }).filter(item => item.label)
+    const deduped: Array<{ label: string; lat: number | null; lon: number | null }> = []
+    const seen = new Set<string>()
+    for (const item of results) {
+      if (seen.has(item.label)) continue
+      seen.add(item.label)
+      deduped.push(item)
+    }
+    return res.json(deduped)
   } catch (err) {
     console.error('TomTom search error:', String(err).slice(0, 140))
     return res.json([])
@@ -1385,6 +1438,8 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const hora     = sanitize(raw.hora, 10)
   const recolha  = sanitize(raw.recolha, 300)
   const destino  = sanitize(raw.destino, 300)
+  const recolhaPosition = positionFromParts(raw.recolhaLat, raw.recolhaLon)
+  const destinoPosition = positionFromParts(raw.destinoLat, raw.destinoLon)
   const clientId = sanitize(raw.clientId, 64)
   const source   = sanitize(raw.source || 'direct', 80)
   if (!/^client-[A-Za-z0-9_-]{1,60}$/.test(clientId))
@@ -1416,6 +1471,10 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   const bookingId = `691-${crypto.randomBytes(12).toString('hex')}`
   const bookingData: Record<string, any> = {
     bookingId, nome, telefone, data, hora, recolha, destino, clientId, lang, source,
+    recolhaLat: recolhaPosition?.lat,
+    recolhaLon: recolhaPosition?.lon,
+    destinoLat: destinoPosition?.lat,
+    destinoLon: destinoPosition?.lon,
     status: 'pending', _ts: String(Date.now()),
   }
 
@@ -1451,7 +1510,7 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   if (bot && TELEGRAM_CHAT_ID) {
     let sentMessageId = 0
     try {
-      const replyMarkup = await buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending')
+      const replyMarkup = await buildKeyboard(bookingId, recolha, destino, bookingData.telefone, 'pending', recolhaPosition, destinoPosition)
       const sent = await bot.api.sendMessage(
         Number(TELEGRAM_CHAT_ID),
         buildMessage(bookingData),

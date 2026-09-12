@@ -1028,3 +1028,13 @@ body.premium-site{padding-bottom:0!important}
     margin-top:-12px!important;
   }
 }
+
+
+/* V24 — autocomplete visibility + spacing */
+.premium-site .form-group.autocomplete-open{position:relative!important;z-index:30020!important;margin-bottom:108px!important}
+.premium-site .premium-autocomplete-dropdown{top:calc(100% + 6px)!important;border:1px solid #dbe2e8!important;border-radius:16px!important;background:#fff!important;overflow:hidden!important}
+.premium-site .premium-autocomplete-dropdown>div{background:#fff!important;color:#0b1015!important;line-height:1.4!important}
+.premium-site .premium-autocomplete-dropdown>div strong{color:#0b1015!important}
+@media(max-width:680px){
+  .premium-site .form-group.autocomplete-open{margin-bottom:124px!important}
+}
