@@ -151,17 +151,26 @@
 
                 function openDropdown() {
                     autocompleteContainer.style.display = 'block';
+                    input.setAttribute('aria-expanded', 'true');
                     formGroup?.classList.add('autocomplete-open');
                 }
 
                 function closeDropdown() {
                     autocompleteContainer.style.display = 'none';
+                    input.setAttribute('aria-expanded', 'false');
+                    input.removeAttribute('aria-activedescendant');
                     formGroup?.classList.remove('autocomplete-open');
                 }
 
                 // Create autocomplete container
                 const autocompleteContainer = document.createElement('div');
                 autocompleteContainer.className = 'autocomplete-items premium-autocomplete-dropdown';
+                autocompleteContainer.id = `${input.id}-suggestions`;
+                autocompleteContainer.setAttribute('role', 'listbox');
+                input.setAttribute('role', 'combobox');
+                input.setAttribute('aria-autocomplete', 'list');
+                input.setAttribute('aria-controls', autocompleteContainer.id);
+                input.setAttribute('aria-expanded', 'false');
                 autocompleteContainer.style.position = 'absolute';
                 autocompleteContainer.style.top = 'calc(100% + 6px)';
                 autocompleteContainer.style.left = '0';
@@ -196,9 +205,12 @@
 
                         currentFocus = -1;
                         autocompleteContainer.replaceChildren();
-                        suggestions.forEach((suggestion) => {
+                        suggestions.forEach((suggestion, suggestionIndex) => {
                             const label = String(suggestion.label || '');
                             const item = document.createElement('div');
+                            item.id = `${input.id}-suggestion-${suggestionIndex}`;
+                            item.setAttribute('role', 'option');
+                            item.setAttribute('aria-selected', 'false');
                             item.style.padding = '12px 15px';
                             item.style.cursor = 'pointer';
                             item.style.borderBottom = '1px solid #eef2f5';
@@ -252,17 +264,22 @@
                 });
                 
                 function addActive(items) {
-                    if (!items) return false;
+                    if (!items || !items.length) return false;
                     removeActive(items);
                     if (currentFocus >= items.length) currentFocus = 0;
                     if (currentFocus < 0) currentFocus = (items.length - 1);
-                    items[currentFocus].style.background = '#f4f7f9';
+                    const activeItem = items[currentFocus];
+                    activeItem.style.background = '#f4f7f9';
+                    activeItem.setAttribute('aria-selected', 'true');
+                    input.setAttribute('aria-activedescendant', activeItem.id);
                 }
                 
                 function removeActive(items) {
                     for (let item of items) {
                         item.style.background = '#ffffff';
+                        item.setAttribute('aria-selected', 'false');
                     }
+                    input.removeAttribute('aria-activedescendant');
                 }
             });
             

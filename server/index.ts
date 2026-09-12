@@ -63,7 +63,11 @@ const io = new SocketIOServer(server, {
       return callback(new Error('Origin não permitida'))
     },
     methods: ['GET', 'POST']
-  }
+  },
+  // O frontend troca apenas pequenos objetos JSON. Limitar o payload reduz a
+  // superfície de DoS sem afetar reservas, estados ou subscrições Push.
+  maxHttpBufferSize: 64 * 1024,
+  perMessageDeflate: false
 })
 
 
@@ -628,11 +632,11 @@ async function tomTomPosition(url: string): Promise<{ lat: number; lon: number }
 
 async function buildWazeUrl(address: string, directPosition?: { lat: number; lon: number } | null): Promise<string> {
   const cleanAddress = String(address || '').trim()
-  const fallback = `https://www.waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes`
+  const fallback = `https://waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes&utm_source=691.pt`
   if (!cleanAddress) return fallback
 
   if (directPosition) {
-    return `https://www.waze.com/ul?ll=${encodeURIComponent(`${directPosition.lat},${directPosition.lon}`)}&q=${encodeURIComponent(cleanAddress)}&navigate=yes`
+    return `https://waze.com/ul?ll=${encodeURIComponent(`${directPosition.lat.toFixed(6)},${directPosition.lon.toFixed(6)}`)}&navigate=yes&utm_source=691.pt`
   }
 
   const cached = wazeUrlCache.get(cleanAddress)
@@ -661,7 +665,7 @@ async function buildWazeUrl(address: string, directPosition?: { lat: number; lon
 
     if (!position) return fallback
 
-    const resolved = `https://www.waze.com/ul?ll=${encodeURIComponent(`${position.lat},${position.lon}`)}&q=${encodeURIComponent(cleanAddress)}&navigate=yes`
+    const resolved = `https://waze.com/ul?ll=${encodeURIComponent(`${position.lat.toFixed(6)},${position.lon.toFixed(6)}`)}&navigate=yes&utm_source=691.pt`
     if (wazeUrlCache.size > 250) wazeUrlCache.clear()
     wazeUrlCache.set(cleanAddress, resolved)
     return resolved

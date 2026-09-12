@@ -21,8 +21,14 @@ for (const file of ['public/index.html','public/reserva.html','public/legal.html
   if (dupes.length) fail(`${file}: duplicate ids: ${[...new Set(dupes)].join(', ')}`)
 
   let i = 0
-  for (const match of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)) {
-    new vm.Script(match[1], { filename: `${file}:inline-script-${++i}` })
+  for (const match of html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const attrs = match[1] || ''
+    const body = match[2] || ''
+    if (/type=["']application\/ld\+json["']/i.test(attrs)) {
+      try { JSON.parse(body) } catch (error) { fail(`${file}: invalid inline JSON-LD: ${error.message}`) }
+      continue
+    }
+    new vm.Script(body, { filename: `${file}:inline-script-${++i}` })
   }
 }
 
@@ -71,7 +77,9 @@ if (!appJs.includes('accessToken: result.accessToken')) fail('booking access tok
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-v16'")) fail('service worker cache version not bumped')
+if (!sw.includes("const CACHE = '691-final-20260912-1'")) fail('final service worker cache version missing')
+if (sw.includes("const CACHE = '691-v16'")) fail('obsolete service worker cache version remains')
+if (!sw.includes('if (url.origin === self.location.origin)') || !sw.includes('networkFirst(request)')) fail('same-origin assets are not refreshed network-first')
 if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
 if (!sw.includes("'https://unpkg.com'") || !sw.includes("'https://fonts.googleapis.com'")) fail('safe runtime caching for external UI assets missing')
 if (!index.includes('integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="')) fail('Leaflet CSS SRI missing')
@@ -136,6 +144,55 @@ for (const css of ['public/index.css','public/reserva.css','public/legal.css','p
 for (const asset of ["'/index.css'", "'/reserva.css'", "'/legal.css'", "'/offline.css'"]) {
   if (!sw.includes(asset)) fail(`service worker does not pre-cache ${asset}`)
 }
+
+
+// Final-release checks: SEO semantics, Waze deep links and coordinate persistence.
+if (index.includes('src="/schema.json" type="application/ld+json"')) fail('JSON-LD is still loaded as an external script')
+const jsonLdMatch = index.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i)
+if (!jsonLdMatch) fail('inline JSON-LD missing from homepage')
+try {
+  const schema = JSON.parse(jsonLdMatch[1])
+  if (schema['@type'] !== 'TaxiService' || schema.url !== 'https://691.pt/') fail('homepage TaxiService JSON-LD incomplete')
+} catch (error) {
+  fail(`homepage JSON-LD invalid: ${error.message}`)
+}
+if (!index.includes('class="seo-hero-title"')) fail('accessible semantic homepage H1 missing')
+if ((index.match(/<h1\b/gi) || []).length !== 1) fail('homepage must expose exactly one H1')
+if (!server.includes('https://waze.com/ul?ll=') || !server.includes('&navigate=yes&utm_source=691.pt')) fail('official Waze coordinate deep-link format missing')
+if (server.includes('ll=${encodeURIComponent(`${directPosition.lat.toFixed(6)},${directPosition.lon.toFixed(6)}`)}&q=')) fail('Waze coordinate link still mixes q with ll')
+const routeMigration = 'supabase_migration_2026-09-12_route_coords.sql'
+if (!fs.existsSync(path.join(root, routeMigration))) fail('final Supabase route-coordinate migration missing')
+const routeSql = read(routeMigration)
+for (const col of ['recolha_lat','recolha_lon','destino_lat','destino_lon']) {
+  if (!routeSql.includes(col)) fail(`route-coordinate migration missing ${col}`)
+  if (!store.includes(col)) fail(`Supabase store does not persist ${col}`)
+}
+if (!store.includes('bookingCoordinatesSupported') || !store.includes('colunas de coordenadas ainda não disponíveis')) fail('coordinate migration backward-compatibility fallback missing')
+const lock = JSON.parse(read('package-lock.json'))
+const lockedVersions = {
+  express: lock.packages?.['node_modules/express']?.version || '',
+  qs: lock.packages?.['node_modules/qs']?.version || '',
+  socketIo: lock.packages?.['node_modules/socket.io']?.version || '',
+  socketParser: lock.packages?.['node_modules/socket.io-parser']?.version || '',
+  engineIo: lock.packages?.['node_modules/engine.io']?.version || '',
+  ws: lock.packages?.['node_modules/ws']?.version || ''
+}
+const expectedLockedVersions = {
+  express: '4.22.2',
+  qs: '6.16.0',
+  socketIo: '4.8.3',
+  socketParser: '4.2.7',
+  engineIo: '6.6.9',
+  ws: '8.21.3'
+}
+for (const [name, expected] of Object.entries(expectedLockedVersions)) {
+  if (lockedVersions[name] !== expected) fail(`unexpected ${name} version in lockfile: ${lockedVersions[name] || 'missing'} (expected ${expected})`)
+}
+if (!server.includes('maxHttpBufferSize: 64 * 1024') || !server.includes('perMessageDeflate: false')) fail('Socket.IO resource limits missing')
+if (!index.includes('/apple-touch-icon.png') || !read('public/manifest.json').includes('/icon-512.png')) fail('production PWA PNG icon set missing')
+if (!index.includes('aria-label="Ligar +351 928 158 158"') || !index.includes('aria-label="WhatsApp +351 928 158 158"')) fail('icon-only contact links need accessible labels')
+if (!appJs.includes("input.setAttribute('role', 'combobox')") || !appJs.includes("autocompleteContainer.setAttribute('role', 'listbox')")) fail('autocomplete ARIA combobox/listbox semantics missing')
+if (index.includes('id="recolha-autocomplete"') || index.includes('id="destino-autocomplete"')) fail('obsolete empty autocomplete containers remain')
 
 console.log('691 static audit: OK')
 

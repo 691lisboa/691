@@ -12,6 +12,10 @@ create table if not exists public.bookings (
     hora time not null,
     recolha text not null,
     destino text not null,
+    recolha_lat double precision check (recolha_lat is null or recolha_lat between -90 and 90),
+    recolha_lon double precision check (recolha_lon is null or recolha_lon between -180 and 180),
+    destino_lat double precision check (destino_lat is null or destino_lat between -90 and 90),
+    destino_lon double precision check (destino_lon is null or destino_lon between -180 and 180),
     client_id text not null,
     lang text not null default 'pt',
     status text not null default 'pending'

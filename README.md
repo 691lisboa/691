@@ -12,7 +12,8 @@ Aplicação web de reservas de táxi com confirmação e gestão operacional via
 - Web Push com validação do par VAPID e renovação automática de subscrições inválidas.
 - Persistência Supabase; o filesystem do Render não é usado como fonte de verdade.
 - Link privado `/reserva/:id?token=...` protegido por HMAC.
-- PWA com Service Worker e fallback offline.
+- Botões Waze com coordenadas exatas quando a morada é escolhida no autocomplete; fallback por geocodificação quando necessário.
+- PWA com Service Worker, atualização network-first dos ficheiros locais e fallback offline.
 
 A funcionalidade GPS foi removida por completo porque não é utilizada, reduzindo superfície de ataque, permissões e dependências externas desnecessárias.
 
@@ -20,7 +21,7 @@ A funcionalidade GPS foi removida por completo porque não é utilizada, reduzin
 
 - Node.js 22.x
 - npm
-- Projeto Supabase com o esquema de `supabase_schema.sql`. Em bases já existentes, `supabase_migration_2026-08-18_hardening.sql` remove apenas a coluna/índice legado da antiga função GPS do motorista.
+- Projeto Supabase com o esquema de `supabase_schema.sql`. Em bases já existentes, aplicar também `supabase_migration_2026-09-12_route_coords.sql` para persistir as coordenadas exatas de recolha/destino usadas pelo Waze. A migração é idempotente e pode ser executada mais de uma vez.
 
 ## Variáveis de ambiente
 
@@ -60,7 +61,7 @@ npm test
 npm start
 ```
 
-`npm run build` executa uma auditoria estática: valida a sintaxe do backend, Service Worker e scripts inline, procura IDs HTML duplicados e verifica invariantes de segurança importantes.
+`npm run build` executa uma auditoria estática reforçada: valida sintaxe do backend e frontend, JSON-LD, Service Worker, semântica da homepage, integração Waze, migração de coordenadas, dependências críticas e invariantes de segurança.
 
 ## Deploy no Render
 
@@ -88,8 +89,20 @@ server/index.ts  Express, Socket.IO, Telegram e Web Push
 server/store.ts  persistência Supabase via REST
 scripts/audit.mjs verificações estáticas de build
 supabase_schema.sql esquema para instalação nova
+supabase_migration_2026-09-12_route_coords.sql migração final das coordenadas Waze
 ```
 
 ## Preço da viagem
 
 A aplicação continua a apresentar o preço final pelo taxímetro conforme o tarifário aplicável. A estimativa automática de preço deve ser integrada apenas quando estiverem definidos e validados todos os parâmetros tarifários que o serviço pretende aplicar; não deve ser inferida por aproximações no código.
+
+
+## Checklist da versão final
+
+Para uma instalação existente, antes ou depois do deploy do código, executar uma vez no SQL Editor do Supabase:
+
+```sql
+-- conteúdo de supabase_migration_2026-09-12_route_coords.sql
+```
+
+O backend é compatível com a base antiga: se a migração ainda não tiver sido aplicada, continua a funcionar com geocodificação por morada. Depois de aplicar a migração, reiniciar o serviço no Render para ativar automaticamente a persistência das coordenadas.

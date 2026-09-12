@@ -57,6 +57,10 @@ function rowToBooking(row: Record<string, any>): BookingRecord {
     hora: String(row.hora || '').slice(0, 5),
     recolha: row.recolha,
     destino: row.destino,
+    recolhaLat: row.recolha_lat ?? undefined,
+    recolhaLon: row.recolha_lon ?? undefined,
+    destinoLat: row.destino_lat ?? undefined,
+    destinoLon: row.destino_lon ?? undefined,
     clientId: row.client_id,
     lang: row.lang || 'pt',
     status: row.status || 'pending',
@@ -69,7 +73,14 @@ function rowToBooking(row: Record<string, any>): BookingRecord {
   }
 }
 
-function bookingToRow(booking: BookingRecord): Record<string, unknown> {
+let bookingCoordinatesSupported = true
+
+function validCoordinate(value: unknown, min: number, max: number): number | null {
+  const n = Number(value)
+  return Number.isFinite(n) && n >= min && n <= max ? n : null
+}
+
+function bookingToRow(booking: BookingRecord, includeCoordinates = bookingCoordinatesSupported): Record<string, unknown> {
   const createdAt =
     booking.createdAt ||
     (
@@ -78,7 +89,7 @@ function bookingToRow(booking: BookingRecord): Record<string, unknown> {
         : new Date().toISOString()
     )
 
-  return {
+  const row: Record<string, unknown> = {
     booking_id: String(booking.bookingId),
     nome: String(booking.nome || ''),
     telefone: String(booking.telefone || ''),
@@ -95,6 +106,15 @@ function bookingToRow(booking: BookingRecord): Record<string, unknown> {
     created_at: createdAt,
     updated_at: new Date().toISOString()
   }
+
+  if (includeCoordinates) {
+    row.recolha_lat = validCoordinate(booking.recolhaLat, -90, 90)
+    row.recolha_lon = validCoordinate(booking.recolhaLon, -180, 180)
+    row.destino_lat = validCoordinate(booking.destinoLat, -90, 90)
+    row.destino_lon = validCoordinate(booking.destinoLon, -180, 180)
+  }
+
+  return row
 }
 
 const lastPersistedStatus = new Map<string, string>()
@@ -114,14 +134,28 @@ export async function loadPersistentState(): Promise<{
     }
   }
 
-  const [bookingsResponse, pushResponse] = await Promise.all([
-    supabaseRequest(
+  const pushPromise = supabaseRequest(
+    'push_subscriptions?select=client_id,endpoint,subscription&order=created_at.asc'
+  )
+
+  let bookingsResponse = await supabaseRequest(
+    'bookings?select=booking_id,nome,telefone,data,hora,recolha,destino,recolha_lat,recolha_lon,destino_lat,destino_lon,client_id,lang,status,telegram_message_id,created_at,updated_at&order=created_at.asc'
+  )
+
+  // Backward-compatible deploy: the code can go live before the one-time SQL
+  // migration is applied. After the migration, a restart enables persistence
+  // of route coordinates automatically.
+  if (!bookingsResponse.ok && bookingsResponse.status === 400) {
+    bookingCoordinatesSupported = false
+    console.warn('Supabase: colunas de coordenadas ainda não disponíveis; Waze mantém fallback por geocodificação até aplicar a migração final.')
+    bookingsResponse = await supabaseRequest(
       'bookings?select=booking_id,nome,telefone,data,hora,recolha,destino,client_id,lang,status,telegram_message_id,created_at,updated_at&order=created_at.asc'
-    ),
-    supabaseRequest(
-      'push_subscriptions?select=client_id,endpoint,subscription&order=created_at.asc'
     )
-  ])
+  } else if (bookingsResponse.ok) {
+    bookingCoordinatesSupported = true
+  }
+
+  const pushResponse = await pushPromise
 
   if (!bookingsResponse.ok || !pushResponse.ok) {
     const failures = [
@@ -175,7 +209,7 @@ export async function upsertBooking(booking: BookingRecord): Promise<void> {
     String(booking.bookingId)
   )
 
-  const response = await supabaseRequest(
+  let response = await supabaseRequest(
     'bookings?on_conflict=booking_id',
     {
       method: 'POST',
@@ -185,6 +219,22 @@ export async function upsertBooking(booking: BookingRecord): Promise<void> {
       body: JSON.stringify(bookingToRow(booking))
     }
   )
+
+  // Same safe fallback as loadPersistentState for deployments where the final
+  // coordinate migration has not yet been applied.
+  if (!response.ok && response.status === 400 && bookingCoordinatesSupported) {
+    bookingCoordinatesSupported = false
+    response = await supabaseRequest(
+      'bookings?on_conflict=booking_id',
+      {
+        method: 'POST',
+        headers: {
+          Prefer: 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(bookingToRow(booking, false))
+      }
+    )
+  }
 
   if (!response.ok) {
     throw supabaseError('Supabase booking upsert', response)
