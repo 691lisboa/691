@@ -398,6 +398,9 @@
             const footerLegal = document.getElementById('footer-legal');
             const footerPrivacy = document.getElementById('footer-privacy');
             const footerComplaints = document.getElementById('footer-complaints');
+            const premiumFooterLegal = document.getElementById('premium-footer-legal');
+            const premiumFooterPrivacy = document.getElementById('premium-footer-privacy');
+            const premiumFooterComplaints = document.getElementById('premium-footer-complaints');
             const encodedLang = encodeURIComponent(lang);
             if (footerLegal) {
                 footerLegal.textContent = footerT.legal;
@@ -410,6 +413,18 @@
             if (footerComplaints) {
                 footerComplaints.textContent = footerT.complaints;
                 footerComplaints.href = `https://www.livroreclamacoes.pt/Inicio/?lang=${lang === 'pt' ? 'PT' : 'EN'}`;
+            }
+            if (premiumFooterLegal) {
+                premiumFooterLegal.textContent = footerT.legal;
+                premiumFooterLegal.href = `/legal.html?lang=${encodedLang}`;
+            }
+            if (premiumFooterPrivacy) {
+                premiumFooterPrivacy.textContent = footerT.privacy;
+                premiumFooterPrivacy.href = `/legal.html?lang=${encodedLang}#privacidade`;
+            }
+            if (premiumFooterComplaints) {
+                premiumFooterComplaints.textContent = footerT.complaints;
+                premiumFooterComplaints.href = `https://www.livroreclamacoes.pt/Inicio/?lang=${lang === 'pt' ? 'PT' : 'EN'}`;
             }
             const whatsappDriverText = document.getElementById('whatsapp-driver-text');
             if (whatsappDriverText) whatsappDriverText.textContent = t.whatsappChat;

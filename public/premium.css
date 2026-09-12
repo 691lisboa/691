@@ -553,3 +553,45 @@ body.premium-site{padding-bottom:0!important}
   .premium-site .closing-actions{width:100%!important}
   .premium-site .yellow-cta,.premium-site .whatsapp-premium{width:100%!important}
 }
+
+
+/* V15 — car-first hero + simplified trust + translated footer */
+.premium-site .hero-trust{display:none!important}
+.premium-site .premium-hero{
+  min-height:650px!important;
+  background-size:cover!important;
+  background-position:center 61%!important;
+  background-repeat:no-repeat!important;
+}
+.premium-site .hero-overlay{
+  background:
+    linear-gradient(90deg,rgba(3,9,13,.28) 0%,rgba(3,9,13,.08) 48%,rgba(3,9,13,.32) 100%),
+    linear-gradient(0deg,rgba(2,7,10,.34) 0%,rgba(2,7,10,.02) 58%)!important;
+}
+.premium-site .hero-grid{align-items:center!important}
+.premium-site .hero-copy{min-height:360px!important;justify-content:flex-start!important;padding-top:34px!important;pointer-events:none}
+.premium-site .hero-kicker{background:rgba(4,10,13,.46)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;pointer-events:auto}
+.premium-site .english-feature{grid-template-rows:auto!important;align-items:center!important}
+.premium-site .english-feature span{grid-row:1!important}
+.premium-site .english-feature strong{align-self:center}
+.premium-site .premium-footer a{transition:color .18s ease}
+.premium-site .premium-footer a:hover{color:#fff}
+
+@media(max-width:980px){
+  .premium-site .premium-hero{background-position:center 58%!important}
+  .premium-site .hero-grid{padding-top:94px!important}
+  .premium-site .hero-copy{min-height:300px!important;padding-top:18px!important}
+}
+@media(max-width:680px){
+  .premium-site .premium-hero{
+    background-size:auto 390px!important;
+    background-position:50% 0!important;
+    background-color:#07100b!important;
+  }
+  .premium-site .hero-overlay{
+    background:linear-gradient(180deg,rgba(2,8,10,.08) 0,rgba(2,8,10,.18) 220px,rgba(7,16,11,.88) 390px,#07100b 430px)!important;
+  }
+  .premium-site .hero-grid{padding:76px 0 24px!important;gap:10px!important}
+  .premium-site .hero-copy{min-height:270px!important;padding-top:0!important;justify-content:flex-start!important}
+  .premium-site .hero-kicker{margin-top:4px!important}
+}
