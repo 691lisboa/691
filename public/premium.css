@@ -989,3 +989,24 @@ body.premium-site{padding-bottom:0!important}
   .premium-site .destinations-head h2,
   .premium-site .closing-inner h2{font-size:2rem!important}
 }
+
+
+/* V20 — reveal car slightly more on mobile */
+@media(max-width:680px){
+  .premium-site .premium-hero{
+    background-position:58% -22px!important;
+    background-size:auto 412px!important;
+  }
+  .premium-site .hero-overlay{
+    background:linear-gradient(180deg,rgba(2,8,10,.02) 0,rgba(2,8,10,.07) 122px,rgba(4,10,13,.26) 224px,#06100b 368px)!important;
+  }
+  .premium-site .hero-grid{
+    padding:70px 0 12px!important;
+  }
+  .premium-site .hero-copy{
+    min-height:224px!important;
+  }
+  .premium-site .booking-shell{
+    margin-top:-10px!important;
+  }
+}
