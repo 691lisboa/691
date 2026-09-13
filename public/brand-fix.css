@@ -1,0 +1,28 @@
+/* 691.pt — optical brand kerning
+   Keeps the registered name text exactly "691.pt" while visually closing
+   the natural side-bearing between the digit 1 and the dot in Inter. */
+.brand-optical {
+  white-space: nowrap;
+}
+
+.brand-optical-suffix {
+  display: inline-block;
+  margin-left: -0.07em;
+}
+
+/* Main homepage wordmark is already split into dedicated spans. */
+.premium-site .brand-dot {
+  display: inline-block;
+  margin-left: -0.055em;
+}
+
+.premium-site .brand-pt {
+  margin-left: -0.015em !important;
+}
+
+/* Landing-page wordmark: 691<span>.</span>pt */
+.lp-brand > span {
+  display: inline-block;
+  margin-left: -0.055em;
+  margin-right: -0.01em;
+}
