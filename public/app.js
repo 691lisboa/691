@@ -1114,6 +1114,37 @@
             });
         }
 
+
+        function applyRoutePrefillFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const pickupParam = (params.get('recolha') || params.get('pickup') || '').trim();
+            const destinationParam = (params.get('destino') || params.get('destination') || '').trim().toLowerCase();
+            const routeMap = {
+                'lisboa': 'Lisboa',
+                'sintra-cascais': 'Sintra & Cascais',
+                'fatima-obidos': 'Fátima & Óbidos',
+                'evora': 'Évora',
+                'nazare': 'Nazaré',
+                'porto': 'Porto'
+            };
+
+            const pickupInput = document.getElementById('recolha');
+            const destinationInput = document.getElementById('destino');
+
+            if (pickupInput && pickupParam) {
+                pickupInput.value = pickupParam;
+                delete pickupInput.dataset.lat;
+                delete pickupInput.dataset.lon;
+            }
+
+            const mappedDestination = routeMap[destinationParam] || (params.get('destino') || params.get('destination') || '').trim();
+            if (destinationInput && mappedDestination) {
+                destinationInput.value = mappedDestination;
+                delete destinationInput.dataset.lat;
+                delete destinationInput.dataset.lon;
+            }
+        }
+
         // Window cancel button
         const windowCancelBtn = document.getElementById('window-cancel-btn');
         if (windowCancelBtn) {
@@ -1153,4 +1184,5 @@
             
             const detectedLang = detectBrowserLanguage();
             updateLanguage(detectedLang);
+            applyRoutePrefillFromQuery();
         });
