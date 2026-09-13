@@ -32,7 +32,7 @@ for (const file of ['public/index.html','public/reserva.html','public/legal.html
   }
 }
 
-for (const file of ['public/app.js','public/push-map.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js']) {
+for (const file of ['public/app.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js']) {
   new vm.Script(read(file), { filename: file })
 }
 
@@ -41,7 +41,6 @@ const store = read('server/store.ts')
 const index = read('public/index.html')
 const sw = read('public/sw.js')
 const appJs = read('public/app.js')
-const pushMapJs = read('public/push-map.js')
 
 const legalJs = read('public/legal.js')
 const reservaJs = read('public/reserva.js')
@@ -72,18 +71,16 @@ if (server.includes("process.env.SUPABASE_SERVICE_ROLE_KEY ||\n  process.env.VAP
 if (appJs.includes('item.innerHTML')) fail('unsafe autocomplete innerHTML remains')
 if (appJs.includes("console.log('Enviando reserva")) fail('PII browser debug log remains')
 if (appJs.includes('[Push] Sync on connect failed')) fail('push subscription is redundantly re-synced on every socket reconnect')
-if (pushMapJs.includes('SKIP_WAITING')) fail('obsolete service-worker skip-waiting message remains')
 if (!appJs.includes('accessToken: result.accessToken')) fail('booking access token is not persisted by client')
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-final-20260913-home-destinations-photos-3'")) fail('final service worker cache version missing')
+if (!sw.includes("const CACHE = '691-final-20260913-extreme-review-1'")) fail('final service worker cache version missing')
 if (sw.includes("const CACHE = '691-v16'")) fail('obsolete service worker cache version remains')
+if (index.includes('/push-map.js') || index.includes('leaflet@1.9.4')) fail('homepage still loads hidden map assets')
 if (!sw.includes('if (url.origin === self.location.origin)') || !sw.includes('networkFirst(request)')) fail('same-origin assets are not refreshed network-first')
 if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
-if (!sw.includes("'https://unpkg.com'") || !sw.includes("'https://fonts.googleapis.com'")) fail('safe runtime caching for external UI assets missing')
-if (!index.includes('integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="')) fail('Leaflet CSS SRI missing')
-if (!pushMapJs.includes("attribution: '&copy; OpenStreetMap contributors &copy; CARTO'")) fail('map attribution missing')
+if (!sw.includes("'https://fonts.googleapis.com'") || !sw.includes("'https://fonts.gstatic.com'")) fail('safe runtime caching for external font assets missing')
 
 if (server.includes("process.env.PERSISTENCE_MODE")) fail('obsolete filesystem persistence mode remains')
 if ((server.match(/authorizedTelegramChat\(ctx\)/g) || []).length < 2) fail('Telegram authorization coverage is incomplete')

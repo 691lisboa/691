@@ -17,8 +17,6 @@
 <meta content="summary" name="twitter:card"/>
 <link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
 <link href="/manifest.json" rel="manifest"/>
-<link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" rel="stylesheet"/>
-<script crossorigin="" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <meta content="#000000" name="theme-color"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -26,12 +24,11 @@
 <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
 <script src="/socket.io/socket.io.js"></script>
 <link href="/index.css" rel="stylesheet"/>
 <link href="/premium.css" rel="stylesheet"/><link as="image" fetchpriority="high" href="/assets/taxi-691.webp" rel="preload"/><meta content="https://691.pt/assets/taxi-691.webp" property="og:image"/><script type="application/ld+json">{"@context":"https://schema.org","@type":"TaxiService","name":"691.pt Táxi Lisboa","url":"https://691.pt/","telephone":"+351928158158","areaServed":[{"@type":"City","name":"Lisboa"},{"@type":"Country","name":"Portugal"}],"availableLanguage":["Portuguese","English"],"description":"Reserva direta de táxi em Lisboa para deslocações locais, aeroporto e viagens reservadas em Portugal."}</script><link rel="stylesheet" href="/brand-fix.css"></head>
 <body class="premium-site">
-<div aria-hidden="true" id="map-bg"></div>
 <header class="site-header">
 <div class="brand-cluster"><a aria-label="691.pt Táxi Lisboa" class="site-brand" href="/"><span class="brand-691">691<span class="brand-dot">.</span><span class="brand-pt">pt</span></span></a><span aria-label="Contactos rápidos" class="brand-inline-links">
 <a class="brand-inline-link" href="tel:+351928158158" title="Ligar +351 928 158 158" aria-label="Ligar +351 928 158 158">
@@ -115,10 +112,12 @@
 <div class="form-group">
 <label for="data" id="date-label">Data de recolha</label>
 <input id="data" name="data" required="" type="date"/>
+<div class="validation-message" id="data-error"></div>
 </div>
 <div class="form-group">
 <label for="hora" id="time-label">Hora de recolha</label>
 <input id="hora" name="hora" required="" type="time"/>
+<div class="validation-message" id="hora-error"></div>
 </div>
 </div>
 <div class="form-group autocomplete-container">
@@ -169,7 +168,7 @@
 </section>
 <section class="destinations-section">
 <div class="section-wrap">
-<div class="destinations-head"><div><span class="eyebrow" data-mkt="destEyebrow">DESTINOS EM DESTAQUE</span><h2 data-mkt="destTitle">Descubra Portugal com o 691</h2><p data-mkt="destSubtitle">Transporte em táxi para destinos muito procurados. Fale connosco e reserve a sua viagem.</p></div><a class="dark-cta" data-mkt="allDest" href="/viagens-portugal/">Ver todos os destinos →</a></div>
+<div class="destinations-head"><div><span class="eyebrow" data-mkt="destEyebrow">DESTINOS EM DESTAQUE</span><h2 data-mkt="destTitle">De Lisboa para Portugal.</h2><p data-mkt="destSubtitle">Táxi com reserva direta para Lisboa, Sintra, Cascais, Fátima, Nazaré, Porto, Évora e outros destinos.</p></div><a class="dark-cta" data-mkt="allDest" href="/viagens-portugal/">Ver todos os destinos →</a></div>
 <div class="destination-grid">
 <a class="destination-card dest-lisbon" href="/taxi-lisboa/"><div><h3>Lisboa</h3><p data-mkt="lisbonSub">A cidade das sete colinas</p></div><span>→</span></a>
 <a class="destination-card dest-sintra" href="/viagens-portugal/?destino=sintra-cascais"><div><h3>Sintra &amp; Cascais</h3><p data-mkt="sintraSub">Palácio da Pena e costa</p></div><span>→</span></a>
@@ -183,7 +182,7 @@
 <section class="confidence-strip section-wrap">
 <div><span>●</span><strong data-mkt="featurePersonal">Atendimento personalizado</strong><small data-mkt="featurePersonalSub">Direto com o motorista</small></div>
 <div class="english-feature"><span>◎</span><strong data-mkt="featureLang">Falamos inglês</strong></div>
-<div><span>★</span><strong data-mkt="featureTrust">Confiança</strong><small data-mkt="featureTrustSub">Clientes locais e visitantes</small></div>
+<div><span>★</span><strong data-mkt="featureTrust">Táxi licenciado</strong><small data-mkt="featureTrustSub">Serviço legal e direto</small></div>
 <div><span>⌖</span><strong data-mkt="featureCountry">Em todo o país</strong><small data-mkt="featureCountrySub">Lisboa e Portugal</small></div>
 </section>
 <section class="closing-cta">
@@ -244,6 +243,6 @@
 </div>
 
 <footer class="premium-footer"><div class="section-wrap footer-inner"><div><strong>691.pt · Táxi Lisboa</strong><p data-mkt="footerTag">Reserva direta em Lisboa, aeroporto e viagens por Portugal.</p></div><div><a href="legal.html" id="premium-footer-legal">Informação Legal</a><a href="legal.html#privacidade" id="premium-footer-privacy">Privacidade</a><a href="https://www.livroreclamacoes.pt/Inicio/" id="premium-footer-complaints" rel="noopener" target="_blank">Livro de Reclamações</a></div></div><div class="photo-credit">© 2026 691.pt Lisboa</div></footer>
-<script src="/app.js"></script><script src="/push-map.js"></script><script src="/marketing.js"></script>
+<script src="/app.js"></script><script src="/marketing.js"></script>
 <script src="/brand-fix.js"></script></body>
 </html>

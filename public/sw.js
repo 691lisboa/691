@@ -1,4 +1,4 @@
-const CACHE = '691-final-20260913-home-destinations-photos-3'
+const CACHE = '691-final-20260913-extreme-review-1'
 
 const STATIC_ASSETS = [
   '/',
@@ -8,7 +8,6 @@ const STATIC_ASSETS = [
   '/brand-fix.css',
   '/brand-fix.js',
   '/app.js',
-  '/push-map.js',
   '/marketing.js',
   '/addresses.js',
   '/assets/taxi-691.webp',
@@ -104,7 +103,6 @@ self.addEventListener('fetch', (event) => {
 
   // Versioned third-party UI/font assets are safe to cache-first.
   const runtimeCacheOrigins = new Set([
-    'https://unpkg.com',
     'https://fonts.googleapis.com',
     'https://fonts.gstatic.com'
   ])

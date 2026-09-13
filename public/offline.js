@@ -3,7 +3,7 @@
   const supported = ['pt', 'en', 'fr', 'es', 'de', 'it', 'zh', 'ja', 'ru', 'nl', 'pl']
   const requested = (new URLSearchParams(window.location.search).get('lang') || '').toLowerCase()
   const browser = (navigator.language || 'pt').split('-')[0].toLowerCase()
-  const lang = supported.includes(requested) ? requested : (supported.includes(browser) ? browser : 'en')
+  const lang = requested === 'en' ? 'en' : (requested === 'pt' ? 'pt' : (browser.startsWith('en') ? 'en' : 'pt'))
   const translations = {
     pt: { page: '691 Lisboa — Sem Ligação', title: 'Sem ligação à internet', sub: 'O servidor 691 está temporariamente inacessível. Verifica a tua ligação e tenta novamente.', retry: 'Tentar novamente', contact: 'Reservas por telefone' },
     en: { page: '691 Lisboa — Offline', title: 'No internet connection', sub: 'The 691 server is temporarily unreachable. Check your connection and try again.', retry: 'Try again', contact: 'Bookings by phone' },

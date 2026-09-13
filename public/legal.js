@@ -40,10 +40,11 @@
   }
 
   function detectLanguage() {
-    const requested = new URLSearchParams(window.location.search).get('lang')
-    if (requested && SUPPORTED.includes(requested.toLowerCase())) return requested.toLowerCase()
-    const browser = (navigator.language || 'pt').split('-')[0].toLowerCase()
-    return SUPPORTED.includes(browser) ? browser : 'en'
+    const requested = (new URLSearchParams(window.location.search).get('lang') || '').toLowerCase()
+    if (requested === 'en') return 'en'
+    if (requested === 'pt') return 'pt'
+    const browser = (navigator.language || 'pt').toLowerCase()
+    return browser.startsWith('en') ? 'en' : 'pt'
   }
 
   const lang = detectLanguage()

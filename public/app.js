@@ -29,16 +29,16 @@
         // Traduções da interface do cliente.
         const translations = {
             pt: {
-                title: '691.pt', subtitle: 'Táxi Lisboa', nameLabel: 'Nome', phoneLabel: 'Telefone', dateLabel: 'Data de recolha', timeLabel: 'Hora de recolha', pickupLabel: 'Local de Recolha', destinationLabel: 'Destino', submitButton: 'Reservar Táxi', whatsappChat: 'Falar com o Motorista', cancelButton: '❌ Cancelar Reserva', bookingTitle: 'Reserva ativa', bookingPending: 'A aguardar confirmação', bookingAccepted: 'Reserva aceite', driverArrived: 'O motorista chegou', driverOnTheWay: 'Motorista a caminho', bookingRejected: 'Reserva recusada', bookingCancelled: 'Reserva cancelada', bookingCompleted: 'Viagem concluída', noBookings: 'Sem reservas ativas', bookingDetailsTitle: 'Detalhes da reserva', successMessage: '✅ Reserva enviada com sucesso!', youLabel: 'Você', errorGeneric: '❌ Erro ao enviar a reserva.', errorConnection: '❌ Erro de ligação.', cancelError: '❌ Não foi possível cancelar a reserva. Tente novamente.', namePlaceholder: 'Seu nome', phonePlaceholder: 'Seu telefone', pickupPlaceholder: 'Local de recolha', destPlaceholder: 'Destino', validationName: 'Por favor, preencha o nome', validationNameInvalid: 'Nome inválido (mínimo 2 letras)', validationPhone: 'Por favor, preencha o telefone', validationPhoneInvalid: 'Telefone inválido (mínimo 7 dígitos)', validationPickup: 'Por favor, preencha o local de recolha', validationDestination: 'Por favor, preencha o destino', enableNotifications: '⚠️ Ative as notificações para receber atualizações da sua reserva.\n\nNo navegador: definições do site → Notificações → Permitir', pickupLabelShort: 'Recolha', destLabelShort: 'Destino'
+                title: '691.pt', subtitle: 'Táxi Lisboa', nameLabel: 'Nome', phoneLabel: 'Telefone', dateLabel: 'Data de recolha', timeLabel: 'Hora de recolha', pickupLabel: 'Local de Recolha', destinationLabel: 'Destino', submitButton: 'Reservar Táxi', whatsappChat: 'Falar com o Motorista', cancelButton: '❌ Cancelar Reserva', bookingTitle: 'Reserva ativa', bookingPending: 'A aguardar confirmação', bookingAccepted: 'Reserva aceite', driverArrived: 'O motorista chegou', driverOnTheWay: 'Motorista a caminho', bookingRejected: 'Reserva recusada', bookingCancelled: 'Reserva cancelada', bookingCompleted: 'Viagem concluída', noBookings: 'Sem reservas ativas', bookingDetailsTitle: 'Detalhes da reserva', successMessage: '✅ Reserva enviada com sucesso!', youLabel: 'Você', errorGeneric: '❌ Erro ao enviar a reserva.', errorConnection: '❌ Erro de ligação.', cancelError: '❌ Não foi possível cancelar a reserva. Tente novamente.', namePlaceholder: 'Seu nome', phonePlaceholder: 'Seu telefone', pickupPlaceholder: 'Local de recolha', destPlaceholder: 'Destino', validationName: 'Por favor, preencha o nome', validationNameInvalid: 'Nome inválido (mínimo 2 letras)', validationPhone: 'Por favor, preencha o telefone', validationPhoneInvalid: 'Telefone inválido (mínimo 7 dígitos)', validationPickup: 'Por favor, preencha o local de recolha', validationDestination: 'Por favor, preencha o destino', validationDate: 'Por favor, escolha a data', validationTime: 'Por favor, escolha a hora', validationDatePast: 'Escolha hoje ou uma data futura', validationDateTimePast: 'Escolha uma hora futura para a recolha', enableNotifications: '⚠️ Ative as notificações para receber atualizações da sua reserva.\n\nNo navegador: definições do site → Notificações → Permitir', pickupLabelShort: 'Recolha', destLabelShort: 'Destino'
             },
             en: {
-                title: '691.pt', subtitle: 'Lisbon Taxi', nameLabel: 'Name', phoneLabel: 'Phone', dateLabel: 'Pickup date', timeLabel: 'Pickup time', pickupLabel: 'Pickup location', destinationLabel: 'Destination', submitButton: 'Book Taxi', whatsappChat: 'Talk to the Driver', cancelButton: '❌ Cancel Booking', bookingTitle: 'Active booking', bookingPending: 'Awaiting confirmation', bookingAccepted: 'Booking accepted', driverArrived: 'Driver arrived', driverOnTheWay: 'Driver is on the way', bookingRejected: 'Booking declined', bookingCancelled: 'Booking cancelled', bookingCompleted: 'Trip completed', noBookings: 'No active bookings', bookingDetailsTitle: 'Booking details', successMessage: '✅ Booking sent successfully!', youLabel: 'You', errorGeneric: '❌ Error sending booking.', errorConnection: '❌ Connection error.', cancelError: '❌ The booking could not be cancelled. Please try again.', namePlaceholder: 'Your name', phonePlaceholder: 'Your phone', pickupPlaceholder: 'Pickup address', destPlaceholder: 'Destination address', validationName: 'Please enter your name', validationNameInvalid: 'Invalid name (minimum 2 characters)', validationPhone: 'Please enter your phone number', validationPhoneInvalid: 'Invalid phone number (minimum 7 digits)', validationPickup: 'Please enter the pickup location', validationDestination: 'Please enter the destination', enableNotifications: '⚠️ Enable notifications to receive booking updates.\n\nBrowser site settings → Notifications → Allow', pickupLabelShort: 'Pickup', destLabelShort: 'Destination'
+                title: '691.pt', subtitle: 'Lisbon Taxi', nameLabel: 'Name', phoneLabel: 'Phone', dateLabel: 'Pickup date', timeLabel: 'Pickup time', pickupLabel: 'Pickup location', destinationLabel: 'Destination', submitButton: 'Book Taxi', whatsappChat: 'Talk to the Driver', cancelButton: '❌ Cancel Booking', bookingTitle: 'Active booking', bookingPending: 'Awaiting confirmation', bookingAccepted: 'Booking accepted', driverArrived: 'Driver arrived', driverOnTheWay: 'Driver is on the way', bookingRejected: 'Booking declined', bookingCancelled: 'Booking cancelled', bookingCompleted: 'Trip completed', noBookings: 'No active bookings', bookingDetailsTitle: 'Booking details', successMessage: '✅ Booking sent successfully!', youLabel: 'You', errorGeneric: '❌ Error sending booking.', errorConnection: '❌ Connection error.', cancelError: '❌ The booking could not be cancelled. Please try again.', namePlaceholder: 'Your name', phonePlaceholder: 'Your phone', pickupPlaceholder: 'Pickup address', destPlaceholder: 'Destination address', validationName: 'Please enter your name', validationNameInvalid: 'Invalid name (minimum 2 characters)', validationPhone: 'Please enter your phone number', validationPhoneInvalid: 'Invalid phone number (minimum 7 digits)', validationPickup: 'Please enter the pickup location', validationDestination: 'Please enter the destination', validationDate: 'Please select a date', validationTime: 'Please select a time', validationDatePast: 'Please choose today or a future date', validationDateTimePast: 'Please choose a future pickup time', enableNotifications: '⚠️ Enable notifications to receive booking updates.\n\nBrowser site settings → Notifications → Allow', pickupLabelShort: 'Pickup', destLabelShort: 'Destination'
             },
             fr: {
                 title: '691.pt', subtitle: 'Taxi Lisbonne', nameLabel: 'Nom', phoneLabel: 'Téléphone', dateLabel: 'Date de prise en charge', timeLabel: 'Heure de prise en charge', pickupLabel: 'Lieu de prise en charge', destinationLabel: 'Destination', submitButton: 'Réserver un Taxi', whatsappChat: 'Parler au Chauffeur', cancelButton: '❌ Annuler la Réservation', bookingTitle: 'Réservation active', bookingPending: '⏳ En attente de confirmation', bookingAccepted: '✅ Réservation acceptée.', driverArrived: '📍 Le chauffeur est arrivé.', driverOnTheWay: '🚗 Le chauffeur est en route !', bookingRejected: '❌ Réservation refusée.', bookingCancelled: '❌ Réservation annulée.', bookingCompleted: '✅ Trajet terminé.', noBookings: 'Aucune réservation active', bookingDetailsTitle: '📋 Détails de la Réservation', successMessage: '✅ Réservation envoyée avec succès !', youLabel: 'Vous', errorGeneric: '❌ Erreur lors de l’envoi de la réservation.', errorConnection: '❌ Erreur de connexion.', cancelError: '❌ Impossible d’annuler la réservation. Veuillez réessayer.', namePlaceholder: 'Votre nom', phonePlaceholder: 'Votre téléphone', pickupPlaceholder: 'Adresse de prise en charge', destPlaceholder: 'Adresse de destination', validationName: 'Veuillez saisir votre nom', validationNameInvalid: 'Nom invalide (minimum 2 caractères)', validationPhone: 'Veuillez saisir votre téléphone', validationPhoneInvalid: 'Téléphone invalide (minimum 7 chiffres)', validationPickup: 'Veuillez saisir le lieu de prise en charge', validationDestination: 'Veuillez saisir la destination', enableNotifications: '⚠️ Activez les notifications pour recevoir les mises à jour de votre réservation.\n\nParamètres du site → Notifications → Autoriser', pickupLabelShort: 'Prise en charge', destLabelShort: 'Destination'
             },
             es: {
-                title: '691.pt', subtitle: 'Taxi Lisboa', nameLabel: 'Nombre', phoneLabel: 'Teléfono', dateLabel: 'Fecha de recogida', timeLabel: 'Hora de recogida', pickupLabel: 'Lugar de recogida', destinationLabel: 'Destino', submitButton: 'Reservar Taxi', whatsappChat: 'Hablar con el Conductor', cancelButton: '❌ Cancelar Reserva', bookingTitle: 'Reserva activa', bookingPending: '⏳ Esperando confirmación', bookingAccepted: '✅ Reserva aceptada.', driverArrived: '📍 El conductor ha llegado.', driverOnTheWay: '🚗 El conductor está en camino.', bookingRejected: '❌ Reserva rechazada.', bookingCancelled: 'Reserva cancelada', bookingCompleted: '✅ Viaje completado.', noBookings: 'No hay reservas activas', bookingDetailsTitle: '📋 Detalles de la Reserva', successMessage: '✅ Reserva enviada con éxito.', youLabel: 'Tú', errorGeneric: '❌ Error al enviar la reserva.', errorConnection: '❌ Error de conexión.', cancelError: '❌ No se pudo cancelar la reserva. Inténtalo de nuevo.', namePlaceholder: 'Tu nombre', phonePlaceholder: 'Tu teléfono', pickupPlaceholder: 'Dirección de recogida', destPlaceholder: 'Dirección de destino', validationName: 'Introduce tu nombre', validationNameInvalid: 'Nombre no válido (mínimo 2 caracteres)', validationPhone: 'Introduce tu teléfono', validationPhoneInvalid: 'Teléfono no válido (mínimo 7 dígitos)', validationPickup: 'Introduce el lugar de recogida', validationDestination: 'Introduce el destino', enableNotifications: '⚠️ Activa las notificaciones para recibir actualizaciones de tu reserva.\n\nConfiguración del sitio → Notificaciones → Permitir', pickupLabelShort: 'Recogida', destLabelShort: 'Destino'
+                title: '691.pt', subtitle: 'Taxi Lisboa', nameLabel: 'Nombre', phoneLabel: 'Teléfono', dateLabel: 'Fecha de recogida', timeLabel: 'Hora de recogida', pickupLabel: 'Lugar de recogida', destinationLabel: 'Destino', submitButton: 'Reservar Taxi', whatsappChat: 'Hablar con el Conductor', cancelButton: '❌ Cancelar Reserva', bookingTitle: 'Reserva activa', bookingPending: '⏳ Esperando confirmación', bookingAccepted: '✅ Reserva aceptada.', driverArrived: '📍 El conductor ha llegado.', driverOnTheWay: '🚗 El conductor está en camino.', bookingRejected: '❌ Reserva rechazada.', bookingCancelled: 'Reserva cancelada', bookingCompleted: '✅ Viaje completado.', noBookings: 'No hay reservas activas', bookingDetailsTitle: '📋 Detalles de la Reserva', successMessage: '✅ Reserva enviada con éxito.', youLabel: 'Tú', errorGeneric: '❌ Error al enviar la reserva.', errorConnection: '❌ Error de conexión.', cancelError: '❌ No se pudo cancelar la reserva. Inténtalo de nuevo.', namePlaceholder: 'Tu nombre', phonePlaceholder: 'Tu teléfono', pickupPlaceholder: 'Dirección de recogida', destPlaceholder: 'Dirección de destino', validationName: 'Introduce tu nombre', validationNameInvalid: 'Nombre no válido (mínimo 2 caracteres)', validationPhone: 'Introduce tu teléfono', validationPhoneInvalid: 'Teléfono no válido (mínimo 7 dígitos)', validationPickup: 'Introduce el lugar de recogida', validationDestination: 'Introduce el destino', validationDate: 'Elige la fecha', validationTime: 'Elige la hora', validationDatePast: 'Elige hoy o una fecha futura', validationDateTimePast: 'Elige una hora futura para la recogida', enableNotifications: '⚠️ Activa las notificaciones para recibir actualizaciones de tu reserva.\n\nConfiguración del sitio → Notificaciones → Permitir', pickupLabelShort: 'Recogida', destLabelShort: 'Destino'
             },
             de: {
                 title: '691.pt', subtitle: 'Taxi Lisboa', nameLabel: 'Name', phoneLabel: 'Telefon', dateLabel: 'Abholdatum', timeLabel: 'Abholzeit', pickupLabel: 'Abholort', destinationLabel: 'Ziel', submitButton: 'Taxi Buchen', whatsappChat: 'Mit dem Fahrer sprechen', cancelButton: '❌ Buchung Stornieren', bookingTitle: 'Aktive Buchung', bookingPending: '⏳ Bestätigung ausstehend', bookingAccepted: '✅ Buchung angenommen.', driverArrived: '📍 Fahrer ist angekommen.', driverOnTheWay: '🚗 Fahrer ist unterwegs.', bookingRejected: '❌ Buchung abgelehnt.', bookingCancelled: '❌ Buchung storniert.', bookingCompleted: '✅ Fahrt abgeschlossen.', noBookings: 'Keine aktiven Buchungen', bookingDetailsTitle: '📋 Buchungsdetails', successMessage: '✅ Buchung erfolgreich gesendet.', youLabel: 'Sie', errorGeneric: '❌ Fehler beim Senden der Buchung.', errorConnection: '❌ Verbindungsfehler.', cancelError: '❌ Die Buchung konnte nicht storniert werden. Bitte versuchen Sie es erneut.', namePlaceholder: 'Ihr Name', phonePlaceholder: 'Ihre Telefonnummer', pickupPlaceholder: 'Abholadresse', destPlaceholder: 'Zieladresse', validationName: 'Bitte geben Sie Ihren Namen ein', validationNameInvalid: 'Ungültiger Name (mindestens 2 Zeichen)', validationPhone: 'Bitte geben Sie Ihre Telefonnummer ein', validationPhoneInvalid: 'Ungültige Telefonnummer (mindestens 7 Ziffern)', validationPickup: 'Bitte geben Sie den Abholort ein', validationDestination: 'Bitte geben Sie das Ziel ein', enableNotifications: '⚠️ Aktivieren Sie Benachrichtigungen für Buchungsupdates.\n\nWebsite-Einstellungen → Benachrichtigungen → Zulassen', pickupLabelShort: 'Abholung', destLabelShort: 'Ziel'
@@ -451,10 +451,11 @@
         // Update language
         function updateLanguage(lang) {
             if (!lang) lang = 'pt';
+            lang = lang.toLowerCase().startsWith('en') ? 'en' : 'pt';
             currentLang = lang;
             const t = translations[lang] || translations.en;
             const footerT = footerTranslations[lang] || footerTranslations.en;
-            document.documentElement.lang = lang;
+            document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en';
             
             document.getElementById('title').textContent = t.title;
             document.getElementById('subtitle').textContent = t.subtitle;
@@ -552,10 +553,15 @@
             const telefoneInput = document.getElementById('telefone');
             const recolhaInput = document.getElementById('recolha');
             const destinoInput = document.getElementById('destino');
+            const dateInput = document.getElementById('data');
+            const timeInput = document.getElementById('hora');
             if (nomeInput) nomeInput.title = t.validationName;
             if (telefoneInput) telefoneInput.title = t.validationPhone;
+            if (dateInput) dateInput.title = t.validationDate || 'Please select a date';
+            if (timeInput) timeInput.title = t.validationTime || 'Please select a time';
             if (recolhaInput) recolhaInput.title = t.validationPickup;
             if (destinoInput) destinoInput.title = t.validationDestination;
+            applyDateTimeConstraints();
 
             // Re-render booking status badge in the new language
             if (currentBooking) updateBookingStatus(currentStatus);
@@ -930,80 +936,165 @@
             if (statusInd) statusInd.style.opacity = connected ? '0.9' : '0.7';
         }
 
+        function validationMessage(key, fallback) {
+            const t = translations[currentLang] || translations.en || {};
+            return t[key] || fallback;
+        }
+
+        function setFieldError(input, errorEl, message) {
+            if (!input || !errorEl) return;
+            input.classList.add('error');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function clearFieldError(input, errorEl) {
+            if (!input || !errorEl) return;
+            input.classList.remove('error');
+            errorEl.classList.remove('show');
+        }
+
+        function getTodayISO() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getNowTimeISO() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function applyDateTimeConstraints() {
+            const dateInput = document.getElementById('data');
+            const timeInput = document.getElementById('hora');
+            if (!dateInput || !timeInput) return;
+            const today = getTodayISO();
+            dateInput.min = today;
+            if (!dateInput.value) return;
+            if (dateInput.value < today) dateInput.value = today;
+            if (dateInput.value === today) {
+                const minTime = getNowTimeISO();
+                timeInput.min = minTime;
+                if (timeInput.value && timeInput.value < minTime) timeInput.value = minTime;
+            } else {
+                timeInput.removeAttribute('min');
+            }
+        }
+
+        function initDateTimeValidation() {
+            const dateInput = document.getElementById('data');
+            const timeInput = document.getElementById('hora');
+            const dateError = document.getElementById('data-error');
+            const timeError = document.getElementById('hora-error');
+            applyDateTimeConstraints();
+            if (dateInput) {
+                dateInput.addEventListener('input', () => {
+                    applyDateTimeConstraints();
+                    if (dateInput.value) clearFieldError(dateInput, dateError);
+                });
+            }
+            if (timeInput) {
+                timeInput.addEventListener('input', () => {
+                    applyDateTimeConstraints();
+                    if (timeInput.value) clearFieldError(timeInput, timeError);
+                });
+            }
+        }
+
         // Custom validation with translated messages
         function validateForm() {
-            const t = translations[currentLang];
             let isValid = true;
 
-            // Name validation
             const nomeInput = document.getElementById('nome');
             const nomeError = document.getElementById('nome-error');
             if (nomeInput && nomeError) {
                 const nomeValue = nomeInput.value.trim();
                 if (!nomeValue) {
-                    nomeInput.classList.add('error');
-                    nomeError.textContent = t.validationName;
-                    nomeError.classList.add('show');
+                    setFieldError(nomeInput, nomeError, validationMessage('validationName', 'Please enter your name'));
                     isValid = false;
                 } else if (nomeValue.length < 2) {
-                    nomeInput.classList.add('error');
-                    nomeError.textContent = t.validationNameInvalid;
-                    nomeError.classList.add('show');
+                    setFieldError(nomeInput, nomeError, validationMessage('validationNameInvalid', 'Invalid name'));
                     isValid = false;
                 } else {
-                    nomeInput.classList.remove('error');
-                    nomeError.classList.remove('show');
+                    clearFieldError(nomeInput, nomeError);
                 }
             }
 
-            // Phone validation
             const telefoneInput = document.getElementById('telefone');
             const telefoneError = document.getElementById('telefone-error');
             if (telefoneInput && telefoneError) {
                 const telefoneValue = telefoneInput.value.trim();
                 if (!telefoneValue) {
-                    telefoneInput.classList.add('error');
-                    telefoneError.textContent = t.validationPhone;
-                    telefoneError.classList.add('show');
+                    setFieldError(telefoneInput, telefoneError, validationMessage('validationPhone', 'Please enter your phone number'));
                     isValid = false;
                 } else if (!/^[+\d\s()\-]{7,30}$/.test(telefoneValue)) {
-                    telefoneInput.classList.add('error');
-                    telefoneError.textContent = t.validationPhoneInvalid;
-                    telefoneError.classList.add('show');
+                    setFieldError(telefoneInput, telefoneError, validationMessage('validationPhoneInvalid', 'Invalid phone number'));
                     isValid = false;
                 } else {
-                    telefoneInput.classList.remove('error');
-                    telefoneError.classList.remove('show');
+                    clearFieldError(telefoneInput, telefoneError);
                 }
             }
 
-            // Pickup validation
+            const dateInput = document.getElementById('data');
+            const dateError = document.getElementById('data-error');
+            const timeInput = document.getElementById('hora');
+            const timeError = document.getElementById('hora-error');
+            const dateValue = dateInput ? dateInput.value : '';
+            const timeValue = timeInput ? timeInput.value : '';
+            const today = getTodayISO();
+            if (dateInput && dateError) {
+                if (!dateValue) {
+                    setFieldError(dateInput, dateError, validationMessage('validationDate', 'Please select a date'));
+                    isValid = false;
+                } else if (dateValue < today) {
+                    setFieldError(dateInput, dateError, validationMessage('validationDatePast', 'Please choose today or a future date'));
+                    isValid = false;
+                } else {
+                    clearFieldError(dateInput, dateError);
+                }
+            }
+            if (timeInput && timeError) {
+                if (!timeValue) {
+                    setFieldError(timeInput, timeError, validationMessage('validationTime', 'Please select a time'));
+                    isValid = false;
+                } else {
+                    clearFieldError(timeInput, timeError);
+                }
+            }
+            if (dateInput && timeInput && dateError && timeError && dateValue && timeValue) {
+                const selected = new Date(`${dateValue}T${timeValue}:00`);
+                if (!Number.isNaN(selected.getTime()) && selected.getTime() < Date.now() - 60000) {
+                    const msg = validationMessage('validationDateTimePast', 'Please choose a future pickup time');
+                    setFieldError(dateInput, dateError, msg);
+                    setFieldError(timeInput, timeError, msg);
+                    isValid = false;
+                }
+            }
+
             const recolhaInput = document.getElementById('recolha');
             const recolhaError = document.getElementById('recolha-error');
             if (recolhaInput && recolhaError) {
                 if (!recolhaInput.value.trim()) {
-                    recolhaInput.classList.add('error');
-                    recolhaError.textContent = t.validationPickup;
-                    recolhaError.classList.add('show');
+                    setFieldError(recolhaInput, recolhaError, validationMessage('validationPickup', 'Please enter the pickup location'));
                     isValid = false;
                 } else {
-                    recolhaInput.classList.remove('error');
-                    recolhaError.classList.remove('show');
+                    clearFieldError(recolhaInput, recolhaError);
                 }
             }
 
-            // Destination validation
             const destinoInput = document.getElementById('destino');
             const destinoError = document.getElementById('destino-error');
             if (destinoInput && destinoError) {
                 if (!destinoInput.value.trim()) {
-                    destinoInput.classList.add('error');
-                    destinoError.textContent = t.validationDestination;
-                    destinoError.classList.add('show');
+                    setFieldError(destinoInput, destinoError, validationMessage('validationDestination', 'Please enter the destination'));
                     isValid = false;
                 } else {
-                    destinoInput.classList.remove('error');
-                    destinoError.classList.remove('show');
+                    clearFieldError(destinoInput, destinoError);
                 }
             }
 
@@ -1165,21 +1256,20 @@
             // Setup validation clearing on input
             clearValidation('nome', 'nome-error');
             clearValidation('telefone', 'telefone-error');
+            clearValidation('data', 'data-error');
+            clearValidation('hora', 'hora-error');
             clearValidation('recolha', 'recolha-error');
             clearValidation('destino', 'destino-error');
+            initDateTimeValidation();
             
             // Detect browser language automatically
             function detectBrowserLanguage() {
-                const supportedLangs = ['pt', 'en', 'fr', 'es', 'de', 'it', 'zh', 'ja', 'ru', 'nl', 'pl'];
-                const requestedLang = new URLSearchParams(window.location.search).get('lang');
-                if (requestedLang && supportedLangs.includes(requestedLang.toLowerCase())) {
-                    return requestedLang.toLowerCase();
-                }
+                const requestedLang = (new URLSearchParams(window.location.search).get('lang') || '').toLowerCase();
+                if (requestedLang === 'en') return 'en';
+                if (requestedLang === 'pt') return 'pt';
 
-                const browserLang = navigator.language || navigator.userLanguage || 'pt';
-                const primaryLang = browserLang.split('-')[0].toLowerCase();
-                if (supportedLangs.includes(primaryLang)) return primaryLang;
-                return 'en';
+                const browserLang = (navigator.language || navigator.userLanguage || 'pt').toLowerCase();
+                return browserLang.startsWith('en') ? 'en' : 'pt';
             }
             
             const detectedLang = detectBrowserLanguage();
