@@ -5,7 +5,7 @@ Aplicação web de reservas de táxi com confirmação e gestão operacional via
 ## Funcionalidades atuais
 
 - Formulário de reserva em `public/index.html` com autocomplete TomTom para moradas.
-- Tradução automática coerente em 11 idiomas na interface principal, rodapé, páginas Legal/Privacidade, acompanhamento da reserva e fallback offline; os links internos preservam o idioma.
+- Experiência pública uniformizada em português e inglês (PT/EN) na interface principal, landing pages, Legal/Privacidade, acompanhamento da reserva e fallback offline; os links internos preservam o idioma.
 - Estados da reserva: `pending → accepted → onway → arrived → completed`, com rejeição/cancelamento como estados terminais.
 - Bot Telegram administrativo limitado ao `TELEGRAM_CHAT_ID` configurado.
 - Cancelamento pelo cliente com confirmação do servidor e aviso no Telegram.
@@ -14,6 +14,8 @@ Aplicação web de reservas de táxi com confirmação e gestão operacional via
 - Link privado `/reserva/:id?token=...` protegido por HMAC.
 - Botões Waze com coordenadas exatas quando a morada é escolhida no autocomplete; fallback por geocodificação quando necessário.
 - PWA com Service Worker, atualização network-first dos ficheiros locais e fallback offline.
+- Landing pages SEO estáticas para Sintra, Fátima, Nazaré, Porto e Évora, com redirecionamento permanente dos antigos URLs por query string.
+- CSS consolidado por superfície (`site.css` e `landing-site.css`) e imagens WebP responsivas para reduzir tráfego móvel.
 
 A funcionalidade GPS foi removida por completo porque não é utilizada, reduzindo superfície de ataque, permissões e dependências externas desnecessárias.
 
@@ -41,7 +43,7 @@ BOOKING_ACCESS_SECRET=
 TOMTOM_API_KEY=
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
-VAPID_EMAIL=mailto:jose@79.pt
+VAPID_EMAIL=mailto:you@example.com
 ```
 
 `BOOKING_ACCESS_SECRET` deve ser independente dos outros segredos e ter pelo menos 32 caracteres. Pode ser gerado com:

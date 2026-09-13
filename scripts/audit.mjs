@@ -32,7 +32,7 @@ for (const file of ['public/index.html','public/reserva.html','public/legal.html
   }
 }
 
-for (const file of ['public/app.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js']) {
+for (const file of ['public/app.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js','public/marketing.js','public/landing-auto.js','public/destination-page.js']) {
   new vm.Script(read(file), { filename: file })
 }
 
@@ -47,11 +47,15 @@ const reservaJs = read('public/reserva.js')
 const offlineJs = read('public/offline.js')
 if (!index.includes('id="footer-legal"') || !index.includes('id="footer-privacy"') || !index.includes('id="footer-complaints"')) fail('translatable footer links missing')
 if (!appJs.includes('footerTranslations') || !appJs.includes('/legal.html?lang=${encodedLang}')) fail('footer automatic translation/language propagation missing')
-if (!legalJs.includes("const SUPPORTED = ['pt', 'en', 'fr', 'es', 'de', 'it', 'zh', 'ja', 'ru', 'nl', 'pl']")) fail('legal page language coverage incomplete')
-for (const lang of ['pt','en','fr','es','de','it','zh','ja','ru','nl','pl']) {
+if (!legalJs.includes("const SUPPORTED = ['pt', 'en']")) fail('legal page must be PT/EN only')
+for (const lang of ['pt','en']) {
   if (!legalJs.includes(`    ${lang}: {`)) fail(`legal translation missing: ${lang}`)
   if (!reservaJs.includes(`    ${lang}: {`)) fail(`booking tracking translation missing: ${lang}`)
   if (!offlineJs.includes(`    ${lang}: {`)) fail(`offline translation missing: ${lang}`)
+}
+for (const legacyLang of ['fr','es','de','it','zh','ja','ru','nl','pl']) {
+  const re = new RegExp(`\n\s+${legacyLang}:\s*\{`)
+  if (re.test(legalJs) || re.test(reservaJs) || re.test(offlineJs) || re.test(appJs)) fail(`legacy UI translation remains: ${legacyLang}`)
 }
 if (!read('public/legal.html').includes('id="footer-license-label"')) fail('legal footer licence label is not translatable')
 if (!legalJs.includes('TomTom Search API')) fail('legal provider disclosure does not mention address-search provider')
@@ -75,7 +79,7 @@ if (!appJs.includes('accessToken: result.accessToken')) fail('booking access tok
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-final-20260913-form-ui-fix-1'")) fail('final service worker cache version missing')
+if (!sw.includes("const CACHE = '691-final-20260913-world-final-1'")) fail('final service worker cache version missing')
 if (sw.includes("const CACHE = '691-v16'")) fail('obsolete service worker cache version remains')
 if (index.includes('/push-map.js') || index.includes('leaflet@1.9.4')) fail('homepage still loads hidden map assets')
 if (fs.existsSync(path.join(root, 'public/push-map.js'))) fail('dead push-map.js file remains')
@@ -110,10 +114,10 @@ for (const file of ['public/index.html','public/reserva.html','public/legal.html
     if (!/\brel=["'][^"']*\bnoopener\b[^"']*["']/i.test(match[0])) fail(`${file}: target=_blank without noopener`)
   }
 }
-const indexCss = read('public/index.css')
+const indexCss = read('public/site.css')
 if (indexCss.includes('-webkit-mask-image') || indexCss.includes('mask-image: radial-gradient')) fail('cancel button mask workaround remains')
-if (!indexCss.includes('-webkit-appearance: none;') || !indexCss.includes('background-clip: padding-box;')) fail('cancel button native appearance reset missing')
-if (!/\.cancel-btn\s*\{[\s\S]*?border:\s*none;/m.test(indexCss)) fail('cancel button still uses a visible border')
+if (!indexCss.includes('-webkit-appearance:none') || !indexCss.includes('background-clip:padding-box')) fail('cancel button native appearance reset missing')
+if (!/\.cancel-btn\s*\{[\s\S]*?border:none/m.test(indexCss)) fail('cancel button still uses a visible border')
 
 for (const file of ['public/index.html','public/reserva.html','public/legal.html','public/offline.html']) {
   const html = read(file)
@@ -139,10 +143,13 @@ if (server.includes('clientsConnected: connectedClients.size')) fail('reservatio
 if (!server.includes('validPushEndpoint(endpoint)') || !server.includes('validWebPushKey(p256dh, 65)') || !server.includes('validWebPushKey(auth, 16)')) fail('push subscription endpoint/key validation missing')
 if (!appJs.includes("footerComplaints.href = `https://www.livroreclamacoes.pt/Inicio/?lang=${lang === 'pt' ? 'PT' : 'EN'}`")) fail('official complaints link language routing missing')
 if (!store.includes('Supabase stale push endpoint cleanup')) fail('push endpoint uniqueness recovery missing')
-for (const css of ['public/index.css','public/reserva.css','public/legal.css','public/offline.css']) {
+for (const css of ['public/site.css','public/landing-site.css','public/reserva.css','public/legal.css','public/offline.css']) {
   if (!fs.existsSync(path.join(root, css)) || !read(css).trim()) fail(`${css}: missing or empty`)
 }
-for (const asset of ["'/index.css'", "'/reserva.css'", "'/legal.css'", "'/offline.css'"]) {
+for (const obsoleteCss of ['public/index.css','public/premium.css','public/landing-premium.css','public/landing.css','public/brand-fix.css']) {
+  if (fs.existsSync(path.join(root, obsoleteCss))) fail(`obsolete CSS file remains: ${obsoleteCss}`)
+}
+for (const asset of ["'/site.css'", "'/landing-site.css'", "'/reserva.css'", "'/legal.css'", "'/offline.css'"]) {
   if (!sw.includes(asset)) fail(`service worker does not pre-cache ${asset}`)
 }
 
@@ -197,17 +204,52 @@ if (index.includes('id="recolha-autocomplete"') || index.includes('id="destino-a
 
 for (const file of ['public/index.html','public/reserva.html','public/legal.html','public/offline.html','public/taxi-lisboa/index.html','public/taxi-aeroporto-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html']) {
   const html = read(file)
-  if (!html.includes('/brand-fix.css') || !html.includes('/brand-fix.js')) fail(`${file}: global 691.pt optical brand fix missing`)
+  if (!html.includes('/brand-fix.js')) fail(`${file}: global 691.pt optical brand JS missing`)
 }
-const brandFixCss = read('public/brand-fix.css')
 const brandFixJs = read('public/brand-fix.js')
-if (!brandFixCss.includes('.brand-optical-suffix') || !brandFixCss.includes('margin-left: -0.07em')) fail('global 691.pt optical kerning CSS missing')
+const brandCssSources = [read('public/site.css'),read('public/landing-site.css'),read('public/reserva.css'),read('public/legal.css'),read('public/offline.css')].join('\n')
+if (!brandCssSources.includes('.brand-optical-suffix') || !brandCssSources.includes('margin-left:-0.07em')) fail('global 691.pt optical kerning CSS missing')
 if (!brandFixJs.includes('const BRAND_RE = /691\\s*\\.pt/g')) fail('global 691.pt text normalization missing')
-if (!sw.includes("'/brand-fix.css'") || !sw.includes("'/brand-fix.js'")) fail('service worker does not pre-cache brand optical fix assets')
+if (!sw.includes("'/brand-fix.js'")) fail('service worker does not pre-cache brand optical JS')
+
+
+// World-final checks: static destination SEO, responsive assets, privacy and legacy cleanup.
+for (const legacyLang of ['fr','es','de','it','zh','ja','ru','nl','pl']) {
+  if (server.includes(`const ${legacyLang}: Record<string, string>`)) fail(`legacy backend translation remains: ${legacyLang}`)
+}
+if (server.includes("new Set(['pt','en','fr'")) fail('backend still accepts legacy UI languages')
+for (const obsoleteRef of ['/index.css','/premium.css','/landing-premium.css','/landing.css','/brand-fix.css']) {
+  for (const file of ['public/index.html','public/taxi-lisboa/index.html','public/taxi-aeroporto-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html']) {
+    if (read(file).includes(obsoleteRef)) fail(`${file}: obsolete CSS reference remains: ${obsoleteRef}`)
+  }
+}
+if (!index.includes('media="(max-width: 680px)"') || !index.includes('/assets/taxi-691-mobile.webp')) fail('homepage responsive hero preload missing')
+
+const destinationSlugs = ['sintra','fatima','nazare','porto','evora']
+const sitemap = read('public/sitemap.xml')
+for (const slug of destinationSlugs) {
+  const file = `public/viagens-portugal/${slug}/index.html`
+  if (!fs.existsSync(path.join(root, file))) fail(`static destination page missing: ${slug}`)
+  const html = read(file)
+  if (!html.includes(`https://691.pt/viagens-portugal/${slug}/`)) fail(`destination canonical missing: ${slug}`)
+  if (!/<h1[^>]*data-lp=["']title["'][^>]*>[^<]+<\/h1>/i.test(html)) fail(`destination static H1 missing: ${slug}`)
+  if (!html.includes('/destination-page.js')) fail(`destination PT/EN script missing: ${slug}`)
+  if (!sitemap.includes(`https://691.pt/viagens-portugal/${slug}/`)) fail(`destination sitemap URL missing: ${slug}`)
+}
+if (!server.includes("app.get('/viagens-portugal/'") || !server.includes("return res.redirect(301, `/viagens-portugal/${slug}/${lang}`)")) fail('legacy destination query redirect missing')
+for (const asset of ['taxi-691-mobile.webp','lisboa-mobile.webp','sintra-mobile.webp','fatima-mobile.webp','nazare-mobile.webp','porto-mobile.webp','evora-mobile.webp']) {
+  const file = asset === 'taxi-691-mobile.webp' ? `public/assets/${asset}` : `public/assets/destinations/${asset}`
+  if (!fs.existsSync(path.join(root, file))) fail(`responsive image missing: ${asset}`)
+}
+if (!read('public/site.css').includes('taxi-691-mobile.webp') || !read('public/landing-site.css').includes('porto-mobile.webp')) fail('responsive image CSS missing')
+if (read('public/legal.html').includes('mailto:') || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(read('public/legal.html')) || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(legalJs)) fail('public technical email remains in legal UI')
+if (index.includes('?destino=sintra-cascais') || index.includes('?destino=fatima-obidos') || index.includes('?destino=nazare') || index.includes('?destino=porto') || index.includes('?destino=evora')) fail('homepage still uses dynamic destination query URLs')
+if (!index.includes('/viagens-portugal/sintra/') || !index.includes('/viagens-portugal/porto/')) fail('homepage static destination links missing')
+if (fs.existsSync(path.join(root, 'public/push-map.js'))) fail('dead push-map.js file remains')
 
 console.log('691 static audit: OK')
 
-for (const file of ['public/robots.txt','public/sitemap.xml','public/schema.json','public/landing.css']) {
+for (const file of ['public/robots.txt','public/sitemap.xml','public/schema.json']) {
   if (!fs.existsSync(path.join(root, file)) || !read(file).trim()) fail(`${file}: SEO asset missing or empty`)
 }
 for (const dir of ['taxi-lisboa','taxi-aeroporto-lisboa','lisbon-airport-taxi','viagens-portugal']) {

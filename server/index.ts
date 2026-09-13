@@ -77,7 +77,7 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || ''
 // Configuração Web Push (VAPID)
 const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY || ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || ''
-const VAPID_EMAIL       = process.env.VAPID_EMAIL || 'mailto:jose@79.pt'
+const VAPID_EMAIL       = process.env.VAPID_EMAIL || 'mailto:you@example.com'
 const TELEGRAM_WEBHOOK_URL = String(process.env.TELEGRAM_WEBHOOK_URL || '')
 const TELEGRAM_WEBHOOK_SECRET = String(process.env.TELEGRAM_WEBHOOK_SECRET || '')
 const IS_PRODUCTION = String(process.env.NODE_ENV || 'production').toLowerCase() === 'production'
@@ -368,7 +368,7 @@ async function sendPush(
   }
 }
 
-/** Mensagens de estado localizadas */
+/** Mensagens de estado localizadas (PT/EN). */
 function statusMsg(event: string, lang: string): string {
   const en: Record<string, string> = {
     accepted:  '✅ Booking accepted!',
@@ -386,84 +386,8 @@ function statusMsg(event: string, lang: string): string {
     cancelled: '❌ Reserva Cancelada',
     onway:     '🚗 Motorista a Caminho'
   }
-  const fr: Record<string, string> = {
-    accepted:  '✅ Réservation acceptée!',
-    rejected:  '❌ Réservation refusée. Veuillez réessayer.',
-    arrived:   '📍 Le chauffeur est arrivé.',
-    completed: '✅ Trajet terminé! Merci. 🙏',
-    cancelled: '❌ Réservation annulée.',
-    onway:     '🚗 Le chauffeur est en route!'
-  }
-  const es: Record<string, string> = {
-    accepted:  '✅ ¡Reserva aceptada!',
-    rejected:  '❌ Reserva rechazada. Por favor intente nuevamente.',
-    arrived:   '📍 El conductor ha llegado.',
-    completed: '✅ ¡Viaje completado! Gracias. 🙏',
-    cancelled: '❌ Reserva cancelada.',
-    onway:     '🚗 ¡El conductor está en camino!'
-  }
-  const de: Record<string, string> = {
-    accepted:  '✅ Buchung akzeptiert!',
-    rejected:  '❌ Buchung abgelehnt. Bitte versuchen Sie es erneut.',
-    arrived:   '📍 Fahrer angekommen.',
-    completed: '✅ Fahrt abgeschlossen! Vielen Dank. 🙏',
-    cancelled: '❌ Buchung storniert.',
-    onway:     '🚗 Fahrer ist unterwegs!'
-  }
-  const it: Record<string, string> = {
-    accepted:  '✅ Prenotazione accettata!',
-    rejected:  '❌ Prenotazione rifiutata. Riprova.',
-    arrived:   '📍 L\'autista è arrivato.',
-    completed: '✅ Viaggio completato! Grazie. 🙏',
-    cancelled: '❌ Prenotazione annullata.',
-    onway:     '🚗 L\'autista è in viaggio!'
-  }
-  const zh: Record<string, string> = {
-    accepted:  '✅ 预订已接受！',
-    rejected:  '❌ 预订被拒绝。请重试。',
-    arrived:   '📍 司机已到达。',
-    completed: '✅ 行程完成！谢谢。🙏',
-    cancelled: '❌ 预订已取消。',
-    onway:     '🚗 司机正在路上！'
-  }
-  const ja: Record<string, string> = {
-    accepted:  '✅ 予約が承認されました！',
-    rejected:  '❌ 予約が拒否されました。もう一度お試しください。',
-    arrived:   '📍 ドライバーが到着しました。',
-    completed: '✅ 旅行が完了しました！ありがとうございます。🙏',
-    cancelled: '❌ 予約がキャンセルされました。',
-    onway:     '🚗 ドライバーが向かっています！'
-  }
-  const ru: Record<string, string> = {
-    accepted:  '✅ Бронирование принято!',
-    rejected:  '❌ Бронирование отклонено. Попробуйте еще раз.',
-    arrived:   '📍 Водитель прибыл.',
-    completed: '✅ Поездка завершена! Спасибо. 🙏',
-    cancelled: '❌ Бронирование отменено.',
-    onway:     '🚗 Водитель в пути!'
-  }
-  const nl: Record<string, string> = {
-    accepted:  '✅ Boeking geaccepteerd!',
-    rejected:  '❌ Boeking geweigerd. Probeer het opnieuw.',
-    arrived:   '📍 Bestuurder is aangekomen.',
-    completed: '✅ Rit voltooid! Dank u. 🙏',
-    cancelled: '❌ Boeking geannuleerd.',
-    onway:     '🚗 Bestuurder is onderweg!'
-  }
-  const pl: Record<string, string> = {
-    accepted:  '✅ Rezerwacja przyjęta!',
-    rejected:  '❌ Rezerwacja odrzucona. Spróbuj ponownie.',
-    arrived:   '📍 Kierowca przyjechał.',
-    completed: '✅ Podróż zakończona! Dziękujemy. 🙏',
-    cancelled: '❌ Rezerwacja anulowana.',
-    onway:     '🚗 Kierowca w drodze!'
-  }
-
-  const languages: Record<string, Record<string, string>> = {
-    en, pt, fr, es, de, it, zh, ja, ru, nl, pl
-  }
-  
-  return languages[lang]?.[event] || pt[event] || ''
+  const selected = lang === 'en' ? en : pt
+  return selected[event] || pt[event] || ''
 }
 
 /** Textos dos botões do painel Telegram. */
@@ -1317,6 +1241,24 @@ app.get('/reserva/:id', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../public/reserva.html'))
 })
 
+// ── Destination legacy query redirects ─────────────────────────────────────────
+app.get('/viagens-portugal/', (req: Request, res: Response, next) => {
+  const raw = sanitize(String(req.query.destino || req.query.destination || ''), 64).toLowerCase()
+  const destinationRedirects: Record<string, string> = {
+    'sintra-cascais': 'sintra',
+    'sintra': 'sintra',
+    'fatima-obidos': 'fatima',
+    'fatima': 'fatima',
+    'nazare': 'nazare',
+    'porto': 'porto',
+    'evora': 'evora'
+  }
+  const slug = destinationRedirects[raw]
+  if (!slug) return next()
+  const lang = String(req.query.lang || '').toLowerCase() === 'en' ? '?lang=en' : ''
+  return res.redirect(301, `/viagens-portugal/${slug}/${lang}`)
+})
+
 // ── Ficheiros estáticos ───────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')))
 
@@ -1379,25 +1321,15 @@ app.get('/api/search', async (req: Request, res: Response) => {
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
 app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
   const raw = req.body || {}
-  const supportedLangs = new Set(['pt','en','fr','es','de','it','zh','ja','ru','nl','pl'])
   const requestedLang = sanitize(raw.lang || 'pt', 8).toLowerCase()
-  const lang = supportedLangs.has(requestedLang) ? requestedLang : 'pt'
+  const lang = requestedLang === 'en' ? 'en' : 'pt'
   
   // Rate limiting por IP
   const ip = requestIp(req)
   if (!checkRateLimit(ip)) {
     const rateLimitMsgs: Record<string, string> = {
       pt: 'Demasiados pedidos. Tente novamente em 10 minutos.',
-      en: 'Too many requests. Please try again in 10 minutes.',
-      fr: 'Trop de demandes. Veuillez réessayer dans 10 minutes.',
-      es: 'Demasiadas solicitudes. Por favor inténtelo de nuevo en 10 minutos.',
-      de: 'Zu viele Anfragen. Bitte versuchen Sie es in 10 Minuten erneut.',
-      it: 'Troppe richieste. Per favore riprova tra 10 minuti.',
-      zh: '请求过多。请10分钟后再试。',
-      ja: 'リクエストが多すぎます。10分後にもう一度お試しください。',
-      ru: 'Слишком много запросов. Пожалуйста, попробуйте снова через 10 минут.',
-      nl: 'Te veel verzoeken. Probeer het over 10 minuten opnieuw.',
-      pl: 'Zbyt wiele próśb. Spróbuj ponownie za 10 minut.'
+      en: 'Too many requests. Please try again in 10 minutes.'
     }
     return res.status(429).json({ success: false, error: rateLimitMsgs[lang] || rateLimitMsgs.pt })
   }
@@ -1405,30 +1337,12 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
   // Validação: campos obrigatórios
   const validationMsgs: Record<string, Record<string, string>> = {
     pt: { missing: 'Campos obrigatórios em falta', name: 'Nome inválido', phone: 'Telefone inválido', address: 'Moradas inválidas' },
-    en: { missing: 'Required fields missing', name: 'Invalid name', phone: 'Invalid phone', address: 'Invalid addresses' },
-    fr: { missing: 'Champs obligatoires manquants', name: 'Nom invalide', phone: 'Téléphone invalide', address: 'Adresses invalides' },
-    es: { missing: 'Campos obligatorios faltantes', name: 'Nombre inválido', phone: 'Teléfono inválido', address: 'Direcciones inválidas' },
-    de: { missing: 'Pflichtfelder fehlen', name: 'Ungültiger Name', phone: 'Ungültiges Telefon', address: 'Ungültige Adressen' },
-    it: { missing: 'Campi obbligatori mancanti', name: 'Nome non valido', phone: 'Telefono non valido', address: 'Indirizzi non validi' },
-    zh: { missing: '必填字段缺失', name: '姓名无效', phone: '电话无效', address: '地址无效' },
-    ja: { missing: '必須フィールドが不足しています', name: '無効な名前', phone: '無効な電話', address: '無効な住所' },
-    ru: { missing: 'Обязательные поля отсутствуют', name: 'Неверное имя', phone: 'Неверный телефон', address: 'Неверные адреса' },
-    nl: { missing: 'Verplichte velden ontbreken', name: 'Ongeldige naam', phone: 'Ongeldige telefoon', address: 'Ongeldige adressen' },
-    pl: { missing: 'Brak wymaganych pól', name: 'Nieprawidłowe imię', phone: 'Nieprawidłowy telefon', address: 'Nieprawidłowe adresy' }
+    en: { missing: 'Required fields missing', name: 'Invalid name', phone: 'Invalid phone', address: 'Invalid addresses' }
   }
   const vm = validationMsgs[lang] || validationMsgs.pt
   const operationalMsgs: Record<string, { active: string; unavailable: string; delivery: string }> = {
     pt: { active: 'Já tem uma reserva ativa.', unavailable: 'Serviço temporariamente indisponível. Tente novamente.', delivery: 'Não foi possível confirmar a reserva neste momento. Tente novamente.' },
-    en: { active: 'You already have an active booking.', unavailable: 'Service temporarily unavailable. Please try again.', delivery: 'The booking could not be confirmed at this time. Please try again.' },
-    fr: { active: 'Vous avez déjà une réservation active.', unavailable: 'Service temporairement indisponible. Veuillez réessayer.', delivery: 'La réservation ne peut pas être confirmée pour le moment. Veuillez réessayer.' },
-    es: { active: 'Ya tiene una reserva activa.', unavailable: 'Servicio temporalmente no disponible. Inténtelo de nuevo.', delivery: 'No se pudo confirmar la reserva en este momento. Inténtelo de nuevo.' },
-    de: { active: 'Sie haben bereits eine aktive Buchung.', unavailable: 'Dienst vorübergehend nicht verfügbar. Bitte versuchen Sie es erneut.', delivery: 'Die Buchung konnte derzeit nicht bestätigt werden. Bitte versuchen Sie es erneut.' },
-    it: { active: 'Hai già una prenotazione attiva.', unavailable: 'Servizio temporaneamente non disponibile. Riprova.', delivery: 'Al momento non è stato possibile confermare la prenotazione. Riprova.' },
-    zh: { active: '您已有一个当前预订。', unavailable: '服务暂时不可用，请重试。', delivery: '目前无法确认预订，请重试。' },
-    ja: { active: 'すでに有効な予約があります。', unavailable: 'サービスは一時的に利用できません。もう一度お試しください。', delivery: '現在予約を確認できません。もう一度お試しください。' },
-    ru: { active: 'У вас уже есть активное бронирование.', unavailable: 'Сервис временно недоступен. Попробуйте снова.', delivery: 'Сейчас не удалось подтвердить бронирование. Попробуйте снова.' },
-    nl: { active: 'U heeft al een actieve reservering.', unavailable: 'Dienst tijdelijk niet beschikbaar. Probeer opnieuw.', delivery: 'De reservering kon op dit moment niet worden bevestigd. Probeer opnieuw.' },
-    pl: { active: 'Masz już aktywną rezerwację.', unavailable: 'Usługa jest chwilowo niedostępna. Spróbuj ponownie.', delivery: 'Nie udało się teraz potwierdzić rezerwacji. Spróbuj ponownie.' }
+    en: { active: 'You already have an active booking.', unavailable: 'Service temporarily unavailable. Please try again.', delivery: 'The booking could not be confirmed at this time. Please try again.' }
   }
   const om = operationalMsgs[lang] || operationalMsgs.pt
   if (!raw.nome || !raw.telefone || !raw.data || !raw.hora || !raw.recolha || !raw.destino || !raw.clientId) {

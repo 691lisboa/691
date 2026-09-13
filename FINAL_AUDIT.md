@@ -1,50 +1,43 @@
-# 691.pt — Auditoria final / freeze 2026-09-12
+# 691.pt — Auditoria final / freeze 2026-09-13
 
 Estado: **FINAL / production freeze candidate**.
 
 ## Correções finais incluídas
 
-- Service Worker com cache final `691-final-20260912-1` e estratégia network-first para ficheiros locais, evitando frontend antigo após deploy.
-- JSON-LD `TaxiService` embebido diretamente na homepage.
-- Um único H1 semântico e acessível, sem alterar o visual aprovado.
-- PWA com ícones PNG 192/512 e Apple Touch 180px.
-- Autocomplete com dropdown opaco, coordenadas exatas e semântica ARIA combobox/listbox.
-- Waze com deep link oficial por latitude/longitude (`navigate=yes`) e `utm_source=691.pt`; fallback por morada.
-- Persistência opcional e retrocompatível das coordenadas no Supabase.
-- Migração SQL idempotente: `supabase_migration_2026-09-12_route_coords.sql`.
-- Limite de payload Socket.IO (64 KiB) e compressão WebSocket desativada para reduzir superfície de DoS.
-- Auditoria estática reforçada para validar SEO, PWA, Waze, migração, acessibilidade e versões críticas de dependências.
-- Pacote final distribuído sem `.git` e sem `node_modules`.
+- Homepage preservada visualmente, mantendo a fotografia real do táxi do 691.pt.
+- Interface pública uniformizada em **PT/EN** no formulário, páginas de marketing, Legal/Privacidade, acompanhamento de reserva, offline e mensagens do backend.
+- Páginas SEO estáticas e indexáveis para **Sintra, Fátima, Nazaré, Porto e Évora**, cada uma com título, descrição, canonical, H1 e CTA próprios.
+- URLs antigas `?destino=` redirecionadas permanentemente para os novos URLs estáticos.
+- Sitemap atualizado com os destinos individuais.
+- CSS consolidado: homepage em `site.css`, landings em `landing-site.css`; ficheiros CSS obsoletos eliminados.
+- Assets mobile dedicados para o hero e cartões de destinos, reduzindo o peso transferido em ecrãs pequenos.
+- Sintra e Fátima voltaram a imagens de um local concreto, evitando composições visuais de dois destinos diferentes.
+- Nazaré e Porto mantêm imagens de alta resolução, agora recomprimidas para WebP mais eficiente.
+- Email técnico removido de toda a interface pública; o contacto público permanece por telefone/WhatsApp e canais legais.
+- Leaflet continua apenas na página de acompanhamento onde o mapa é funcional; não é carregado na homepage.
+- Fonte Inter variável 100–900, validação de data/hora, ARIA de erros e alvos tácteis reforçados.
+- Service Worker atualizado para `691-final-20260913-world-final-1`.
+- `push-map.js`, `landing.css`, `index.css`, `premium.css`, `landing-premium.css` e `brand-fix.css` obsoletos removidos.
 
-## Dependências críticas bloqueadas no package-lock
+## Segurança e operação
 
-- express 4.22.2
-- body-parser 1.20.8
-- qs 6.16.0
-- socket.io 4.8.3
-- socket.io-parser 4.2.7
-- engine.io 6.6.9
-- ws 8.21.3
-- grammy 1.41.0
-- dotenv 17.4.2
-- web-push 3.6.7
+- CSP, HSTS, X-Frame-Options, Referrer-Policy e Permissions-Policy preservados.
+- Webhook Telegram protegido, chat autorizado e transições de reserva validadas no servidor.
+- Reserva/cancelamento protegidos por token; páginas privadas com `no-store`.
+- Supabase mantém-se como persistência; Web Push e Waze preservados.
+- Nenhum segredo real é incluído no pacote.
 
-## Validação
+## Validação final
 
-- `npm run build` → `691 static audit: OK`
-- `npm test` → `691 static audit: OK`
-- Sem segredos reais incluídos no pacote; apenas `.env.example`.
+- `npm run build` → **691 static audit: OK**
+- JavaScript/TypeScript: verificação de sintaxe OK.
+- Sitemap, páginas estáticas, canonicals, assets responsivos e ausência de email público validados pelo audit.
+- `npm audit` depende de acesso ao registry; no ambiente de preparação o registry pode estar indisponível por DNS. O deploy Render anterior reportou `found 0 vulnerabilities` para este lockfile.
 
-## Único passo externo ao código
+## Deploy
 
-Numa base Supabase já existente, executar uma vez no SQL Editor:
+Build: `npm install && npm run build`  
+Start: `npx tsx server/index.ts`  
+Node: 22.x
 
-`supabase_migration_2026-09-12_route_coords.sql`
-
-Depois reiniciar/redeployar o serviço. Sem essa migração o sistema continua funcional graças ao fallback, mas as coordenadas Waze não ficam persistidas através de um restart do Render.
-
-## 2026-09-13 — 691.pt optical brand pass
-- Applied a global optical kerning correction to visible `691.pt` occurrences across all public pages and runtime translations.
-- Normalizes any accidental visual `691 .pt` text node to `691.pt` without changing URLs, metadata, SEO identifiers, or backend data.
-- Main and landing wordmarks receive the same optical correction through dedicated CSS.
-- Service-worker cache bumped so mobile clients receive the final branding immediately.
+Para bases Supabase existentes, manter aplicada a migração `supabase_migration_2026-09-12_route_coords.sql`.
