@@ -1,4 +1,4 @@
-const CACHE = '691-final-20260913-brand-1'
+const CACHE = '691-final-20260913-logo-2'
 
 const STATIC_ASSETS = [
   '/',
