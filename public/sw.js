@@ -15,6 +15,8 @@ const STATIC_ASSETS = [
   '/assets/destinations/lisboa.webp',
   '/assets/destinations/sintra.webp',
   '/assets/destinations/fatima.webp',
+  '/assets/destinations/nazare.webp',
+  '/assets/destinations/porto.webp',
   '/assets/destinations/evora.webp',
   '/offline.html',
   '/offline.css',

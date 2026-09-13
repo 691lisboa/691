@@ -77,7 +77,7 @@ if (!appJs.includes('accessToken: result.accessToken')) fail('booking access tok
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-final-20260913-logo-2'")) fail('final service worker cache version missing')
+if (!sw.includes("const CACHE = '691-final-20260913-home-destinations-photos-3'")) fail('final service worker cache version missing')
 if (sw.includes("const CACHE = '691-v16'")) fail('obsolete service worker cache version remains')
 if (!sw.includes('if (url.origin === self.location.origin)') || !sw.includes('networkFirst(request)')) fail('same-origin assets are not refreshed network-first')
 if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
