@@ -944,6 +944,7 @@
         function setFieldError(input, errorEl, message) {
             if (!input || !errorEl) return;
             input.classList.add('error');
+            input.setAttribute('aria-invalid', 'true');
             errorEl.textContent = message;
             errorEl.classList.add('show');
         }
@@ -951,6 +952,7 @@
         function clearFieldError(input, errorEl) {
             if (!input || !errorEl) return;
             input.classList.remove('error');
+            input.setAttribute('aria-invalid', 'false');
             errorEl.classList.remove('show');
         }
 

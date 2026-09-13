@@ -100,41 +100,41 @@
 <form id="taxi-form" novalidate="">
 <div class="form-group">
 <label for="nome" id="name-label">Nome</label>
-<input autocomplete="name" id="nome" name="nome" placeholder="Seu nome" required="" type="text"/>
-<div class="validation-message" id="nome-error"></div>
+<input autocomplete="name" id="nome" name="nome" placeholder="Seu nome" required="" type="text" aria-describedby="nome-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="nome-error" role="alert"></div>
 </div>
 <div class="form-group">
 <label for="telefone" id="phone-label">Telefone</label>
-<input autocomplete="tel" id="telefone" inputmode="tel" name="telefone" placeholder="Seu telefone" required="" type="tel"/>
-<div class="validation-message" id="telefone-error"></div>
+<input autocomplete="tel" id="telefone" inputmode="tel" name="telefone" placeholder="Seu telefone" required="" type="tel" aria-describedby="telefone-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="telefone-error" role="alert"></div>
 </div>
 <div class="datetime-inputs">
 <div class="form-group">
 <label for="data" id="date-label">Data de recolha</label>
-<input id="data" name="data" required="" type="date"/>
-<div class="validation-message" id="data-error"></div>
+<input id="data" name="data" required="" type="date" aria-describedby="data-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="data-error" role="alert"></div>
 </div>
 <div class="form-group">
 <label for="hora" id="time-label">Hora de recolha</label>
-<input id="hora" name="hora" required="" type="time"/>
-<div class="validation-message" id="hora-error"></div>
+<input id="hora" name="hora" required="" type="time" aria-describedby="hora-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="hora-error" role="alert"></div>
 </div>
 </div>
 <div class="form-group autocomplete-container">
 <label for="recolha" id="pickup-label">Local de Recolha</label>
-<input autocomplete="off" id="recolha" name="recolha" placeholder="Endereço de recolha" required="" type="text"/>
-<div class="validation-message" id="recolha-error"></div>
+<input autocomplete="off" id="recolha" name="recolha" placeholder="Endereço de recolha" required="" type="text" aria-describedby="recolha-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="recolha-error" role="alert"></div>
 
 </div>
 <div class="form-group autocomplete-container">
 <label for="destino" id="dest-label">Destino</label>
-<input autocomplete="off" id="destino" name="destino" placeholder="Endereço de destino" required="" type="text"/>
-<div class="validation-message" id="destino-error"></div>
+<input autocomplete="off" id="destino" name="destino" placeholder="Endereço de destino" required="" type="text" aria-describedby="destino-error" aria-invalid="false"/>
+<div aria-live="polite" class="validation-message" id="destino-error" role="alert"></div>
 
 </div>
 <button class="submit-btn" id="submit-btn" type="submit">Reservar Táxi</button>
 </form>
-<div class="success-message" id="success-message">
+<div aria-live="polite" class="success-message" id="success-message" role="status">
                 ✅ Reserva enviada com sucesso!
             </div>
 <!-- Contact Icons (inside form, at bottom) -->
@@ -182,7 +182,7 @@
 <section class="confidence-strip section-wrap">
 <div><span>●</span><strong data-mkt="featurePersonal">Atendimento personalizado</strong><small data-mkt="featurePersonalSub">Direto com o motorista</small></div>
 <div class="english-feature"><span>◎</span><strong data-mkt="featureLang">Falamos inglês</strong></div>
-<div><span>★</span><strong data-mkt="featureTrust">Táxi licenciado</strong><small data-mkt="featureTrustSub">Serviço legal e direto</small></div>
+<div><span>★</span><strong data-mkt="featureTrust">Reserva direta</strong><small data-mkt="featureTrustSub">Sem intermediários</small></div>
 <div><span>⌖</span><strong data-mkt="featureCountry">Em todo o país</strong><small data-mkt="featureCountrySub">Lisboa e Portugal</small></div>
 </section>
 <section class="closing-cta">

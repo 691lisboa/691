@@ -1,4 +1,4 @@
-const CACHE = '691-final-20260913-extreme-review-1'
+const CACHE = '691-final-20260913-form-ui-fix-1'
 
 const STATIC_ASSETS = [
   '/',
