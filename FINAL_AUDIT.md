@@ -42,3 +42,9 @@ Numa base Supabase já existente, executar uma vez no SQL Editor:
 `supabase_migration_2026-09-12_route_coords.sql`
 
 Depois reiniciar/redeployar o serviço. Sem essa migração o sistema continua funcional graças ao fallback, mas as coordenadas Waze não ficam persistidas através de um restart do Render.
+
+## 2026-09-13 — 691.pt optical brand pass
+- Applied a global optical kerning correction to visible `691.pt` occurrences across all public pages and runtime translations.
+- Normalizes any accidental visual `691 .pt` text node to `691.pt` without changing URLs, metadata, SEO identifiers, or backend data.
+- Main and landing wordmarks receive the same optical correction through dedicated CSS.
+- Service-worker cache bumped so mobile clients receive the final branding immediately.

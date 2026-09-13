@@ -1,10 +1,12 @@
-const CACHE = '691-final-20260912-2'
+const CACHE = '691-final-20260913-brand-1'
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/index.css',
   '/premium.css',
+  '/brand-fix.css',
+  '/brand-fix.js',
   '/app.js',
   '/push-map.js',
   '/marketing.js',

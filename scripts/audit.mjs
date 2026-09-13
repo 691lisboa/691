@@ -32,7 +32,7 @@ for (const file of ['public/index.html','public/reserva.html','public/legal.html
   }
 }
 
-for (const file of ['public/app.js','public/push-map.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js']) {
+for (const file of ['public/app.js','public/push-map.js','public/reserva.js','public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js']) {
   new vm.Script(read(file), { filename: file })
 }
 
@@ -77,7 +77,7 @@ if (!appJs.includes('accessToken: result.accessToken')) fail('booking access tok
 if (!appJs.includes("accessToken: currentBooking.accessToken")) fail('cancel action is not token-protected')
 if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
 if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-final-20260912-2'")) fail('final service worker cache version missing')
+if (!sw.includes("const CACHE = '691-final-20260913-brand-1'")) fail('final service worker cache version missing')
 if (sw.includes("const CACHE = '691-v16'")) fail('obsolete service worker cache version remains')
 if (!sw.includes('if (url.origin === self.location.origin)') || !sw.includes('networkFirst(request)')) fail('same-origin assets are not refreshed network-first')
 if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
@@ -196,6 +196,16 @@ if (!index.includes('/apple-touch-icon.png') || !read('public/manifest.json').in
 if (!index.includes('aria-label="Ligar +351 928 158 158"') || !index.includes('aria-label="WhatsApp +351 928 158 158"')) fail('icon-only contact links need accessible labels')
 if (!appJs.includes("input.setAttribute('role', 'combobox')") || !appJs.includes("autocompleteContainer.setAttribute('role', 'listbox')")) fail('autocomplete ARIA combobox/listbox semantics missing')
 if (index.includes('id="recolha-autocomplete"') || index.includes('id="destino-autocomplete"')) fail('obsolete empty autocomplete containers remain')
+
+for (const file of ['public/index.html','public/reserva.html','public/legal.html','public/offline.html','public/taxi-lisboa/index.html','public/taxi-aeroporto-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html']) {
+  const html = read(file)
+  if (!html.includes('/brand-fix.css') || !html.includes('/brand-fix.js')) fail(`${file}: global 691.pt optical brand fix missing`)
+}
+const brandFixCss = read('public/brand-fix.css')
+const brandFixJs = read('public/brand-fix.js')
+if (!brandFixCss.includes('.brand-optical-suffix') || !brandFixCss.includes('margin-left: -0.07em')) fail('global 691.pt optical kerning CSS missing')
+if (!brandFixJs.includes('const BRAND_RE = /691\\s*\\.pt/g')) fail('global 691.pt text normalization missing')
+if (!sw.includes("'/brand-fix.css'") || !sw.includes("'/brand-fix.js'")) fail('service worker does not pre-cache brand optical fix assets')
 
 console.log('691 static audit: OK')
 
