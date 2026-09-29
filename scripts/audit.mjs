@@ -37,7 +37,18 @@ const sw = read('public/sw.js')
 const packageJson = JSON.parse(read('package.json'))
 
 if (!index.includes('id="footer-legal"') || !index.includes('id="footer-privacy"') || !index.includes('id="footer-complaints"')) fail('footer legal links missing')
-if (!index.includes('data-whatsapp-cta="hero"') || !index.includes('Falar pelo WhatsApp')) fail('WhatsApp hero CTA missing')
+if (!index.includes('data-whatsapp-cta="hero"') || !index.includes('Reservar pelo WhatsApp')) fail('WhatsApp hero CTA missing')
+if (index.includes('Abrir conversa no WhatsApp') || index.includes('Resposta direta') || index.includes('Sem formulário') || index.includes('Motorista 691.pt')) fail('obsolete homepage WhatsApp proof/secondary CTA remains')
+if (index.includes('aria-label="WhatsApp +351 928 158 158"')) fail('duplicate header WhatsApp action remains')
+for (const file of fs.readdirSync(path.join(root, 'public'), { withFileTypes: true })) {}
+for (const htmlFile of [
+  'public/index.html','public/taxi-aeroporto-lisboa/index.html','public/taxi-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html',
+  'public/viagens-portugal/porto/index.html','public/viagens-portugal/nazare/index.html','public/viagens-portugal/evora/index.html','public/viagens-portugal/fatima/index.html','public/viagens-portugal/sintra/index.html'
+]) {
+  const html = read(htmlFile)
+  if (html.includes('class="lp-btn lp-wa') || html.includes('class="mobile-dual"') || html.includes('Abrir conversa no WhatsApp')) fail(`${htmlFile}: duplicate WhatsApp CTA remains`)
+}
+
 if (index.includes('/app.js') || index.includes('/socket.io/socket.io.js')) fail('obsolete runtime script remains on homepage')
 if (index.includes('booking-window') || index.includes('submit-btn') || index.includes('form-group')) fail('online booking form remains on homepage')
 if (index.includes('#reservar') || index.includes('Reservar Táxi')) fail('legacy reservation CTA remains on homepage')
