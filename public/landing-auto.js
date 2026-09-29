@@ -29,6 +29,8 @@
   const pageMessage=pageWa[page]?.[lang]||msgMap[lang]
   document.documentElement.lang=lang==='pt'?'pt-PT':'en'
   document.querySelectorAll('[data-lp]').forEach(el=>{const v=values[el.dataset.lp];if(v!==undefined)el.textContent=v})
+  const photoCaptions={pt:{lisbon:'A cidade das sete colinas',sintra:'Palácio da Pena · serra',fatima:'Santuário · peregrinação',nazare:'Praia · ondas gigantes · costa atlântica',porto:'Ribeira · Douro · centro histórico',evora:'Alentejo · Portugal'},en:{lisbon:'The city of seven hills',sintra:'Pena Palace · hills',fatima:'Sanctuary · pilgrimage',nazare:'Beach · giant waves · Atlantic coast',porto:'Ribeira · Douro · historic centre',evora:'Alentejo · Portugal'}}
+  document.querySelectorAll('.lp-photo').forEach(card=>{const cls=[...card.classList].find(c=>c.startsWith('photo-'));const key=cls?cls.slice(6):'';const caption=photoCaptions[lang]?.[key];const p=card.querySelector('p');if(caption&&p)p.textContent=caption})
   document.querySelectorAll('.wa-link').forEach(a=>a.href='https://wa.me/351928158158?text='+encodeURIComponent(pageMessage))
   document.querySelectorAll('a[data-lp="legal"]').forEach(a=>a.href='/legal.html?lang='+lang)
   document.querySelectorAll('a[data-lp="privacy"]').forEach(a=>a.href='/legal.html?lang='+lang+'#privacidade')
