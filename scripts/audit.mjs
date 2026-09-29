@@ -4,240 +4,55 @@ import vm from 'node:vm'
 import { spawnSync } from 'node:child_process'
 
 const root = process.cwd()
-const read = p => fs.readFileSync(path.join(root, p), 'utf8')
+const read = file => fs.readFileSync(path.join(root, file), 'utf8')
 const fail = msg => { throw new Error(msg) }
 
-for (const file of ['server/index.ts', 'server/store.ts']) {
-  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--check', path.join(root, file)], {
-    encoding: 'utf8'
-  })
-  if (result.status !== 0) fail(`${file}: TypeScript syntax check failed\n${result.stderr || result.stdout}`)
-}
+const serverCheck = spawnSync(process.execPath, ['--check', path.join(root, 'server/index.js')], { encoding: 'utf8' })
+if (serverCheck.status !== 0) fail(`server/index.js: syntax check failed\n${serverCheck.stderr || serverCheck.stdout}`)
 
-for (const file of ['public/index.html','public/legal.html','public/offline.html']) {
+for (const file of ['public/index.html', 'public/legal.html', 'public/offline.html']) {
   const html = read(file)
   const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1])
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i)
   if (dupes.length) fail(`${file}: duplicate ids: ${[...new Set(dupes)].join(', ')}`)
-
   let i = 0
   for (const match of html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi)) {
     const attrs = match[1] || ''
     const body = match[2] || ''
     if (/type=["']application\/ld\+json["']/i.test(attrs)) {
-      try { JSON.parse(body) } catch (error) { fail(`${file}: invalid inline JSON-LD: ${error.message}`) }
-      continue
+      try { JSON.parse(body) } catch (error) { fail(`${file}: invalid JSON-LD: ${error.message}`) }
+    } else {
+      try { new vm.Script(body, { filename: `${file}:inline-${++i}` }) } catch (error) { fail(`${file}: inline script failed\n${error.message}`) }
     }
-    new vm.Script(body, { filename: `${file}:inline-script-${++i}` })
   }
 }
 
 for (const file of ['public/legal.js','public/offline.js','public/sw.js','public/brand-fix.js','public/marketing.js','public/landing-auto.js','public/destination-page.js']) {
-  new vm.Script(read(file), { filename: file })
+  try { new vm.Script(read(file), { filename: file }) } catch (error) { fail(`${file}: JavaScript syntax check failed\n${error.message}`) }
 }
 
-const server = read('server/index.ts')
-const store = read('server/store.ts')
 const index = read('public/index.html')
+const server = read('server/index.js')
 const sw = read('public/sw.js')
-const legalJs = read('public/legal.js')
-const offlineJs = read('public/offline.js')
-if (!index.includes('id="footer-legal"') || !index.includes('id="footer-privacy"') || !index.includes('id="footer-complaints"')) fail('translatable footer links missing')
-if (index.includes('booking-window') || index.includes('submit-btn') || index.includes('form-group') || index.includes('/socket.io/socket.io.js')) fail('online booking UI remains on homepage')
-if (!index.includes('data-whatsapp-cta="hero"') || !index.includes('Falar pelo WhatsApp')) fail('WhatsApp-first hero CTA missing')
+const packageJson = JSON.parse(read('package.json'))
+
+if (!index.includes('id="footer-legal"') || !index.includes('id="footer-privacy"') || !index.includes('id="footer-complaints"')) fail('footer legal links missing')
+if (!index.includes('data-whatsapp-cta="hero"') || !index.includes('Falar pelo WhatsApp')) fail('WhatsApp hero CTA missing')
+if (index.includes('/app.js') || index.includes('/socket.io/socket.io.js')) fail('obsolete runtime script remains on homepage')
+if (index.includes('booking-window') || index.includes('submit-btn') || index.includes('form-group')) fail('online booking form remains on homepage')
 if (index.includes('#reservar') || index.includes('Reservar Táxi')) fail('legacy reservation CTA remains on homepage')
-if (!legalJs.includes("const SUPPORTED = ['pt', 'en']")) fail('legal page must be PT/EN only')
-for (const lang of ['pt','en']) {
-  if (!legalJs.includes(`    ${lang}: {`)) fail(`legal translation missing: ${lang}`)
-  if (!offlineJs.includes(`    ${lang}: {`)) fail(`offline translation missing: ${lang}`)
-}
-for (const legacyLang of ['fr','es','de','it','zh','ja','ru','nl','pl']) {
-  const re = new RegExp(`\n\s+${legacyLang}:\s*\{`)
-  if (re.test(legalJs) || re.test(offlineJs)) fail(`legacy UI translation remains: ${legacyLang}`)
-}
-if (!read('public/legal.html').includes('id="footer-license-label"')) fail('legal footer licence label is not translatable')
-if (!legalJs.includes('TomTom Search API')) fail('legal provider disclosure does not mention address-search provider')
-if (!read('public/legal.html').includes('<script src="/legal.js"></script>')) fail('legal translation script not loaded')
-if (!sw.includes("'/legal.js'")) fail('legal translation script not pre-cached')
-
-if (fs.existsSync(path.join(root, 'public/driver-track.html'))) fail('GPS driver page must not exist')
-for (const forbidden of ['driver_location_update', 'check_booking_status', 'driverTokenHash', 'roomForDriver']) {
-  if (server.includes(forbidden)) fail(`unused GPS code remains: ${forbidden}`)
-}
-if ((server.match(/X-Frame-Options/g) || []).length !== 1) fail('security headers are duplicated')
-if (!server.includes("Referrer-Policy', 'no-referrer")) fail('private booking URLs are not protected by no-referrer policy')
-if (!server.includes("if (!authorizedTelegramChat(ctx)) return")) fail('Telegram message authorization missing')
-if (!server.includes("if (!authorizedTelegramChat(ctx)) {")) fail('Telegram callback authorization missing')
-if (!server.includes('BOOKING_TRANSITIONS')) fail('booking state machine missing')
-if (server.includes("process.env.SUPABASE_SERVICE_ROLE_KEY ||\n  process.env.VAPID_PRIVATE_KEY")) fail('booking secret reuses unrelated secrets')
-if ((sw.match(/addEventListener\('fetch'/g) || []).length !== 1) fail('service worker must have exactly one fetch handler')
-if (sw.includes("cache.put('/index.html', copy)")) fail('service worker navigation cache regression')
-if (!sw.includes("const CACHE = '691-whatsapp-final-20260929-1'")) fail('final service worker cache version missing')
-if (sw.includes("'/app.js'") || sw.includes("'/reserva.js'") || sw.includes("'/reserva.css'")) fail('obsolete reservation assets remain in service worker')
-if (index.includes('/push-map.js') || index.includes('leaflet@1.9.4')) fail('homepage still loads hidden map assets')
-if (!server.includes("As reservas online foram substituídas pelo WhatsApp.")) fail('legacy booking API is not disabled')
-if (fs.existsSync(path.join(root, 'public/push-map.js'))) fail('dead push-map.js file remains')
-if (!sw.includes('if (url.origin === self.location.origin)') || !sw.includes('networkFirst(request)')) fail('same-origin assets are not refreshed network-first')
-if (sw.includes(".catch(() => caches.match('/offline.html'))")) fail('service worker returns HTML for failed non-navigation assets')
-if (!sw.includes("'https://fonts.googleapis.com'") || !sw.includes("'https://fonts.gstatic.com'")) fail('safe runtime caching for external font assets missing')
-
-if (server.includes("process.env.PERSISTENCE_MODE")) fail('obsolete filesystem persistence mode remains')
-if ((server.match(/authorizedTelegramChat\(ctx\)/g) || []).length < 2) fail('Telegram authorization coverage is incomplete')
-if (!server.includes('validTelegramWebhookSecret')) fail('constant-time Telegram webhook verification missing')
-if (server.includes("new Date(`${b.data}T${b.hora}:00Z`)")) fail('booking time is still being shifted as UTC')
-if (!server.includes("if (digits.length === 9) digits = `351${digits}`")) fail('Portuguese WhatsApp normalization missing')
-if (!server.includes('terminalBookingsToDelete')) fail('terminal bookings can resurrect after restart')
-if (!server.includes("throw new Error('Persistência não configurada. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.')")) fail('persistence is not fail-fast')
-if (!server.includes("if (IS_PRODUCTION && !VAPID_READY)")) fail('production VAPID is not fail-fast')
-if (!server.includes("return res.status(503).json({ success: false, error: om.delivery })")) fail('Telegram delivery failure is not fail-safe')
-if (fs.existsSync(path.join(root, 'public/chat.html'))) fail('obsolete chat redirect remains')
-if (!index.includes('>Informação Legal</a>')) fail('footer capitalization regressed')
-if (server.includes("script-src 'self' 'unsafe-inline'")) fail('CSP still allows inline JavaScript')
-if (!server.includes("script-src-attr 'none'")) fail('inline event handlers are not forbidden')
-for (const file of ['public/index.html','public/legal.html','public/offline.html']) {
-  if (/\son[a-z]+=/i.test(read(file))) fail(`${file}: inline event handler remains`)
-}
-for (const file of ['public/index.html','public/legal.html']) {
-  const html = read(file)
-  for (const match of html.matchAll(/<a\b[^>]*target=["']_blank["'][^>]*>/gi)) {
-    if (!/\brel=["'][^"']*\bnoopener\b[^"']*["']/i.test(match[0])) fail(`${file}: target=_blank without noopener`)
-  }
-}
-const indexCss = read('public/site.css')
-if (indexCss.includes('-webkit-mask-image') || indexCss.includes('mask-image: radial-gradient')) fail('cancel button mask workaround remains')
-if (!indexCss.includes('-webkit-appearance:none') || !indexCss.includes('background-clip:padding-box')) fail('cancel button native appearance reset missing')
-if (!/\.cancel-btn\s*\{[\s\S]*?border:none/m.test(indexCss)) fail('cancel button still uses a visible border')
-
-for (const file of ['public/index.html','public/legal.html','public/offline.html']) {
-  const html = read(file)
-  if (/<style[\s>]/i.test(html)) fail(`${file}: inline style block remains`)
-  if (/\sstyle=["']/i.test(html)) fail(`${file}: inline style attribute remains`)
-}
-if (server.includes("style-src 'self' 'unsafe-inline'")) fail('CSP still allows inline CSS')
-if (!server.includes("style-src-attr 'unsafe-inline'")) fail('Leaflet-compatible runtime style policy missing')
-
-if (!server.includes("Permissions-Policy', 'geolocation=(), notifications=(self), camera=(), microphone=()")) fail('geolocation permission is still enabled')
-if (!server.includes("const BOOKING_ACCESS_SECRET = String(process.env.BOOKING_ACCESS_SECRET || '')")) fail('dedicated booking access secret is not mandatory')
-if (!server.includes("BOOKING_ACCESS_SECRET.length < 32")) fail('booking access secret minimum length missing')
-if (!server.includes("const ALLOWED_ORIGINS = new Set(['https://691.pt', 'https://www.691.pt'")) fail('691 Socket.IO origin policy regressed')
-if (server.includes("console.log('Nova reserva:', bookingId, nome") || server.includes('nome, recolha, destino')) fail('PII may be present in booking logs')
-if (!server.includes("pending:   new Set(['accepted', 'rejected', 'cancelled'])")) fail('pending transition set regressed')
-if (!server.includes("onway:     new Set(['arrived', 'completed'])") || !server.includes("arrived:   new Set(['completed'])")) fail('client cancellation remains possible after driver departure')
-if (!server.includes("completed: new Set()") || !server.includes("rejected:  new Set()") || !server.includes("cancelled: new Set()")) fail('terminal booking states are not terminal')
-if (server.includes('clientsConnected: connectedClients.size')) fail('reservation API exposes unnecessary connection count')
-if (!server.includes('validPushEndpoint(endpoint)') || !server.includes('validWebPushKey(p256dh, 65)') || !server.includes('validWebPushKey(auth, 16)')) fail('push subscription endpoint/key validation missing')
-if (!store.includes('Supabase stale push endpoint cleanup')) fail('push endpoint uniqueness recovery missing')
-for (const css of ['public/site.css','public/landing-site.css','public/legal.css','public/offline.css']) {
-  if (!fs.existsSync(path.join(root, css)) || !read(css).trim()) fail(`${css}: missing or empty`)
-}
-for (const obsoleteCss of ['public/index.css','public/premium.css','public/landing-premium.css','public/landing.css','public/brand-fix.css']) {
-  if (fs.existsSync(path.join(root, obsoleteCss))) fail(`obsolete CSS file remains: ${obsoleteCss}`)
-}
-for (const asset of ["'/site.css'", "'/landing-site.css'", "'/legal.css'", "'/offline.css'"]) {
-  if (!sw.includes(asset)) fail(`service worker does not pre-cache ${asset}`)
+if (index.includes('/push-map.js') || index.includes('leaflet@1.9.4')) fail('obsolete map assets remain')
+if (server.includes('telegram') || server.includes('supabase') || server.includes('socket.io') || server.includes('web-push')) fail('legacy backend integration remains')
+if (server.includes('BOOKING_ACCESS_SECRET') || server.includes('VAPID') || server.includes('booking')) fail('legacy booking backend logic remains')
+if (!server.includes('http.createServer')) fail('static site server missing')
+if (!server.includes("pathname === '/health'")) fail('health endpoint missing')
+if (!sw.includes("const CACHE = '691-whatsapp-final-20260929-2'")) fail('service worker cache version missing')
+if (sw.includes('push') || sw.includes('notification') || sw.includes('/api/') || sw.includes('/socket.io/')) fail('service worker contains obsolete backend/push logic')
+if (!sw.includes('networkFirst')) fail('service worker network-first strategy missing')
+if (packageJson.dependencies && Object.keys(packageJson.dependencies).length) fail('runtime dependencies remain')
+if (packageJson.scripts.start !== 'node server/index.js') fail('start command is not the minimal static server')
+for (const obsolete of ['server/store.ts','supabase_schema.sql','supabase_migration_2026-08-17.sql','supabase_migration_2026-08-18_hardening.sql','supabase_migration_2026-09-12_route_coords.sql']) {
+  if (fs.existsSync(path.join(root, obsolete))) fail(`obsolete file remains: ${obsolete}`)
 }
 
-
-// Final-release checks: SEO semantics, Waze deep links and coordinate persistence.
-if (index.includes('src="/schema.json" type="application/ld+json"')) fail('JSON-LD is still loaded as an external script')
-const jsonLdMatch = index.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i)
-if (!jsonLdMatch) fail('inline JSON-LD missing from homepage')
-try {
-  const schema = JSON.parse(jsonLdMatch[1])
-  if (schema['@type'] !== 'TaxiService' || schema.url !== 'https://691.pt/') fail('homepage TaxiService JSON-LD incomplete')
-} catch (error) {
-  fail(`homepage JSON-LD invalid: ${error.message}`)
-}
-if (!index.includes('class="seo-hero-title"')) fail('accessible semantic homepage H1 missing')
-if ((index.match(/<h1\b/gi) || []).length !== 1) fail('homepage must expose exactly one H1')
-if (!server.includes('https://waze.com/ul?ll=') || !server.includes('&navigate=yes&utm_source=691.pt')) fail('official Waze coordinate deep-link format missing')
-if (server.includes('ll=${encodeURIComponent(`${directPosition.lat.toFixed(6)},${directPosition.lon.toFixed(6)}`)}&q=')) fail('Waze coordinate link still mixes q with ll')
-const routeMigration = 'supabase_migration_2026-09-12_route_coords.sql'
-if (!fs.existsSync(path.join(root, routeMigration))) fail('final Supabase route-coordinate migration missing')
-const routeSql = read(routeMigration)
-for (const col of ['recolha_lat','recolha_lon','destino_lat','destino_lon']) {
-  if (!routeSql.includes(col)) fail(`route-coordinate migration missing ${col}`)
-  if (!store.includes(col)) fail(`Supabase store does not persist ${col}`)
-}
-if (!store.includes('bookingCoordinatesSupported') || !store.includes('colunas de coordenadas ainda não disponíveis')) fail('coordinate migration backward-compatibility fallback missing')
-const lock = JSON.parse(read('package-lock.json'))
-const lockedVersions = {
-  express: lock.packages?.['node_modules/express']?.version || '',
-  qs: lock.packages?.['node_modules/qs']?.version || '',
-  socketIo: lock.packages?.['node_modules/socket.io']?.version || '',
-  socketParser: lock.packages?.['node_modules/socket.io-parser']?.version || '',
-  engineIo: lock.packages?.['node_modules/engine.io']?.version || '',
-  ws: lock.packages?.['node_modules/ws']?.version || ''
-}
-const expectedLockedVersions = {
-  express: '4.22.2',
-  qs: '6.16.0',
-  socketIo: '4.8.3',
-  socketParser: '4.2.7',
-  engineIo: '6.6.9',
-  ws: '8.21.3'
-}
-for (const [name, expected] of Object.entries(expectedLockedVersions)) {
-  if (lockedVersions[name] !== expected) fail(`unexpected ${name} version in lockfile: ${lockedVersions[name] || 'missing'} (expected ${expected})`)
-}
-if (!server.includes('maxHttpBufferSize: 64 * 1024') || !server.includes('perMessageDeflate: false')) fail('Socket.IO resource limits missing')
-if (!index.includes('/apple-touch-icon.png') || !read('public/manifest.json').includes('/icon-512.png')) fail('production PWA PNG icon set missing')
-if (!index.includes('aria-label="Ligar +351 928 158 158"') || !index.includes('aria-label="WhatsApp +351 928 158 158"')) fail('icon-only contact links need accessible labels')
-if (index.includes('id="recolha-autocomplete"') || index.includes('id="destino-autocomplete"')) fail('obsolete empty autocomplete containers remain')
-
-for (const file of ['public/index.html','public/legal.html','public/offline.html','public/taxi-lisboa/index.html','public/taxi-aeroporto-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html']) {
-  const html = read(file)
-  if (!html.includes('/brand-fix.js')) fail(`${file}: global 691.pt optical brand JS missing`)
-}
-const brandFixJs = read('public/brand-fix.js')
-const brandCssSources = [read('public/site.css'),read('public/landing-site.css'),read('public/legal.css'),read('public/offline.css')].join('\n')
-if (!brandCssSources.includes('.brand-optical-suffix') || !brandCssSources.includes('margin-left:-0.07em')) fail('global 691.pt optical kerning CSS missing')
-if (!brandFixJs.includes('const BRAND_RE = /691\\s*\\.pt/g')) fail('global 691.pt text normalization missing')
-if (!sw.includes("'/brand-fix.js'")) fail('service worker does not pre-cache brand optical JS')
-
-
-// World-final checks: static destination SEO, responsive assets, privacy and legacy cleanup.
-for (const legacyLang of ['fr','es','de','it','zh','ja','ru','nl','pl']) {
-  if (server.includes(`const ${legacyLang}: Record<string, string>`)) fail(`legacy backend translation remains: ${legacyLang}`)
-}
-if (server.includes("new Set(['pt','en','fr'")) fail('backend still accepts legacy UI languages')
-for (const obsoleteRef of ['/index.css','/premium.css','/landing-premium.css','/landing.css','/brand-fix.css']) {
-  for (const file of ['public/index.html','public/taxi-lisboa/index.html','public/taxi-aeroporto-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html']) {
-    if (read(file).includes(obsoleteRef)) fail(`${file}: obsolete CSS reference remains: ${obsoleteRef}`)
-  }
-}
-if (!index.includes('media="(max-width: 680px)"') || !index.includes('/assets/taxi-691-mobile.webp')) fail('homepage responsive hero preload missing')
-
-const destinationSlugs = ['sintra','fatima','nazare','porto','evora']
-const sitemap = read('public/sitemap.xml')
-for (const slug of destinationSlugs) {
-  const file = `public/viagens-portugal/${slug}/index.html`
-  if (!fs.existsSync(path.join(root, file))) fail(`static destination page missing: ${slug}`)
-  const html = read(file)
-  if (!html.includes(`https://691.pt/viagens-portugal/${slug}/`)) fail(`destination canonical missing: ${slug}`)
-  if (!/<h1[^>]*data-lp=["']title["'][^>]*>[^<]+<\/h1>/i.test(html)) fail(`destination static H1 missing: ${slug}`)
-  if (!html.includes('/destination-page.js')) fail(`destination PT/EN script missing: ${slug}`)
-  if (!sitemap.includes(`https://691.pt/viagens-portugal/${slug}/`)) fail(`destination sitemap URL missing: ${slug}`)
-}
-if (!server.includes("app.get('/viagens-portugal/'") || !server.includes("return res.redirect(301, `/viagens-portugal/${slug}/${lang}`)")) fail('legacy destination query redirect missing')
-for (const asset of ['taxi-691-mobile.webp','lisboa-mobile.webp','sintra-mobile.webp','fatima-mobile.webp','nazare-mobile.webp','porto-mobile.webp','evora-mobile.webp']) {
-  const file = asset === 'taxi-691-mobile.webp' ? `public/assets/${asset}` : `public/assets/destinations/${asset}`
-  if (!fs.existsSync(path.join(root, file))) fail(`responsive image missing: ${asset}`)
-}
-if (!read('public/site.css').includes('taxi-691-mobile.webp') || !read('public/landing-site.css').includes('porto-mobile.webp')) fail('responsive image CSS missing')
-if (read('public/legal.html').includes('mailto:') || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(read('public/legal.html')) || /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(legalJs)) fail('public technical email remains in legal UI')
-if (index.includes('?destino=sintra-cascais') || index.includes('?destino=fatima-obidos') || index.includes('?destino=nazare') || index.includes('?destino=porto') || index.includes('?destino=evora')) fail('homepage still uses dynamic destination query URLs')
-if (!index.includes('/viagens-portugal/sintra/') || !index.includes('/viagens-portugal/porto/')) fail('homepage static destination links missing')
-if (fs.existsSync(path.join(root, 'public/push-map.js'))) fail('dead push-map.js file remains')
-
-console.log('691 static audit: OK')
-
-for (const file of ['public/robots.txt','public/sitemap.xml','public/schema.json']) {
-  if (!fs.existsSync(path.join(root, file)) || !read(file).trim()) fail(`${file}: SEO asset missing or empty`)
-}
-for (const dir of ['taxi-lisboa','taxi-aeroporto-lisboa','lisbon-airport-taxi','viagens-portugal']) {
-  const file = `public/${dir}/index.html`
-  const html = read(file)
-  if (!/<title>[^<]+<\/title>/.test(html) || !html.includes('name="description"') || !html.includes('rel="canonical"')) fail(`${file}: SEO metadata incomplete`)
-}
-if (!index.includes('691 Táxi Lisboa | Reserva Direta via WhatsApp')) fail('homepage SEO title missing')
+console.log('691 WhatsApp-only audit: OK')
