@@ -53,4 +53,21 @@
   document.querySelectorAll('a[data-lp="legal"]').forEach(a=>a.href='/legal.html?lang='+lang)
   document.querySelectorAll('a[data-lp="privacy"]').forEach(a=>a.href='/legal.html?lang='+lang+'#privacidade')
   document.querySelectorAll('a[data-lp="complaints"]').forEach(a=>a.href='https://www.livroreclamacoes.pt/Inicio/?lang='+(lang==='pt'?'PT':'EN'))
+  const photoCaptions={
+    lisboa:'The city of seven hills',
+    sintra:'Pena Palace · hills',
+    fatima:'Sanctuary · pilgrimage',
+    nazare:'Beach · giant waves · Atlantic coast',
+    porto:'Ribeira · Douro · historic centre',
+    evora:'Alentejo · Portugal'
+  }
+  if(lang==='en'){
+    document.querySelectorAll('.lp-photo').forEach(photo=>{
+      const p=photo.querySelector('p')
+      if(!p) return
+      const m=photo.className.match(/photo-(lisbon|sintra|fatima|nazare|porto|evora)/)
+      const key=m?.[1]==='lisbon'?'lisboa':m?.[1]
+      if(key && photoCaptions[key]) p.textContent=photoCaptions[key]
+    })
+  }
 })()
