@@ -2,3 +2,16 @@
 /* FINAL accessibility: keep the compact icon visually while enlarging the touch target. */
 .lp-contact-pill{position:relative}
 .lp-contact-pill::after{content:"";position:absolute;inset:-5px;border-radius:999px}
+
+/* 691 FINAL UI POLISH — consistent WhatsApp booking CTA across every landing page. */
+.lp-primary,.lp-wa,.mobile-dual .wa {
+  background:#25D366 !important;
+  background-color:#25D366 !important;
+  color:#fff !important;
+  border-color:#25D366 !important;
+}
+.lp-primary { box-shadow:0 12px 28px rgba(37,211,102,.24) !important; }
+.lp-primary:hover { box-shadow:0 16px 34px rgba(37,211,102,.28) !important; }
+.lp-btn:focus-visible,.lp-contact-pill:focus-visible { outline-color:#25D366 !important; }
+.lp-cta .lp-btn { min-width:220px; }
+@media(max-width:700px){ .lp-cta .lp-btn { width:100%; min-width:0; } }
