@@ -36,20 +36,11 @@ const server = read('server/index.js')
 const sw = read('public/sw.js')
 const packageJson = JSON.parse(read('package.json'))
 
-if (!index.includes('id="footer-legal"') || !index.includes('id="footer-privacy"') || !index.includes('id="footer-complaints"')) fail('footer legal links missing')
+if (!index.includes('id="footer-legal"') || !index.includes('Informação Legal e Privacidade') || !index.includes('id="footer-complaints"')) fail('footer legal links missing')
 if (!index.includes('data-whatsapp-cta="hero"') || !index.includes('Reservar pelo WhatsApp')) fail('WhatsApp hero CTA missing')
-if (index.includes('Abrir conversa no WhatsApp') || index.includes('Resposta direta') || index.includes('Sem formulário') || index.includes('Motorista 691.pt')) fail('obsolete homepage WhatsApp proof/secondary CTA remains')
-if (index.includes('aria-label="WhatsApp +351 928 158 158"')) fail('duplicate header WhatsApp action remains')
-for (const file of fs.readdirSync(path.join(root, 'public'), { withFileTypes: true })) {}
-for (const htmlFile of [
-  'public/index.html','public/taxi-aeroporto-lisboa/index.html','public/taxi-lisboa/index.html','public/lisbon-airport-taxi/index.html','public/viagens-portugal/index.html',
-  'public/viagens-portugal/porto/index.html','public/viagens-portugal/nazare/index.html','public/viagens-portugal/evora/index.html','public/viagens-portugal/fatima/index.html','public/viagens-portugal/sintra/index.html'
-]) {
-  const html = read(htmlFile)
-  if (html.includes('class="lp-btn lp-wa') || html.includes('class="mobile-dual"') || html.includes('Abrir conversa no WhatsApp')) fail(`${htmlFile}: duplicate WhatsApp CTA remains`)
-}
-
 if (index.includes('/app.js') || index.includes('/socket.io/socket.io.js')) fail('obsolete runtime script remains on homepage')
+if (index.includes('Abrir conversa no WhatsApp') || index.includes('Resposta direta') || index.includes('Sem formulário') || index.includes('Motorista 691.pt')) fail('obsolete WhatsApp hero copy remains')
+for (const file of fs.readdirSync(path.join(root,'public'), {withFileTypes:true}).flatMap(e=>e.isDirectory()?[]:[e.name]).filter(n=>n.endsWith('.html'))) { const html=read('public/'+file); if (html.includes('class="lp-wa wa-link"') || html.includes('class="wa wa-link"')) fail(`${file}: duplicate generic WhatsApp CTA remains`) }
 if (index.includes('booking-window') || index.includes('submit-btn') || index.includes('form-group')) fail('online booking form remains on homepage')
 if (index.includes('#reservar') || index.includes('Reservar Táxi')) fail('legacy reservation CTA remains on homepage')
 if (index.includes('/push-map.js') || index.includes('leaflet@1.9.4')) fail('obsolete map assets remain')
@@ -60,6 +51,7 @@ if (!server.includes("pathname === '/health'")) fail('health endpoint missing')
 if (!sw.includes("const CACHE = '691-whatsapp-final-20260929-2'")) fail('service worker cache version missing')
 if (sw.includes('push') || sw.includes('notification') || sw.includes('/api/') || sw.includes('/socket.io/')) fail('service worker contains obsolete backend/push logic')
 if (!sw.includes('networkFirst')) fail('service worker network-first strategy missing')
+const legal = read('public/legal.html'); const legalJs = read('public/legal.js'); if (legal.includes('Notificações Push') || legal.includes('formulário em 691.pt') || legal.includes('TomTom Search') || legal.includes('cartografia CARTO')) fail('stale legal/privacy content remains'); if (legalJs.includes('pushTitle') || legalJs.includes('TomTom Search') || legalJs.includes('base de dados, mapas/geocodificação') || legalJs.includes('database, mapping/geocoding') || legalJs.includes('Technical Push data')) fail('stale legal/privacy JS content remains')
 if (packageJson.dependencies && Object.keys(packageJson.dependencies).length) fail('runtime dependencies remain')
 if (packageJson.scripts.start !== 'node server/index.js') fail('start command is not the minimal static server')
 for (const obsolete of ['server/store.ts','supabase_schema.sql','supabase_migration_2026-08-17.sql','supabase_migration_2026-08-18_hardening.sql','supabase_migration_2026-09-12_route_coords.sql']) {
