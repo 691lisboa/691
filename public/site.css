@@ -4,3 +4,31 @@
 /* FINAL accessibility: keep the small visual icons while enlarging the touch target. */
 .brand-inline-link{position:relative}
 .brand-inline-link::after{content:"";position:absolute;inset:-6px;border-radius:999px}
+
+/* WHATSAPP-FIRST FINAL — replaces the public booking form without changing the hero identity */
+.premium-site .whatsapp-hero-card{display:flex!important;flex-direction:column!important;gap:0!important;padding:26px!important;background:rgba(255,255,255,.97)!important;color:var(--p-ink,#0b1015)!important;border:1px solid rgba(255,255,255,.82)!important;border-radius:30px!important;box-shadow:0 35px 100px rgba(4,9,12,.22)!important;overflow:hidden!important;min-height:0!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn{order:0!important;align-self:stretch!important;width:100%!important;justify-content:center!important;margin:0 0 22px!important;padding:17px 20px!important;border-radius:18px!important;background:#18c861!important;color:#fff!important;font-size:.96rem!important;font-weight:800!important;letter-spacing:.01em!important;text-transform:none!important;box-shadow:0 12px 28px rgba(24,200,97,.24)!important;animation:none!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn:hover{filter:brightness(1.03)!important;transform:translateY(-1px)!important;box-shadow:0 16px 34px rgba(24,200,97,.28)!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn .wa-icon{width:24px!important;height:24px!important;animation:none!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn .wa-icon svg{width:24px!important;height:24px!important;}
+.premium-site .whatsapp-hero-copy{text-align:center!important;padding:2px 4px 4px!important;}
+.premium-site .whatsapp-hero-copy .eyebrow{display:inline-flex!important;align-items:center!important;gap:8px!important;margin-bottom:10px!important;padding:7px 11px!important;border-radius:999px!important;background:#eef7f1!important;color:#557064!important;font-size:.66rem!important;font-weight:800!important;letter-spacing:.14em!important;}
+.premium-site .whatsapp-hero-copy h2{margin:0!important;color:#0b1015!important;font-size:clamp(1.65rem,3.4vw,2.35rem)!important;line-height:1.04!important;letter-spacing:-.045em!important;font-weight:850!important;}
+.premium-site .whatsapp-hero-copy p{margin:12px auto 0!important;max-width:480px!important;color:#68717a!important;font-size:.94rem!important;line-height:1.55!important;}
+.premium-site .whatsapp-hero-points{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:8px!important;margin:18px 0 16px!important;}
+.premium-site .whatsapp-hero-points span{display:inline-flex!important;align-items:center!important;min-height:34px!important;padding:7px 11px!important;border:1px solid #e4e9ed!important;border-radius:999px!important;background:#f8fafb!important;color:#44505a!important;font-size:.72rem!important;font-weight:750!important;}
+.premium-site .whatsapp-hero-secondary{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;padding:13px 16px!important;border-radius:15px!important;background:#0b1015!important;color:#fff!important;text-decoration:none!important;font-size:.82rem!important;font-weight:800!important;}
+.premium-site .whatsapp-hero-secondary:hover{background:#151c22!important;transform:translateY(-1px)!important;}
+.premium-site .whatsapp-hero-card .page-footer{position:static!important;margin:20px -6px -4px!important;padding-top:14px!important;border-top:1px solid #e9edf0!important;color:#8a939b!important;text-align:center!important;font-size:.67rem!important;line-height:1.5!important;}
+.premium-site .whatsapp-hero-card .page-footer a{color:#69747d!important;}
+.premium-site .closing-actions{display:flex!important;}
+.premium-site .closing-actions .whatsapp-premium{width:min(100%,420px)!important;}
+@media(max-width:680px){
+  .premium-site .whatsapp-hero-card{padding:18px 16px 15px!important;border-radius:28px!important;}
+  .premium-site .whatsapp-hero-card .whatsapp-chat-btn{margin-bottom:18px!important;padding:16px!important;border-radius:17px!important;}
+  .premium-site .whatsapp-hero-copy h2{font-size:1.75rem!important;}
+  .premium-site .whatsapp-hero-copy p{font-size:.88rem!important;line-height:1.5!important;}
+  .premium-site .whatsapp-hero-points{gap:6px!important;margin:15px 0 13px!important;}
+  .premium-site .whatsapp-hero-points span{font-size:.68rem!important;padding:6px 9px!important;min-height:32px!important;}
+  .premium-site .whatsapp-hero-card .page-footer{margin-top:16px!important;}
+}

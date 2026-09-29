@@ -7,8 +7,8 @@
   const page=document.body.dataset.page||'lisbon'
   const msgMap={pt:'Olá, gostaria de reservar um táxi.',en:'Hello, I would like to book a taxi.'}
   const base={
-    pt:{book:'Reservar táxi',wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para reservar?',ctaSub:'Reserve online ou escreva diretamente no WhatsApp.'},
-    en:{book:'Book taxi',wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to book?',ctaSub:'Book online or message us directly on WhatsApp.'}
+    pt:{book:'Falar pelo WhatsApp',wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para falar connosco?',ctaSub:'Reserve diretamente pelo WhatsApp. Envie-nos destino, data e hora.'},
+    en:{book:'Message on WhatsApp',wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to message us?',ctaSub:'Book directly on WhatsApp. Send us your destination, date and time.'}
   }
   const pages={
     lisbon:{
@@ -25,9 +25,11 @@
     }
   }
   const values={...base[lang],...(pages[page]?.[lang]||pages.lisbon[lang])}
+  const pageWa={lisbon:{pt:'Olá, gostaria de reservar um táxi em Lisboa.',en:'Hello, I would like to book a taxi in Lisbon.'},airport:{pt:'Olá, gostaria de reservar um táxi para o Aeroporto de Lisboa.',en:'Hello, I would like to book a taxi to Lisbon Airport.'},portugal:{pt:'Olá, gostaria de reservar uma viagem de táxi a partir de Lisboa.',en:'Hello, I would like to book a taxi trip from Lisbon.'}}
+  const pageMessage=pageWa[page]?.[lang]||msgMap[lang]
   document.documentElement.lang=lang==='pt'?'pt-PT':'en'
   document.querySelectorAll('[data-lp]').forEach(el=>{const v=values[el.dataset.lp];if(v!==undefined)el.textContent=v})
-  document.querySelectorAll('.wa-link').forEach(a=>a.href='https://wa.me/351928158158?text='+encodeURIComponent(msgMap[lang]))
+  document.querySelectorAll('.wa-link').forEach(a=>a.href='https://wa.me/351928158158?text='+encodeURIComponent(pageMessage))
   document.querySelectorAll('a[data-lp="legal"]').forEach(a=>a.href='/legal.html?lang='+lang)
   document.querySelectorAll('a[data-lp="privacy"]').forEach(a=>a.href='/legal.html?lang='+lang+'#privacidade')
   document.querySelectorAll('a[data-lp="complaints"]').forEach(a=>a.href='https://www.livroreclamacoes.pt/Inicio/?lang='+(lang==='pt'?'PT':'EN'))

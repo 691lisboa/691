@@ -1229,16 +1229,8 @@ app.post('/api/subscribe', express.json({ limit: '20kb' }), async (req: Request,
 })
 
 // ── Booking details page (tracking only) ─────────────────────────────────────
-app.get('/reserva/:id', (req: Request, res: Response) => {
-  const bookingId = sanitize(String(req.params.id || ''), 96)
-  const accessToken = sanitize(String(req.query.token || ''), 128)
-
-  if (!bookingId || !validBookingAccessToken(bookingId, accessToken)) {
-    return res.status(404).send('Reserva não encontrada.')
-  }
-
-  res.setHeader('Cache-Control', 'no-store, max-age=0')
-  res.sendFile(path.join(__dirname, '../public/reserva.html'))
+app.get('/reserva/:id', (_req: Request, res: Response) => {
+  res.redirect(302, 'https://wa.me/351928158158?text=' + encodeURIComponent('Olá, gostaria de reservar um táxi.'))
 })
 
 // ── Destination legacy query redirects ─────────────────────────────────────────
@@ -1319,6 +1311,11 @@ app.get('/api/search', async (req: Request, res: Response) => {
 
 
 // ── POST /api/reserva ─────────────────────────────────────────────────────────
+app.post('/api/reserva', (_req: Request, res: Response) => {
+  return res.status(410).json({ success: false, error: 'As reservas online foram substituídas pelo WhatsApp.' })
+})
+
+/* Legacy booking API retained below for operational rollback; unreachable by design.
 app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, res: Response) => {
   const raw = req.body || {}
   const requestedLang = sanitize(raw.lang || 'pt', 8).toLowerCase()
@@ -1462,6 +1459,8 @@ app.post('/api/reserva', express.json({ limit: '10kb' }), async (req: Request, r
 
   return res.json({ success: true, bookingId, accessToken: bookingAccessToken(bookingId) })
 })
+
+*/
 
 // Última barreira para erros síncronos encaminhados pelo Express.
 app.use((error: unknown, _req: Request, res: Response, _next: unknown) => {

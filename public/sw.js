@@ -1,13 +1,11 @@
-const CACHE = '691-final-20260913-world-final-1'
+const CACHE = '691-whatsapp-final-20260929-1'
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/site.css',
   '/brand-fix.js',
-  '/app.js',
   '/marketing.js',
-  '/addresses.js',
   '/landing-site.css',
   '/landing-auto.js',
   '/destination-page.js',
@@ -40,8 +38,6 @@ const STATIC_ASSETS = [
   '/legal.html',
   '/legal.css',
   '/legal.js',
-  '/reserva.css',
-  '/reserva.js',
   '/manifest.json',
   '/favicon.svg',
   '/icon.svg',
