@@ -2,3 +2,6 @@
 /* FINAL accessibility: keep the compact icon visually while enlarging the touch target. */
 .lp-contact-pill{position:relative}
 .lp-contact-pill::after{content:"";position:absolute;inset:-5px;border-radius:999px}
+/* Final brand consistency: WhatsApp CTAs on secondary pages use the 691.pt green. */
+body:not(.premium-site) .lp-primary{background:var(--green)!important;color:#fff!important;box-shadow:0 12px 26px rgba(24,200,97,.18)!important}
+body:not(.premium-site) .lp-primary:hover{filter:brightness(1.03)}
