@@ -7,8 +7,8 @@
   const page=document.body.dataset.page||'lisbon'
   const msgMap={pt:'Olá, gostaria de reservar um táxi.',en:'Hello, I would like to book a taxi.'}
   const base={
-    pt:{book:'Falar pelo WhatsApp',wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para falar connosco?',ctaSub:'Reserve diretamente pelo WhatsApp. Envie-nos destino, data e hora.'},
-    en:{book:'Message on WhatsApp',wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to message us?',ctaSub:'Book directly on WhatsApp. Send us your destination, date and time.'}
+    pt:{book:'Falar pelo WhatsApp',wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para falar connosco?',ctaSub:'Reserve diretamente pelo WhatsApp. Envie-nos local de recolha, destino, data e hora.'},
+    en:{book:'Message on WhatsApp',wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to message us?',ctaSub:'Book directly on WhatsApp. Send us your pickup location, destination, date and time.'}
   }
   const pages={
     lisbon:{

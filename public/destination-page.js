@@ -5,8 +5,8 @@
   const browser=(navigator.language||'pt').toLowerCase()
   const lang=requested==='en'?'en':(requested==='pt'?'pt':(browser.startsWith('en')?'en':'pt'))
   const common={
-    pt:{wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para falar connosco?',ctaSub:'Reserve diretamente pelo WhatsApp. Envie-nos destino, data e hora.'},
-    en:{wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to message us?',ctaSub:'Book directly on WhatsApp. Send us your destination, date and time.'}
+    pt:{wa:'WhatsApp',legal:'Informação Legal',privacy:'Privacidade',complaints:'Livro de Reclamações',ctaTitle:'Pronto para falar connosco?',ctaSub:'Reserve diretamente pelo WhatsApp. Envie-nos local de recolha, destino, data e hora.'},
+    en:{wa:'WhatsApp',legal:'Legal Information',privacy:'Privacy',complaints:'Complaints Book',ctaTitle:'Ready to message us?',ctaSub:'Book directly on WhatsApp. Send us your pickup location, destination, date and time.'}
   }
   const pages={
     sintra:{
