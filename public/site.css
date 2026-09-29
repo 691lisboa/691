@@ -32,3 +32,9 @@
   .premium-site .whatsapp-hero-points span{font-size:.68rem!important;padding:6px 9px!important;min-height:32px!important;}
   .premium-site .whatsapp-hero-card .page-footer{margin-top:16px!important;}
 }
+
+/* FINAL RESERVA HOMEPAGE — premium original button treatment, single WhatsApp CTA */
+.premium-site .whatsapp-hero-card{display:flex!important;flex-direction:column!important;gap:0!important;padding:26px!important;background:rgba(255,255,255,.97)!important;color:var(--p-ink,#0b1015)!important;border:1px solid rgba(255,255,255,.82)!important;border-radius:30px!important;box-shadow:0 35px 100px rgba(4,9,12,.22)!important;overflow:hidden!important;min-height:0!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn{order:0!important;align-self:stretch!important;width:100%!important;justify-content:center!important;margin:0!important;padding:17px 20px!important;border-radius:18px!important;background:#18c861!important;color:#fff!important;font-size:.96rem!important;font-weight:800!important;letter-spacing:.01em!important;text-transform:none!important;box-shadow:0 12px 28px rgba(24,200,97,.24)!important;animation:none!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn:hover{background:#14b457!important;transform:translateY(-1px)!important;box-shadow:0 15px 32px rgba(24,200,97,.28)!important;}
+.premium-site .whatsapp-hero-card .whatsapp-chat-btn .wa-icon{animation:none!important;}
