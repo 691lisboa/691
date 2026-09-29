@@ -1,4 +1,4 @@
-const CACHE = '691-whatsapp-final-20260929-3'
+const CACHE = '691-whatsapp-final-20260929-2'
 
 const STATIC_ASSETS = [
   '/', '/index.html', '/site.css', '/brand-fix.js', '/marketing.js',

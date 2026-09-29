@@ -32,29 +32,3 @@
   .premium-site .whatsapp-hero-points span{font-size:.68rem!important;padding:6px 9px!important;min-height:32px!important;}
   .premium-site .whatsapp-hero-card .page-footer{margin-top:16px!important;}
 }
-
-/* 691 FINAL UI POLISH — WhatsApp is the single booking action. */
-.premium-site .whatsapp-chat-btn,
-.premium-site .whatsapp-premium,
-.premium-site a[data-whatsapp-cta],
-.premium-site .whatsapp-chat-btn:hover,
-.premium-site .whatsapp-premium:hover {
-  background:#25D366 !important;
-  background-color:#25D366 !important;
-  color:#fff !important;
-}
-.premium-site .whatsapp-chat-btn,
-.premium-site .whatsapp-premium {
-  border:0 !important;
-  text-decoration:none !important;
-}
-.premium-site .whatsapp-chat-btn {
-  box-shadow:0 12px 28px rgba(37,211,102,.24) !important;
-  text-transform:none !important;
-  letter-spacing:.01em !important;
-}
-.premium-site .whatsapp-chat-btn:hover,
-.premium-site .whatsapp-premium:hover {
-  box-shadow:0 16px 34px rgba(37,211,102,.28) !important;
-}
-@media (prefers-reduced-motion:reduce){.premium-site .whatsapp-chat-btn,.premium-site .whatsapp-premium{transition:none!important}}
