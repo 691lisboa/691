@@ -45,3 +45,13 @@
 @media(max-width:680px){.premium-site .brand-inline-links{top:10px;right:0;gap:7px!important;}}
 
 @media(min-width:981px){.premium-site .desktop-nav{padding-right:170px;}}
+
+/* BRAND ICON COLORS — original service colors, still discreet and premium. */
+.premium-site .brand-inline-link:nth-child(1){color:#2563eb!important;}
+.premium-site .brand-inline-link:nth-child(2){color:#25d366!important;}
+.premium-site .brand-inline-link:nth-child(3){color:#e4405f!important;}
+.premium-site .brand-inline-link:nth-child(4){color:#4285f4!important;}
+.premium-site .brand-inline-link:nth-child(1):hover,.premium-site .brand-inline-link:nth-child(1):focus-visible{background:rgba(37,99,235,.10)!important;}
+.premium-site .brand-inline-link:nth-child(2):hover,.premium-site .brand-inline-link:nth-child(2):focus-visible{background:rgba(37,211,102,.10)!important;}
+.premium-site .brand-inline-link:nth-child(3):hover,.premium-site .brand-inline-link:nth-child(3):focus-visible{background:rgba(228,64,95,.10)!important;}
+.premium-site .brand-inline-link:nth-child(4):hover,.premium-site .brand-inline-link:nth-child(4):focus-visible{background:rgba(66,133,244,.10)!important;}
