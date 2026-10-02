@@ -55,3 +55,25 @@
 .premium-site .brand-inline-link:nth-child(2):hover,.premium-site .brand-inline-link:nth-child(2):focus-visible{background:rgba(37,211,102,.10)!important;}
 .premium-site .brand-inline-link:nth-child(3):hover,.premium-site .brand-inline-link:nth-child(3):focus-visible{background:rgba(228,64,95,.10)!important;}
 .premium-site .brand-inline-link:nth-child(4):hover,.premium-site .brand-inline-link:nth-child(4):focus-visible{background:rgba(244,180,0,.12)!important;}
+
+/* FINAL HEADER OPTICAL POLISH — logo clarity + high-contrast quick icons */
+.premium-site .site-brand{display:inline-flex!important;align-items:baseline!important;gap:0!important;line-height:1!important;filter:drop-shadow(0 2px 10px rgba(0,0,0,.34))!important;}
+.premium-site .brand-691{display:inline-block!important;font-size:2.35rem!important;font-weight:900!important;letter-spacing:-.075em!important;line-height:.9!important;white-space:nowrap!important;}
+.premium-site .brand-dot{display:inline!important;color:#18c861!important;background:none!important;box-shadow:none!important;width:auto!important;height:auto!important;margin:0!important;border-radius:0!important;font-size:1em!important;line-height:1!important;vertical-align:baseline!important;}
+.premium-site .brand-pt{display:inline-block!important;color:#fff!important;font-size:.46em!important;font-weight:850!important;letter-spacing:-.035em!important;line-height:1!important;margin:0 0 0 .01em!important;vertical-align:baseline!important;transform:translateY(-.03em)!important;}
+.premium-site .brand-inline-links{gap:8px!important;}
+.premium-site .brand-inline-link{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;background:rgba(7,12,17,.68)!important;border:1px solid rgba(255,255,255,.34)!important;box-shadow:0 5px 18px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;}
+.premium-site .brand-inline-link svg{width:18px!important;height:18px!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+.premium-site .brand-inline-link:nth-child(1){color:#3b82f6!important;}
+.premium-site .brand-inline-link:nth-child(2){color:#25d366!important;}
+.premium-site .brand-inline-link:nth-child(3){color:#e4405f!important;}
+.premium-site .brand-inline-link:nth-child(4){color:#fbbc04!important;}
+@media(min-width:981px){.premium-site .desktop-nav{padding-right:190px!important;}}
+@media(max-width:680px){
+  .premium-site .site-header{padding:10px 0!important;}
+  .premium-site .brand-691{font-size:1.95rem!important;}
+  .premium-site .brand-pt{font-size:.46em!important;}
+  .premium-site .brand-inline-links{gap:7px!important;top:8px!important;right:0!important;}
+  .premium-site .brand-inline-link{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;}
+  .premium-site .brand-inline-link svg{width:17px!important;height:17px!important;}
+}
