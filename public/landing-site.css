@@ -12,3 +12,9 @@ body:not(.premium-site) .lp-primary:hover{filter:brightness(1.03)}
 .lp-brand .brand-dot{display:inline!important;color:#18c861!important;background:none!important;box-shadow:none!important;width:auto!important;height:auto!important;margin:0!important;border-radius:0!important;font-size:1em!important;line-height:1!important;vertical-align:baseline!important;}
 .lp-brand .brand-pt{display:inline-block!important;color:#fff!important;font-size:.46em!important;font-weight:850!important;letter-spacing:-.035em!important;line-height:1!important;margin:0 0 0 .01em!important;vertical-align:baseline!important;transform:translateY(-.03em)!important;}
 @media(max-width:680px){.lp-header-inner{padding-top:14px!important;padding-bottom:14px!important}.lp-brand .brand-691{font-size:1.95rem!important}.lp-brand .brand-pt{font-size:.46em!important}.lp-brand .brand-dot{font-size:1em!important}}
+
+/* FINAL FIX — secondary-page 691 must match homepage: 691 white, dot green, pt white. */
+.lp-brand .brand-691{color:#fff!important;}
+.lp-brand .brand-691::first-letter{color:#fff!important;}
+.lp-brand .brand-dot{color:#18c861!important;}
+.lp-brand .brand-pt{color:#fff!important;}
