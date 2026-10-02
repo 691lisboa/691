@@ -5,3 +5,10 @@
 /* Final brand consistency: WhatsApp CTAs on secondary pages use the 691.pt green. */
 body:not(.premium-site) .lp-primary{background:var(--green)!important;color:#fff!important;box-shadow:0 12px 26px rgba(24,200,97,.18)!important}
 body:not(.premium-site) .lp-primary:hover{filter:brightness(1.03)}
+
+/* FINAL BRAND CONSISTENCY — secondary pages use the exact homepage 691.pt mark */
+.lp-brand{display:inline-flex!important;align-items:baseline!important;gap:0!important;line-height:1!important;filter:drop-shadow(0 2px 10px rgba(0,0,0,.34))!important;color:#fff!important;}
+.lp-brand .brand-691{display:inline-block!important;font-size:2.35rem!important;font-weight:900!important;letter-spacing:-.075em!important;line-height:.9!important;white-space:nowrap!important;}
+.lp-brand .brand-dot{display:inline!important;color:#18c861!important;background:none!important;box-shadow:none!important;width:auto!important;height:auto!important;margin:0!important;border-radius:0!important;font-size:1em!important;line-height:1!important;vertical-align:baseline!important;}
+.lp-brand .brand-pt{display:inline-block!important;color:#fff!important;font-size:.46em!important;font-weight:850!important;letter-spacing:-.035em!important;line-height:1!important;margin:0 0 0 .01em!important;vertical-align:baseline!important;transform:translateY(-.03em)!important;}
+@media(max-width:680px){.lp-header-inner{padding-top:14px!important;padding-bottom:14px!important}.lp-brand .brand-691{font-size:1.95rem!important}.lp-brand .brand-pt{font-size:.46em!important}.lp-brand .brand-dot{font-size:1em!important}}
