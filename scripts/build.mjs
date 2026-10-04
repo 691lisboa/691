@@ -84,13 +84,14 @@ function header(lang, key) {
   const links = navItems.map(([k, label]) => `<a href="${r[k]}"${cur(k)}>${esc(label)}</a>`).join('')
   const altUrl = ROUTES[t.other][key] || ROUTES[t.other].home
   return `<header class="site-header"><div class="wrap header-inner">
-<a class="logo" href="${r.home}" aria-label="691.pt — ${esc(u.home)}"><b>691</b><i aria-hidden="true"></i><span>pt</span></a>
+<a class="logo" href="${r.home}" aria-label="691.pt — ${esc(u.home)}"><b>691</b><i aria-hidden="true">.</i><span>pt</span></a>
 <nav class="nav" aria-label="${esc(u.nav)}">${links}</nav>
 <div class="header-tools">
-<a class="tool tool-socials" href="${SITE.instagram}" target="_blank" rel="noopener" aria-label="${esc(u.igLabel + externalHint(lang))}">${icon('instagram')}</a>
-<a class="tool tool-socials" href="${SITE.review}" target="_blank" rel="noopener" aria-label="${esc(u.reviewLabel + externalHint(lang))}">${icon('star')}</a>
-<a class="tool" href="tel:${SITE.phone}" aria-label="${esc(u.callLabel)}">${icon('phone')}</a>
+${key === 'home' ? `<a class="tool tool-phone" href="tel:${SITE.phone}" aria-label="${esc(u.callLabel)}">${icon('phone')}</a>
 <a class="tool tool-wa" href="${waLink(lang, key in t.wa ? key : 'home')}" aria-label="${esc(u.waLabel)}">${icon('whatsapp')}</a>
+<a class="tool tool-instagram" href="${SITE.instagram}" target="_blank" rel="noopener" aria-label="${esc(u.igLabel + externalHint(lang))}">${icon('instagram')}</a>
+<a class="tool tool-google" href="${SITE.review}" target="_blank" rel="noopener" aria-label="${esc(u.reviewLabel + externalHint(lang))}">${icon('star')}</a>` : `<a class="tool tool-google" href="${SITE.review}" target="_blank" rel="noopener" aria-label="${esc(u.reviewLabel + externalHint(lang))}">${icon('star')}</a>
+<a class="tool tool-wa" href="${waLink(lang, key in t.wa ? key : 'home')}" aria-label="${esc(u.waLabel)}">${icon('whatsapp')}</a>`}
 <a class="lang-switch" href="${altUrl}" hreflang="${o.code}" lang="${o.code}" aria-label="${esc(u.langSwitchLabel)}">${esc(u.langSwitch)}</a>
 <details class="menu"><summary class="tool" aria-label="${esc(u.menu)}">${icon('menu', 'icon-open')}${icon('close', 'icon-close')}</summary>
 <nav class="menu-panel" aria-label="${esc(u.nav)}">${links}</nav></details>
@@ -106,7 +107,7 @@ function footer(lang, key) {
   const t = T[lang], u = t.ui, r = ROUTES[lang]
   const altHome = ROUTES[t.other].home
   return `<footer class="site-footer"><div class="wrap"><div class="footer-grid">
-<div class="footer-brand"><a class="logo" href="${r.home}" aria-label="691.pt"><b>691</b><i aria-hidden="true"></i><span>pt</span></a><p>${esc(u.footerTag)}</p></div>
+<div class="footer-brand"><a class="logo" href="${r.home}" aria-label="691.pt"><b>691</b><i aria-hidden="true">.</i><span>pt</span></a><p>${esc(u.footerTag)}</p></div>
 <div><h2>${esc(u.services)}</h2><ul><li><a href="${r.home}">${esc(u.home)}</a></li><li><a href="${r.airport}">${esc(u.airport)}</a></li><li><a href="${r.lisbon}">${esc(u.lisbon)}</a></li><li><a href="${r.portugal}">${esc(u.portugal)}</a></li></ul></div>
 <div><h2>${esc(u.destinations)}</h2><ul>${DEST_KEYS.map(k => `<li><a href="${r[k]}">${esc(t.dest[k].name)}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(u.contactsTitle)}</h2><ul>
@@ -115,7 +116,7 @@ function footer(lang, key) {
 <li><a href="${SITE.instagram}" target="_blank" rel="noopener">${icon('instagram')}Instagram<span class="sr-only">${externalHint(lang)}</span></a></li>
 <li><a href="${SITE.review}" target="_blank" rel="noopener">${icon('star')}${esc(u.review)}<span class="sr-only">${externalHint(lang)}</span></a></li></ul></div>
 </div>
-<div class="footer-bottom"><span>${esc(u.rights)}</span><span><a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a> · <a href="${altHome}" hreflang="${t.other}" lang="${t.other}">${esc(T[t.other].name)}</a></span></div>
+<div class="footer-bottom"><span>${esc(u.rights)}</span><span>${key === 'home' ? `<a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a> · ` : ''}<a href="${altHome}" hreflang="${t.other}" lang="${t.other}">${esc(T[t.other].name)}</a></span></div>
 </div></footer>`
 }
 
@@ -294,13 +295,13 @@ function legalPage(lang) {
 function notFoundPage(lang) {
   const n = T[lang].notFound, u = T[lang].ui, r = ROUTES[lang]
   const body = `<section class="center-page"><div class="wrap"><p class="big-code" aria-hidden="true">4<span>0</span>4</p><h1>${esc(n.h1)}</h1><p class="lede">${esc(n.p)}</p><div class="actions"><a class="btn btn-dark btn-lg" href="${r.home}">${esc(u.backHome)}</a><a class="btn btn-wa btn-lg" href="${waLink(lang, 'home')}">${icon('whatsapp')}${esc(u.book)}</a></div></div></section>`
-  return layout(lang, 'home', { title: n.title, desc: n.p, body, robots: 'noindex,follow', noAlt: true }).replace(/<link rel="canonical"[^>]*>/, '')
+  return layout(lang, 'error', { title: n.title, desc: n.p, body, robots: 'noindex,follow', noAlt: true }).replace(/<link rel="canonical"[^>]*>/, '')
 }
 
 function offlinePage(lang) {
   const n = T[lang].offline, u = T[lang].ui
   const body = `<section class="center-page"><div class="wrap"><p class="big-code" aria-hidden="true">69<span>1</span></p><h1>${esc(n.h1)}</h1><p class="lede">${esc(n.p)}</p><div class="actions"><button class="btn btn-dark btn-lg" type="button" data-reload>${esc(n.retry)}</button><a class="btn btn-wa btn-lg" href="tel:${SITE.phone}">${icon('phone')}${esc(n.contact)}: ${SITE.phoneDisplay}</a></div></div></section>`
-  return layout(lang, 'home', { title: n.title, desc: n.p, body, robots: 'noindex,nofollow', noAlt: true }).replace(/<link rel="canonical"[^>]*>/, '')
+  return layout(lang, 'error', { title: n.title, desc: n.p, body, robots: 'noindex,nofollow', noAlt: true }).replace(/<link rel="canonical"[^>]*>/, '')
 }
 
 // ---------- 9. Escrever tudo ----------

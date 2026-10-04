@@ -52,7 +52,7 @@ export const T = {
       home: 'Início', airport: 'Aeroporto', lisbon: 'Lisboa', portugal: 'Viagens por Portugal',
       nav: 'Navegação principal', menu: 'Abrir menu', menuClose: 'Fechar menu', contacts: 'Contactos rápidos',
       book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp', call: 'Ligar', callFull: 'Ligar agora',
-      callLabel: 'Ligar para +351 928 158 158', waLabel: 'Abrir conversa no WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
+      callLabel: 'Ligar para +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
       langSwitch: 'EN', langSwitchLabel: 'Read this page in English',
       breadcrumb: 'Caminho', services: 'Serviços', destinations: 'Destinos', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
       legal: 'Informação Legal e Privacidade', complaints: 'Livro de Reclamações', allDest: 'Ver todos os destinos',
