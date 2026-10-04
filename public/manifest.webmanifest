@@ -1,0 +1,76 @@
+{
+  "name": "691.pt — Táxi Lisboa",
+  "short_name": "691.pt",
+  "description": "Táxi em Lisboa, aeroporto e viagens por Portugal. Reserva direta pelo WhatsApp.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "pt-PT",
+  "dir": "ltr",
+  "background_color": "#0b1015",
+  "theme_color": "#0b1015",
+  "categories": [
+    "travel",
+    "transportation"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Reservar pelo WhatsApp",
+      "short_name": "WhatsApp",
+      "url": "https://wa.me/351928158158?text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20um%20t%C3%A1xi.",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Aeroporto de Lisboa",
+      "short_name": "Aeroporto",
+      "url": "/taxi-aeroporto-lisboa/",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ligar",
+      "short_name": "Ligar",
+      "url": "tel:+351928158158",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

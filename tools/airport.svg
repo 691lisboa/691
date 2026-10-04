@@ -1,0 +1,284 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16213f"/>
+      <stop offset=".28" stop-color="#34447a"/>
+      <stop offset=".5" stop-color="#9a5f87"/>
+      <stop offset=".64" stop-color="#e8795f"/>
+      <stop offset=".72" stop-color="#ffb468"/>
+      <stop offset="1" stop-color="#ffd59a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="820" cy="560" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff3c9" stop-opacity=".95"/>
+      <stop offset=".18" stop-color="#ffd27a" stop-opacity=".65"/>
+      <stop offset=".5" stop-color="#ff9a5c" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#ff7a4c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2430"/>
+      <stop offset=".35" stop-color="#171a24"/>
+      <stop offset="1" stop-color="#0a0d14"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a3f66"/>
+      <stop offset="1" stop-color="#3a2b4d"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe0a0"/>
+      <stop offset="1" stop-color="#ff9d52"/>
+    </linearGradient>
+    <linearGradient id="win" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#27384f"/>
+      <stop offset="1" stop-color="#0d141d"/>
+    </linearGradient>
+    <linearGradient id="plane" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef0f6"/>
+      <stop offset="1" stop-color="#9aa3bd"/>
+    </linearGradient>
+    <radialGradient id="beam" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 0) scale(260 70)">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="blur3"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="blur18"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/>
+      <feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .09 0"/>
+    </filter>
+    <radialGradient id="vig" cx=".5" cy=".5" r=".75">
+      <stop offset=".6" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".45"/>
+    </radialGradient>
+    <linearGradient id="roofteal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#17a08d"/><stop offset="1" stop-color="#37d3bb"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <rect width="1200" height="800" fill="url(#sun)"/>
+  <!-- stars -->
+  <g fill="#fff" opacity=".7">
+    <circle cx="90" cy="60" r="1.4"/><circle cx="210" cy="120" r="1"/><circle cx="330" cy="40" r="1.2"/><circle cx="520" cy="90" r="1"/>
+    <circle cx="640" cy="35" r="1.3"/><circle cx="760" cy="110" r="1"/><circle cx="930" cy="55" r="1.2"/><circle cx="1090" cy="95" r="1"/><circle cx="1150" cy="30" r="1.1"/>
+  </g>
+  <!-- clouds -->
+  <g filter="url(#blur8)" opacity=".85">
+    <ellipse cx="260" cy="330" rx="230" ry="26" fill="#f0a08a"/>
+    <ellipse cx="330" cy="352" rx="190" ry="18" fill="#ffc79a"/>
+    <ellipse cx="930" cy="300" rx="260" ry="24" fill="#e98c78"/>
+    <ellipse cx="1010" cy="326" rx="200" ry="16" fill="#ffd1a0"/>
+    <ellipse cx="610" cy="420" rx="300" ry="14" fill="#ffc08c" opacity=".8"/>
+  </g>
+  <g filter="url(#blur3)" opacity=".7">
+    <ellipse cx="150" cy="210" rx="140" ry="12" fill="#c18aa6"/>
+    <ellipse cx="760" cy="200" rx="170" ry="11" fill="#c78aa0"/>
+  </g>
+  <!-- sun disc -->
+  <circle cx="820" cy="545" r="46" fill="#fff6d6"/>
+  <circle cx="820" cy="545" r="46" fill="#ffe7a1" opacity=".5" filter="url(#blur8)"/>
+
+  <!-- distant hills -->
+  <path d="M0 540 C120 505 200 515 300 530 C420 548 520 510 640 520 C760 530 880 505 1000 522 C1100 535 1160 520 1200 528 L1200 600 L0 600Z" fill="url(#hill)" opacity=".9"/>
+  <path d="M0 565 C150 548 260 560 380 556 C520 552 640 568 800 556 C940 546 1080 562 1200 552 L1200 610 L0 610Z" fill="#2c2140"/>
+
+  <!-- contrail -->
+  <path d="M-20 420 C120 392 230 350 340 300" stroke="#fff" stroke-opacity=".28" stroke-width="9" stroke-linecap="round" fill="none" filter="url(#blur3)"/>
+  <path d="M-20 436 C120 408 230 366 330 318" stroke="#fff" stroke-opacity=".18" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#blur3)"/>
+
+  <!-- airliner climbing (rotated) -->
+  <g transform="translate(470 270) rotate(-17) scale(1.05)">
+    <!-- far wing -->
+    <path d="M30 4 L-70 -62 L-48 -66 L58 -2Z" fill="#8b93ad"/>
+    <!-- fuselage -->
+    <path d="M-170 0 C-170 -22 -140 -30 -90 -30 L120 -28 C170 -26 205 -12 215 0 C205 12 170 24 120 26 L-90 26 C-140 26 -170 18 -170 0Z" fill="url(#plane)"/>
+    <!-- tail fin -->
+    <path d="M-150 -18 L-196 -96 L-168 -96 L-106 -24Z" fill="#e7e9f2"/>
+    <path d="M-196 -96 L-168 -96 L-174 -84 L-192 -84Z" fill="#18a58f"/>
+    <!-- tail plane -->
+    <path d="M-135 4 L-190 40 L-168 42 L-112 14Z" fill="#aab1c8"/>
+    <!-- cockpit window band -->
+    <path d="M168 -18 C180 -18 195 -12 200 -5 L170 -5Z" fill="#26364d"/>
+    <!-- windows -->
+    <g fill="#33445f" opacity=".85">
+      <rect x="-110" y="-12" width="6" height="7" rx="2"/><rect x="-96" y="-12" width="6" height="7" rx="2"/><rect x="-82" y="-12" width="6" height="7" rx="2"/>
+      <rect x="-68" y="-12" width="6" height="7" rx="2"/><rect x="-54" y="-12" width="6" height="7" rx="2"/><rect x="-40" y="-12" width="6" height="7" rx="2"/>
+      <rect x="-26" y="-12" width="6" height="7" rx="2"/><rect x="-12" y="-12" width="6" height="7" rx="2"/><rect x="2" y="-12" width="6" height="7" rx="2"/>
+      <rect x="16" y="-12" width="6" height="7" rx="2"/><rect x="30" y="-12" width="6" height="7" rx="2"/><rect x="44" y="-12" width="6" height="7" rx="2"/>
+      <rect x="58" y="-12" width="6" height="7" rx="2"/><rect x="72" y="-12" width="6" height="7" rx="2"/><rect x="86" y="-12" width="6" height="7" rx="2"/>
+      <rect x="100" y="-12" width="6" height="7" rx="2"/><rect x="114" y="-12" width="6" height="7" rx="2"/><rect x="128" y="-12" width="6" height="7" rx="2"/>
+    </g>
+    <!-- livery stripe -->
+    <path d="M-168 10 C-120 14 40 16 205 8 L212 4 C60 12 -120 8 -168 6Z" fill="#18a58f" opacity=".95"/>
+    <!-- underside shade -->
+    <path d="M-150 16 C-100 24 80 26 170 20 C190 18 205 10 213 3 C190 18 150 28 110 28 L-90 28 C-130 28 -160 22 -170 8Z" fill="#6c7593" opacity=".55"/>
+    <!-- near wing -->
+    <path d="M40 10 L-98 98 L-58 106 L96 18Z" fill="#c9cee0"/>
+    <path d="M40 10 L-98 98 L-86 100 L52 14Z" fill="#fff" opacity=".35"/>
+    <!-- engine -->
+    <ellipse cx="-18" cy="62" rx="40" ry="14" fill="#9099b3"/>
+    <ellipse cx="14" cy="62" rx="9" ry="12" fill="#3b4560"/>
+    <!-- nav light + sun rim -->
+    <circle cx="-92" cy="92" r="3.2" fill="#ff4d4d"/>
+    <circle cx="-92" cy="92" r="10" fill="#ff4d4d" opacity=".35" filter="url(#blur3)"/>
+    <path d="M-160 -22 C-110 -34 60 -34 160 -24" stroke="#ffd9a1" stroke-width="2.2" fill="none" opacity=".7"/>
+  </g>
+
+  <!-- ===== airport ===== -->
+  <!-- terminal -->
+  <g>
+    <!-- reflection glow on ground -->
+    <rect x="40" y="598" width="620" height="40" fill="#ff9d52" opacity=".16" filter="url(#blur8)"/>
+    <!-- main volume -->
+    <path d="M40 596 L40 548 C170 520 330 512 470 520 C550 526 610 536 660 548 L660 596Z" fill="#1d2230"/>
+    <!-- canopy roof -->
+    <path d="M26 548 C170 514 340 504 480 512 C560 518 625 532 676 546 L676 556 C620 546 560 536 480 530 C340 522 170 532 26 560Z" fill="#2b3145"/>
+    <path d="M26 548 C170 514 340 504 480 512 C560 518 625 532 676 546" stroke="#ffcf94" stroke-width="2" fill="none" opacity=".75"/>
+    <!-- glass facade -->
+    <rect x="52" y="560" width="596" height="34" fill="url(#glass)" opacity=".9"/>
+    <g fill="#1d2230">
+      <rect x="52" y="560" width="3" height="34"/><rect x="101" y="560" width="3" height="34"/><rect x="150" y="560" width="3" height="34"/>
+      <rect x="199" y="560" width="3" height="34"/><rect x="248" y="560" width="3" height="34"/><rect x="297" y="560" width="3" height="34"/>
+      <rect x="346" y="560" width="3" height="34"/><rect x="395" y="560" width="3" height="34"/><rect x="444" y="560" width="3" height="34"/>
+      <rect x="493" y="560" width="3" height="34"/><rect x="542" y="560" width="3" height="34"/><rect x="591" y="560" width="3" height="34"/>
+      <rect x="52" y="574" width="596" height="2"/>
+    </g>
+    <!-- people silhouettes inside -->
+    <g fill="#1a1018" opacity=".8">
+      <rect x="120" y="580" width="4" height="14" rx="2"/><rect x="180" y="582" width="4" height="12" rx="2"/><rect x="268" y="580" width="4" height="14" rx="2"/>
+      <rect x="330" y="581" width="4" height="13" rx="2"/><rect x="410" y="580" width="4" height="14" rx="2"/><rect x="520" y="582" width="4" height="12" rx="2"/><rect x="566" y="580" width="4" height="14" rx="2"/>
+    </g>
+    <!-- upper windows -->
+    <g fill="#ffd89a" opacity=".85">
+      <rect x="70" y="534" width="46" height="5" rx="2"/><rect x="130" y="531" width="46" height="5" rx="2"/><rect x="190" y="529" width="46" height="5" rx="2"/>
+      <rect x="250" y="528" width="46" height="5" rx="2"/><rect x="310" y="527" width="46" height="5" rx="2"/><rect x="370" y="528" width="46" height="5" rx="2"/>
+      <rect x="430" y="530" width="46" height="5" rx="2"/><rect x="490" y="533" width="46" height="5" rx="2"/><rect x="550" y="537" width="46" height="5" rx="2"/>
+    </g>
+  </g>
+  <!-- control tower -->
+  <g>
+    <path d="M706 596 L714 470 L730 470 L738 596Z" fill="#232838"/>
+    <path d="M714 470 L730 470 L734 532 L710 532Z" fill="#2c3246"/>
+    <path d="M690 460 L754 460 L744 436 L700 436Z" fill="#232838"/>
+    <path d="M702 452 L742 452 L738 440 L706 440Z" fill="url(#glass)"/>
+    <rect x="700" y="456" width="44" height="6" fill="#161a27"/>
+    <rect x="720" y="418" width="3" height="20" fill="#232838"/>
+    <circle cx="721.5" cy="416" r="3.4" fill="#ff4a4a"/>
+    <circle cx="721.5" cy="416" r="14" fill="#ff4a4a" opacity=".35" filter="url(#blur3)"/>
+    <path d="M714 470 L718 470 L722 532 L714 532Z" fill="#ffcf94" opacity=".35"/>
+  </g>
+  <!-- small hangar right -->
+  <path d="M930 600 L930 568 C980 552 1060 552 1110 568 L1110 600Z" fill="#1d2230"/>
+  <rect x="946" y="580" width="150" height="3" fill="#ffd18a" opacity=".6"/>
+
+  <!-- ===== ground ===== -->
+  <rect y="596" width="1200" height="204" fill="url(#ground)"/>
+  <!-- sun reflection on tarmac -->
+  <path d="M770 598 L870 598 L1000 800 L640 800Z" fill="#ff9d52" opacity=".13" filter="url(#blur8)"/>
+  <!-- runway edge lights perspective -->
+  <g>
+    <g fill="#ffd89a">
+      <circle cx="600" cy="606" r="1.6"/><circle cx="560" cy="614" r="2"/><circle cx="505" cy="626" r="2.5"/><circle cx="430" cy="644" r="3"/><circle cx="330" cy="668" r="3.7"/><circle cx="195" cy="702" r="4.6"/><circle cx="20" cy="748" r="5.6"/>
+    </g>
+    <g fill="#ffd89a" opacity=".35" filter="url(#blur3)">
+      <circle cx="560" cy="614" r="5"/><circle cx="505" cy="626" r="6"/><circle cx="430" cy="644" r="8"/><circle cx="330" cy="668" r="10"/><circle cx="195" cy="702" r="13"/><circle cx="20" cy="748" r="16"/>
+    </g>
+    <g fill="#7ee2c5">
+      <circle cx="660" cy="606" r="1.6"/><circle cx="716" cy="614" r="2"/><circle cx="785" cy="626" r="2.5"/><circle cx="880" cy="644" r="3"/><circle cx="1010" cy="668" r="3.7"/>
+    </g>
+    <g fill="#7ee2c5" opacity=".35" filter="url(#blur3)">
+      <circle cx="716" cy="614" r="5"/><circle cx="785" cy="626" r="6"/><circle cx="880" cy="644" r="8"/><circle cx="1010" cy="668" r="10"/>
+    </g>
+    <!-- centre dashes -->
+    <g fill="#e9dccb" opacity=".55">
+      <path d="M628 603 L632 603 L634 606 L626 606Z"/><path d="M626 610 L634 610 L637 616 L623 616Z"/>
+      <path d="M621 622 L639 622 L644 634 L616 634Z"/><path d="M612 644 L648 644 L658 668 L602 668Z"/>
+      <path d="M594 684 L666 684 L690 740 L570 740Z"/>
+    </g>
+  </g>
+
+  <!-- kerb + road -->
+  <path d="M0 716 L1200 700 L1200 800 L0 800Z" fill="#0b0e15"/>
+  <path d="M0 716 L1200 700 L1200 706 L0 722Z" fill="#3a3f52"/>
+  <path d="M0 722 L1200 706 L1200 710 L0 726Z" fill="#ffb069" opacity=".45"/>
+  <!-- road markings -->
+  <g fill="#cdbfae" opacity=".45">
+    <path d="M60 770 L180 768 L184 773 L56 775Z"/><path d="M330 767 L450 765 L454 770 L326 772Z"/>
+    <path d="M600 764 L720 762 L724 767 L596 769Z"/><path d="M870 761 L990 759 L994 764 L866 766Z"/>
+  </g>
+  <!-- street lamp -->
+  <g>
+    <rect x="130" y="560" width="5" height="160" fill="#10131c"/>
+    <path d="M132 562 C132 548 160 546 176 552" stroke="#10131c" stroke-width="5" fill="none"/>
+    <ellipse cx="176" cy="556" rx="14" ry="4.5" fill="#fff0c4"/>
+    <ellipse cx="176" cy="560" rx="70" ry="20" fill="#ffd38a" opacity=".35" filter="url(#blur8)"/>
+    <path d="M160 560 L112 724 L240 724Z" fill="#ffd38a" opacity=".08"/>
+  </g>
+  <g>
+    <rect x="1060" y="540" width="5" height="170" fill="#10131c"/>
+    <path d="M1062 542 C1062 528 1034 526 1018 532" stroke="#10131c" stroke-width="5" fill="none"/>
+    <ellipse cx="1018" cy="536" rx="14" ry="4.5" fill="#fff0c4"/>
+    <ellipse cx="1018" cy="540" rx="70" ry="20" fill="#ffd38a" opacity=".35" filter="url(#blur8)"/>
+  </g>
+
+  <!-- ===== taxi (side view, facing right) ===== -->
+  <g transform="translate(560 604) scale(1.18)">
+    <!-- shadow + reflection -->
+    <ellipse cx="170" cy="112" rx="190" ry="14" fill="#000" opacity=".55" filter="url(#blur8)"/>
+    <g transform="translate(0 224) scale(1 -1)" opacity=".16">
+      <path d="M2 100 L12 74 L66 70 L98 40 L226 38 L268 68 L324 76 L338 98Z" fill="#fff"/>
+    </g>
+    <!-- headlight beam -->
+    <ellipse cx="420" cy="92" rx="140" ry="22" fill="url(#beam)" transform="translate(-60 0)"/>
+    <!-- body -->
+    <path d="M2 104 L6 82 C10 74 20 72 30 70 L74 66 L106 40 C110 37 114 36 120 36 L226 35 C234 35 240 37 246 42 L278 68 L322 74 C334 76 340 84 340 96 L340 104Z" fill="#0d1118"/>
+    <!-- body highlight -->
+    <path d="M12 82 L74 74 L340 84" stroke="#ffb86b" stroke-opacity=".5" stroke-width="1.6" fill="none"/>
+    <path d="M30 70 L74 66" stroke="#ffd9a1" stroke-opacity=".5" stroke-width="1.4" fill="none"/>
+    <!-- teal roof and upper cabin -->
+    <path d="M104 41 C108 37 114 36 120 36 L226 35 C234 35 240 37 246 42 L252 47 L98 48Z" fill="url(#roofteal)"/>
+    <path d="M104 41 L98 48 L252 47" stroke="#8ff0dd" stroke-opacity=".6" stroke-width="1.2" fill="none"/>
+    <!-- windows -->
+    <path d="M110 52 L118 40 L168 40 L168 66 L90 68Z" fill="url(#win)"/>
+    <path d="M176 40 L228 40 L262 66 L176 66Z" fill="url(#win)"/>
+    <path d="M118 40 L130 40 L112 66 L98 67Z" fill="#fff" opacity=".1"/>
+    <path d="M176 40 L190 40 L176 66Z" fill="#ffb86b" opacity=".22"/>
+    <rect x="168" y="40" width="8" height="26" fill="#0d1118"/>
+    <!-- door seams -->
+    <path d="M168 66 L168 100 M92 68 L88 100 M258 70 L262 100" stroke="#252c3b" stroke-width="1.3"/>
+    <rect x="176" y="76" width="16" height="3" rx="1.5" fill="#2d3548"/>
+    <rect x="102" y="76" width="16" height="3" rx="1.5" fill="#2d3548"/>
+    <!-- 691 badge -->
+    <rect x="200" y="78" width="26" height="12" rx="2.5" fill="#18c861"/>
+    <text x="213" y="87.4" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="800" fill="#06210f" text-anchor="middle">691</text>
+    <!-- roof sign -->
+    <rect x="152" y="24" width="38" height="11" rx="2.5" fill="#f4f6ea"/>
+    <rect x="152" y="24" width="38" height="11" rx="2.5" fill="#ffe9a8" opacity=".6" filter="url(#blur3)"/>
+    <text x="171" y="32.6" font-family="Inter, Arial, sans-serif" font-size="7.4" font-weight="800" fill="#0d1118" text-anchor="middle">TÁXI</text>
+    <!-- lights -->
+    <path d="M326 78 C334 78 340 82 340 88 L326 88Z" fill="#fff6d0"/>
+    <ellipse cx="334" cy="84" rx="16" ry="9" fill="#fff0b8" opacity=".8" filter="url(#blur3)"/>
+    <path d="M2 86 L10 84 L12 94 L2 94Z" fill="#ff3b3b"/>
+    <ellipse cx="6" cy="90" rx="10" ry="8" fill="#ff3b3b" opacity=".5" filter="url(#blur3)"/>
+    <!-- wheels -->
+    <g>
+      <circle cx="82" cy="104" r="22" fill="#05070b"/>
+      <circle cx="82" cy="104" r="14" fill="#9aa2ad"/>
+      <circle cx="82" cy="104" r="11" fill="#151a23"/>
+      <g stroke="#9aa2ad" stroke-width="2.2"><path d="M82 94 L82 114 M72 104 L92 104 M75 97 L89 111 M89 97 L75 111"/></g>
+      <circle cx="82" cy="104" r="3.4" fill="#cdd3da"/>
+      <circle cx="262" cy="104" r="22" fill="#05070b"/>
+      <circle cx="262" cy="104" r="14" fill="#9aa2ad"/>
+      <circle cx="262" cy="104" r="11" fill="#151a23"/>
+      <g stroke="#9aa2ad" stroke-width="2.2"><path d="M262 94 L262 114 M252 104 L272 104 M255 97 L269 111 M269 97 L255 111"/></g>
+      <circle cx="262" cy="104" r="3.4" fill="#cdd3da"/>
+    </g>
+  </g>
+
+  <!-- warm light flares -->
+  <circle cx="820" cy="545" r="160" fill="#ffd27a" opacity=".12" filter="url(#blur18)"/>
+
+  <!-- grain + vignette -->
+  <rect width="1200" height="800" filter="url(#grain)"/>
+  <rect width="1200" height="800" fill="url(#vig)"/>
+</svg>
