@@ -30,7 +30,8 @@ const posCss = [...new Set(Object.values(IMAGES).map(i => i.pos))].map(p => `.${
 const css = minCss(fs.readFileSync(path.join(SRC, 'css/site.css'), 'utf8') + '\n' + posCss)
 const js = fs.readFileSync(path.join(SRC, 'js/site.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '').replace(/\n{2,}/g, '\n').trim() + '\n'
 const V_CSS = hash(css), V_JS = hash(js)
-write('site.css', css); write('site.js', js)
+const langJs = fs.readFileSync(path.join(SRC, 'js/lang.js'), 'utf8').trim() + '\n'
+write('site.css', css); write('site.js', js); write('lang.js', langJs)
 const CSS_URL = `/site.css?v=${V_CSS}`, JS_URL = `/site.js?v=${V_JS}`
 const FONT_MAIN = '/fonts/inter-latin-wght-normal.woff2'
 
@@ -61,13 +62,21 @@ const sprite = '<svg class="sprite" xmlns="http://www.w3.org/2000/svg" width="0"
 const icon = (name, cls = '') => `<svg class="icon${FILLED.has(name) ? ' icon-fill' : ''}${cls ? ' ' + cls : ''}" aria-hidden="true" focusable="false"><use href="#i-${name}"/></svg>`
 
 // ---------- 4. Imagens ----------
+const AIRPORT_PHOTO = {
+  src: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/Lisbon_Humberto_Delgado_Airport_2026.jpg',
+  width: 5712, height: 4284
+}
 function img(name, { alt, sizes, cls = '', eager = false, high = false }) {
+  if (name === 'aeroporto') {
+    return `<img${cls ? ` class="${cls}"` : ''} src="${AIRPORT_PHOTO.src}" width="${AIRPORT_PHOTO.width}" height="${AIRPORT_PHOTO.height}" alt="${esc(alt)}"${eager ? '' : ' loading="lazy"'} decoding="async"${high ? ' fetchpriority="high"' : ''}>`
+  }
   const vs = imgs[name].variants
   const def = vs.find(v => v.w >= 768) || vs[vs.length - 1]
   const srcset = vs.map(v => `/assets/img/${name}-${v.w}.webp ${v.w}w`).join(', ')
   return `<img${cls ? ` class="${cls}"` : ''} src="/assets/img/${name}-${def.w}.webp" srcset="${srcset}" sizes="${sizes}" width="${def.w}" height="${def.h}" alt="${esc(alt)}"${eager ? '' : ' loading="lazy"'} decoding="async"${high ? ' fetchpriority="high"' : ''}>`
 }
 const heroPreload = name => {
+  if (name === 'aeroporto') return `<link rel="preload" as="image" href="${AIRPORT_PHOTO.src}" fetchpriority="high">`
   const vs = imgs[name].variants
   return `<link rel="preload" as="image" href="/assets/img/${name}-${(vs.find(v => v.w >= 768) || vs.at(-1)).w}.webp" imagesrcset="${vs.map(v => `/assets/img/${name}-${v.w}.webp ${v.w}w`).join(', ')}" imagesizes="100vw" fetchpriority="high">`
 }
@@ -82,7 +91,6 @@ function header(lang, key) {
   const navItems = [['home', u.home], ['airport', u.airport], ['lisbon', u.lisbon], ['portugal', u.portugal]]
   const cur = k => (k === key || (k === 'portugal' && DEST_KEYS.includes(key))) ? ' aria-current="page"' : ''
   const links = navItems.map(([k, label]) => `<a href="${r[k]}"${cur(k)}>${esc(label)}</a>`).join('')
-  const altUrl = ROUTES[t.other][key] || ROUTES[t.other].home
   return `<header class="site-header"><div class="wrap header-inner">
 <a class="logo" href="${r.home}" aria-label="691.pt — ${esc(u.home)}"><b>691</b><i aria-hidden="true">.</i><span>pt</span></a>
 <nav class="nav" aria-label="${esc(u.nav)}">${links}</nav>
@@ -92,20 +100,16 @@ ${key === 'home' ? `<a class="tool tool-phone" href="tel:${SITE.phone}" aria-lab
 <a class="tool tool-instagram" href="${SITE.instagram}" target="_blank" rel="noopener" aria-label="${esc(u.igLabel + externalHint(lang))}">${icon('instagram')}</a>
 <a class="tool tool-google" href="${SITE.review}" target="_blank" rel="noopener" aria-label="${esc(u.reviewLabel + externalHint(lang))}">${icon('star')}</a>` : `<a class="tool tool-google" href="${SITE.review}" target="_blank" rel="noopener" aria-label="${esc(u.reviewLabel + externalHint(lang))}">${icon('star')}</a>
 <a class="tool tool-wa" href="${waLink(lang, key in t.wa ? key : 'home')}" aria-label="${esc(u.waLabel)}">${icon('whatsapp')}</a>`}
-<a class="lang-switch" href="${altUrl}" hreflang="${o.code}" lang="${o.code}" aria-label="${esc(u.langSwitchLabel)}">${esc(u.langSwitch)}</a>
-<details class="menu"><summary class="tool" aria-label="${esc(u.menu)}">${icon('menu', 'icon-open')}${icon('close', 'icon-close')}</summary>
-<nav class="menu-panel" aria-label="${esc(u.nav)}">${links}</nav></details>
 </div></div></header>`
 }
 
 function mobileBar(lang, key) {
   const u = T[lang].ui
-  return `<aside class="mobile-bar" data-bar aria-label="${esc(u.book)}"><a class="btn btn-wa" href="${waLink(lang, key in T[lang].wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a><a class="btn btn-ghost btn-icon" href="tel:${SITE.phone}" aria-label="${esc(u.callLabel)}">${icon('phone')}</a></aside>`
+  return `<aside class="mobile-bar" data-bar aria-label="${esc(u.book)}"><a class="btn btn-wa" href="${waLink(lang, key in T[lang].wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a></aside>`
 }
 
 function footer(lang, key) {
   const t = T[lang], u = t.ui, r = ROUTES[lang]
-  const altHome = ROUTES[t.other].home
   return `<footer class="site-footer"><div class="wrap"><div class="footer-grid">
 <div class="footer-brand"><a class="logo" href="${r.home}" aria-label="691.pt"><b>691</b><i aria-hidden="true">.</i><span>pt</span></a><p>${esc(u.footerTag)}</p></div>
 <div><h2>${esc(u.services)}</h2><ul><li><a href="${r.home}">${esc(u.home)}</a></li><li><a href="${r.airport}">${esc(u.airport)}</a></li><li><a href="${r.lisbon}">${esc(u.lisbon)}</a></li><li><a href="${r.portugal}">${esc(u.portugal)}</a></li></ul></div>
@@ -116,7 +120,7 @@ function footer(lang, key) {
 <li><a href="${SITE.instagram}" target="_blank" rel="noopener">${icon('instagram')}Instagram<span class="sr-only">${externalHint(lang)}</span></a></li>
 <li><a href="${SITE.review}" target="_blank" rel="noopener">${icon('star')}${esc(u.review)}<span class="sr-only">${externalHint(lang)}</span></a></li></ul></div>
 </div>
-<div class="footer-bottom"><span>${esc(u.rights)}</span><span>${key === 'home' ? `<a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a> · ` : ''}<a href="${altHome}" hreflang="${t.other}" lang="${t.other}">${esc(T[t.other].name)}</a></span></div>
+<div class="footer-bottom"><span>${esc(u.rights)}</span><span>${key === 'home' ? `<a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a>` : ''}</span></div>
 </div></footer>`
 }
 
@@ -129,7 +133,8 @@ const faqHtml = (lang, items, id = 'faq') => `<section class="section section--s
 
 function ctaBand(lang, key) {
   const t = T[lang], u = t.ui
-  return `<section class="cta-band" aria-labelledby="cta-h"><div class="wrap cta-inner"><div><span class="eyebrow">${esc(lang === 'pt' ? 'Reserva direta' : 'Direct booking')}</span><h2 id="cta-h">${esc(t.cta.title)}</h2><p>${esc(t.cta.p)}</p></div><div class="actions"><a class="btn btn-wa btn-lg" href="${waLink(lang, key in t.wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a><a class="btn btn-ghost btn-lg" href="tel:${SITE.phone}">${icon('phone')}${esc(u.callFull)}</a></div></div></section>`
+  const eyebrow = key === 'home' ? '' : `<span class="eyebrow">${esc(lang === 'pt' ? 'Reserva direta' : 'Direct booking')}</span>`
+  return `<section class="cta-band" aria-labelledby="cta-h"><div class="wrap cta-inner"><div>${eyebrow}<h2 id="cta-h">${esc(t.cta.title)}</h2><p>${esc(t.cta.p)}</p></div><div class="actions"><a class="btn btn-wa btn-lg" href="${waLink(lang, key in t.wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a></div></div></section>`
 }
 
 function stepsHtml(lang, soft = true) {
@@ -156,7 +161,7 @@ function hero(lang, key, { h1, sub, eyebrow, imgKey, alt, trail, home = false, c
   const t = T[lang], u = t.ui
   const I = IMAGES[imgKey]
   const glass = home ? `<aside class="glass" aria-labelledby="send-h"><h2 id="send-h">${esc(u.sendTitle)}</h2><p>${esc(u.sendIntro)}</p><ul class="checklist">${u.send.map(s => `<li>${icon('check')}${esc(s)}</li>`).join('')}</ul><a class="btn btn-wa btn-lg" href="${waLink(lang, 'home')}">${icon('whatsapp')}${esc(u.book)}</a></aside>` : ''
-  return `<section class="hero${home ? '' : ' hero--page'}"><div class="hero-media">${img(I.img, { alt, sizes: '100vw', eager: true, high: true, cls: posClass(I.pos) })}</div><div class="wrap hero-inner"><div class="hero-copy">${trail ? breadcrumb(lang, trail) : ''}<span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(h1)}</h1><p class="hero-sub">${esc(sub)}</p><div class="actions"><a class="btn btn-wa btn-lg" data-hero-cta href="${waLink(lang, key in t.wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a><a class="btn btn-ghost btn-lg" href="tel:${SITE.phone}">${icon('phone')}${esc(u.callFull)}</a></div>${chips.length ? `<ul class="chips" aria-label="${esc(lang === 'pt' ? 'Vantagens' : 'Benefits')}">${chips.map(c => `<li class="chip">${icon('check')}${esc(c)}</li>`).join('')}</ul>` : ''}</div>${glass}</div></section>`
+  return `<section class="hero${home ? '' : ' hero--page'}"><div class="hero-media">${img(I.img, { alt, sizes: '100vw', eager: true, high: true, cls: posClass(I.pos) })}</div><div class="wrap hero-inner"><div class="hero-copy">${trail ? breadcrumb(lang, trail) : ''}<span class="eyebrow">${esc(eyebrow)}</span><h1>${esc(h1)}</h1><p class="hero-sub">${esc(sub)}</p><div class="actions"><a class="btn btn-wa btn-lg" data-hero-cta href="${waLink(lang, key in t.wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a></div>${chips.length ? `<ul class="chips" aria-label="${esc(lang === 'pt' ? 'Vantagens' : 'Benefits')}">${chips.map(c => `<li class="chip">${icon('check')}${esc(c)}</li>`).join('')}</ul>` : ''}</div>${glass}</div></section>`
 }
 
 // ---------- 6. JSON-LD ----------
@@ -208,6 +213,7 @@ function layout(lang, key, { title, desc, body, imgPreload, ld, robots = 'index,
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="${FONT_MAIN}" as="font" type="font/woff2" crossorigin>${imgPreload || ''}
+<script src="/lang.js"></script>
 <link rel="stylesheet" href="${CSS_URL}">${ld ? `<script type="application/ld+json">${ld}</script>` : ''}
 </head><body class="has-bar">${sprite}<a class="skip" href="#main">${esc(t.ui.skip)}</a>
 ${header(lang, key)}
@@ -221,7 +227,7 @@ ${mobileBar(lang, key)}
 function homePage(lang) {
   const t = T[lang], p = t.pages.home, u = t.ui, r = ROUTES[lang], key = 'home'
   const body = [
-    hero(lang, key, { h1: p.h1, sub: p.sub, eyebrow: p.eyebrow, imgKey: 'home', alt: p.imgAlt, home: true, chips: p.chips }),
+    hero(lang, key, { h1: p.h1, sub: p.sub, eyebrow: p.eyebrow, imgKey: 'home', alt: p.imgAlt, home: true }),
     `<section class="section" aria-labelledby="serv-h"><div class="wrap"><div class="section-head"><span class="eyebrow">${esc(p.servicesEyebrow)}</span><h2 id="serv-h">${esc(p.servicesTitle)}</h2><p class="lede">${esc(p.servicesSub)}</p></div><div class="grid grid-3">${['lisbon', 'airport', 'portugal'].map(k => serviceCard(lang, k)).join('')}</div></div></section>`,
     stepsHtml(lang, true),
     `<section class="section" aria-labelledby="dest-h"><div class="wrap"><div class="section-head section-head--row"><div class="stack"><span class="eyebrow">${esc(p.destEyebrow)}</span><h2 id="dest-h">${esc(p.destTitle)}</h2><p class="lede">${esc(p.destSub)}</p></div><a class="btn btn-outline" href="${r.portugal}">${esc(u.allDest)}${icon('arrow')}</a></div><div class="grid grid-3">${lisbonCard(lang)}${DEST_KEYS.map(k => destCard(lang, k)).join('')}</div></div></section>`,
@@ -343,9 +349,9 @@ const manifest = {
 write('manifest.webmanifest', JSON.stringify(manifest, null, 2) + '\n')
 
 // service worker
-const core = ['/', '/en/', '/offline.html', '/en/offline.html', CSS_URL, JS_URL, FONT_MAIN, '/favicon.svg', '/icon-192.png']
+const core = ['/', '/en/', '/offline.html', '/en/offline.html', CSS_URL, JS_URL, '/lang.js', FONT_MAIN, '/favicon.svg', '/icon-192.png']
 const swSrc = fs.readFileSync(path.join(SRC, 'js/sw.js'), 'utf8')
-const version = hash(css + js + JSON.stringify(core) + fs.readdirSync(path.join(OUT, 'assets/img')).join())
+const version = hash(css + js + langJs + JSON.stringify(core) + fs.readdirSync(path.join(OUT, 'assets/img')).join())
 write('sw.js', swSrc.replace('__VERSION__', version).replace('__CORE__', JSON.stringify(core)))
 
 console.log(`build ok · ${pages.length} páginas indexáveis · css ${(css.length / 1024).toFixed(1)} KB · js ${js.length} B · sw ${version}`)

@@ -50,10 +50,10 @@ export const T = {
     ui: {
       skip: 'Saltar para o conteúdo',
       home: 'Início', airport: 'Aeroporto', lisbon: 'Lisboa', portugal: 'Viagens por Portugal',
-      nav: 'Navegação principal', menu: 'Abrir menu', menuClose: 'Fechar menu', contacts: 'Contactos rápidos',
-      book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp', call: 'Ligar', callFull: 'Ligar agora',
+      nav: 'Navegação principal', contacts: 'Contactos rápidos',
+      book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp',
       callLabel: 'Ligar para +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
-      langSwitch: 'EN', langSwitchLabel: 'Read this page in English',
+      
       breadcrumb: 'Caminho', services: 'Serviços', destinations: 'Destinos', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
       legal: 'Informação Legal e Privacidade', complaints: 'Livro de Reclamações', allDest: 'Ver todos os destinos',
       seeMore: 'Saber mais', faq: 'Perguntas frequentes', others: 'Outros serviços', otherDest: 'Outros destinos',
@@ -103,12 +103,11 @@ export const T = {
         eyebrow: 'Táxi em Lisboa · Aeroporto · Portugal',
         h1: 'O seu táxi em Lisboa, a uma mensagem de distância.',
         sub: 'Aeroporto, cidade e todo o país. Fale diretamente com o motorista, sem aplicações nem intermediários.',
-        chips: ['Reserva direta', 'Falamos inglês', 'Em todo o país'],
         servicesEyebrow: 'Serviços', servicesTitle: 'Para onde vamos hoje?',
         servicesSub: 'Escolha o tipo de viagem e envie-nos o pedido pelo WhatsApp.',
         cards: {
           lisbon: { t: 'Táxi em Lisboa', p: 'Trabalho, consultas, restaurantes, hotéis e tudo o que o dia pede.', alt: 'Ponte 25 de Abril ao pôr do sol' },
-          airport: { t: 'Aeroporto de Lisboa', p: 'Partidas a horas e recolhas à chegada, com reserva antecipada.', alt: 'Avião a descolar do aeroporto ao pôr do sol, com um táxi 691 à espera' },
+          airport: { t: 'Aeroporto de Lisboa', p: 'Partidas a horas e recolhas à chegada, com reserva antecipada.', alt: 'Entrada do Aeroporto Humberto Delgado, em Lisboa' },
           portugal: { t: 'Viagens por Portugal', p: 'Sintra, Fátima, Nazaré, Porto, Évora e muito mais, a partir de Lisboa.', alt: 'Palácio da Pena, em Sintra' }
         },
         destEyebrow: 'Destinos', destTitle: 'De Lisboa para Portugal.',
@@ -130,7 +129,7 @@ export const T = {
       airport: {
         title: 'Táxi para o Aeroporto de Lisboa | Reserva Direta — 691.pt',
         desc: 'Táxi para o Aeroporto Humberto Delgado: partidas a horas e recolhas à chegada. Reserve pelo WhatsApp e fale diretamente com o motorista.',
-        imgAlt: 'Avião a descolar do aeroporto de Lisboa ao pôr do sol, com um táxi 691 à espera',
+        imgAlt: 'Entrada do Aeroporto Humberto Delgado, em Lisboa',
         eyebrow: 'Aeroporto de Lisboa',
         h1: 'Do aeroporto ao seu destino, sem filas nem surpresas.',
         sub: 'Reserve com antecedência o táxi para o Aeroporto Humberto Delgado ou combine a recolha à chegada. Fala diretamente com o motorista.',
@@ -303,10 +302,10 @@ export const T = {
     ui: {
       skip: 'Skip to content',
       home: 'Home', airport: 'Airport', lisbon: 'Lisbon', portugal: 'Trips across Portugal',
-      nav: 'Main navigation', menu: 'Open menu', menuClose: 'Close menu', contacts: 'Quick contacts',
-      book: 'Book on WhatsApp', bookShort: 'WhatsApp', call: 'Call', callFull: 'Call now',
+      nav: 'Main navigation', contacts: 'Quick contacts',
+      book: 'Book on WhatsApp', bookShort: 'WhatsApp',
       callLabel: 'Call +351 928 158 158', waLabel: 'Open WhatsApp chat', igLabel: 'Instagram @691.pt', reviewLabel: 'Review us on Google',
-      langSwitch: 'PT', langSwitchLabel: 'Ler esta página em português',
+      
       breadcrumb: 'Breadcrumb', services: 'Services', destinations: 'Destinations', contactsTitle: 'Contacts', legalTitle: 'Legal',
       legal: 'Legal Information and Privacy', complaints: 'Complaints Book', allDest: 'See all destinations',
       seeMore: 'Learn more', faq: 'Frequently asked questions', others: 'Other services', otherDest: 'Other destinations',
@@ -356,12 +355,11 @@ export const T = {
         eyebrow: 'Taxi in Lisbon · Airport · Portugal',
         h1: 'Your Lisbon taxi, one message away.',
         sub: 'Airport, city and the whole country. Talk directly to your driver, with no apps and no middlemen.',
-        chips: ['Direct booking', 'English spoken', 'Across the country'],
         servicesEyebrow: 'Services', servicesTitle: 'Where are we going today?',
         servicesSub: 'Choose your kind of trip and send us your request on WhatsApp.',
         cards: {
           lisbon: { t: 'Taxi in Lisbon', p: 'Work, appointments, restaurants, hotels and everything your day needs.', alt: 'The 25 de Abril Bridge at sunset' },
-          airport: { t: 'Lisbon Airport', p: 'On-time departures and arrivals pickups, pre-booked.', alt: 'A plane taking off at sunset with a 691 taxi waiting' },
+          airport: { t: 'Lisbon Airport', p: 'On-time departures and arrivals pickups, pre-booked.', alt: 'Entrance of Humberto Delgado Airport in Lisbon' },
           portugal: { t: 'Trips across Portugal', p: 'Sintra, Fátima, Nazaré, Porto, Évora and more, from Lisbon.', alt: 'Pena Palace in Sintra' }
         },
         destEyebrow: 'Destinations', destTitle: 'From Lisbon to Portugal.',
@@ -383,7 +381,7 @@ export const T = {
       airport: {
         title: 'Lisbon Airport Taxi | Book Direct on WhatsApp — 691.pt',
         desc: 'Taxi to and from Lisbon Airport (Humberto Delgado): on-time departures and arrivals pickups. Book on WhatsApp and talk to the driver directly.',
-        imgAlt: 'A plane taking off from Lisbon airport at sunset, with a 691 taxi waiting',
+        imgAlt: 'Entrance of Humberto Delgado Airport in Lisbon',
         eyebrow: 'Lisbon Airport',
         h1: 'From the airport to your destination, no queues and no surprises.',
         sub: 'Pre-book your taxi to Humberto Delgado Airport or arrange a pickup on arrival. You talk directly to the driver.',

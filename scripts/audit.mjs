@@ -19,6 +19,7 @@ const htmlFiles = files.filter(f => f.endsWith('.html'))
 
 // ficheiros de destino de um URL interno
 const exists = href => {
+  if (/^https?:\/\//i.test(href)) return true
   const p = href.split('#')[0].split('?')[0]
   if (!p) return true
   const rel = p.replace(/^\//, '')
@@ -32,7 +33,7 @@ for (const f of ['server/index.js', 'scripts/build.mjs']) {
   const r = spawnSync(process.execPath, ['--check', path.join(ROOT, f)], { encoding: 'utf8' })
   if (r.status !== 0) fail(f, 'erro de sintaxe\n' + r.stderr)
 }
-for (const f of ['site.js', 'sw.js']) { try { new vm.Script(read(f), { filename: f }) } catch (e) { fail(f, 'JS inválido: ' + e.message) } }
+for (const f of ['site.js', 'lang.js', 'sw.js']) { try { new vm.Script(read(f), { filename: f }) } catch (e) { fail(f, 'JS inválido: ' + e.message) } }
 if (/__VERSION__|__CORE__/.test(read('sw.js'))) fail('sw.js', 'placeholders por substituir')
 if (/!important/.test(read('site.css'))) fail('site.css', 'contém !important')
 if (read('site.css').length > 30000) fail('site.css', 'CSS demasiado grande (>30 KB)')

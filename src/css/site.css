@@ -74,19 +74,8 @@ p{text-wrap:pretty}
 .tool:hover{background:rgba(11,16,21,.9)}
 .tool-phone{background:#1877f2;border-color:#1877f2;color:#fff}.tool-phone:hover{background:#0d66d5}.tool-wa{background:var(--green);border-color:var(--green);color:var(--green-ink)}
 .tool-wa:hover{background:#2bdc74}.tool-instagram{background:#e4405f;border-color:#e4405f;color:#fff}.tool-instagram:hover{background:#d72f50}.tool-google{background:#f4b400;border-color:#f4b400;color:#171717}.tool-google:hover{background:#ffc107}.tool-socials{display:inline-flex}
-.lang-switch{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 12px;border-radius:999px;font-size:.82rem;font-weight:800;letter-spacing:.06em;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.25)}
-.lang-switch:hover{background:rgba(255,255,255,.14)}
-.menu{position:relative}
-.menu summary{list-style:none;cursor:pointer}
-.menu summary::-webkit-details-marker{display:none}
-.menu .icon-close{display:none}
-.menu[open] .icon-open{display:none}
-.menu[open] .icon-close{display:block}
-.menu-panel{position:absolute;right:0;top:calc(100% + 12px);width:min(320px,calc(100vw - 32px));background:var(--ink-2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:10px;box-shadow:var(--shadow-l)}
-.menu-panel a{display:flex;align-items:center;min-height:50px;padding:0 16px;border-radius:12px;color:#fff;text-decoration:none;font-weight:700}
-.menu-panel a:hover,.menu-panel a[aria-current="page"]{background:rgba(255,255,255,.1)}
-@media(max-width:420px){.header-inner{gap:5px}.header-tools{gap:4px}.tool{width:34px;height:34px}.tool .icon{width:1.15em;height:1.15em}.lang-switch{min-width:34px;height:34px;padding:0 7px;font-size:.72rem}.menu summary.tool{width:34px;height:34px}.logo b{font-size:1.72rem}.logo span{font-size:.84rem}}
-@media(min-width:900px){.nav{display:flex}.menu{display:none}}
+@media(max-width:420px){.header-inner{gap:4px}.header-tools{gap:4px;margin-left:auto;margin-right:-8px}.tool{width:34px;height:34px}.tool .icon{width:1.15em;height:1.15em}.logo b{font-size:1.72rem}.logo span{font-size:.84rem}}
+@media(min-width:900px){.nav{display:flex}}
 
 /* ---------- Hero ---------- */
 .hero{position:relative;isolation:isolate;color:#fff;background:var(--ink);overflow:hidden}
