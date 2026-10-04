@@ -10,6 +10,14 @@
   // Botão "Tentar novamente" (página offline)
   doc.querySelectorAll('[data-reload]').forEach(el => el.addEventListener('click', () => location.reload()))
 
+  // Fechar o menu móvel ao escolher uma ligação ou com Esc
+  const menu = doc.querySelector('.menu')
+  if (menu) {
+    menu.addEventListener('click', e => { if (e.target.closest('a')) menu.removeAttribute('open') })
+    doc.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.hasAttribute('open')) { menu.removeAttribute('open'); menu.querySelector('summary')?.focus() } })
+    doc.addEventListener('click', e => { if (menu.hasAttribute('open') && !menu.contains(e.target)) menu.removeAttribute('open') })
+  }
+
   if (!('IntersectionObserver' in window)) return
 
   // Barra fixa móvel: escondida enquanto já há um botão de reserva visível

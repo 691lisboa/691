@@ -14,7 +14,7 @@ npm test         # build + auditoria (links, SEO, imagens, a11y estática)
 - **Texto legal:** `content/legal.json`.
 
 ## Trocar a foto do aeroporto por uma foto real
-1. Guarde a foto (3:2, mínimo 1920 px de largura) como `src/assets/orig/aeroporto.webp` (apague `aeroporto.png`; ajuste a extensão em `tools/images.py` se usar .jpg).
+1. Guarde a foto (3:2 ou 16:9, mínimo 1920 px de largura) como `src/assets/orig/aeroporto.jpg` (ou .webp) e apague `aeroporto.png`.
 2. `python3 tools/images.py` (gera as variantes responsivas — requer Pillow)
 3. `python3 tools/assets.py` (regenera as imagens de partilha OG — requer Playwright/Chromium)
 4. `npm run build`

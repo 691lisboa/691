@@ -5,6 +5,12 @@
     addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}) })
   }
   doc.querySelectorAll('[data-reload]').forEach(el => el.addEventListener('click', () => location.reload()))
+  const menu = doc.querySelector('.menu')
+  if (menu) {
+    menu.addEventListener('click', e => { if (e.target.closest('a')) menu.removeAttribute('open') })
+    doc.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.hasAttribute('open')) { menu.removeAttribute('open'); menu.querySelector('summary')?.focus() } })
+    doc.addEventListener('click', e => { if (menu.hasAttribute('open') && !menu.contains(e.target)) menu.removeAttribute('open') })
+  }
   if (!('IntersectionObserver' in window)) return
   const bar = doc.querySelector('[data-bar]')
   if (bar) {

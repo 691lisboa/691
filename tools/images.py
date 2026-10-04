@@ -5,7 +5,11 @@ from PIL import Image, ImageFilter
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC=os.path.join(ROOT,'src/assets/orig'); OUT=os.path.join(ROOT,'public/assets/img')
 os.makedirs(OUT,exist_ok=True)
-names={'lisboa':'webp','aeroporto':'png','sintra':'webp','fatima':'webp','nazare':'webp','porto':'webp','evora':'webp','taxi':'webp'}
+def find(n):
+    for e in ('webp','jpg','jpeg','png'):
+        if os.path.exists(f'{SRC}/{n}.{e}'): return e
+    raise SystemExit(f'falta src/assets/orig/{n}.(webp|jpg|png)')
+names={n:find(n) for n in ['lisboa','aeroporto','sintra','fatima','nazare','porto','evora','taxi']}
 targets=[480,768,1280,1920]
 manifest={}
 for n,ext in names.items():

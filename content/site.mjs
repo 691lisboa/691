@@ -34,7 +34,7 @@ export const DEST_KEYS = ['sintra', 'fatima', 'nazare', 'porto', 'evora']
 export const IMAGES = {
   home: { img: 'lisboa', pos: '50% 60%' },
   lisbon: { img: 'lisboa', pos: '50% 60%' },
-  airport: { img: 'aeroporto', pos: '50% 58%' },
+  airport: { img: 'aeroporto', pos: '50% 72%' },
   portugal: { img: 'sintra', pos: '50% 45%' },
   sintra: { img: 'sintra', pos: '50% 45%' },
   fatima: { img: 'fatima', pos: '50% 50%' },
@@ -50,10 +50,10 @@ export const T = {
     ui: {
       skip: 'Saltar para o conteúdo',
       home: 'Início', airport: 'Aeroporto', lisbon: 'Lisboa', portugal: 'Viagens por Portugal',
-      nav: 'Navegação principal', contacts: 'Contactos rápidos',
-      book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp',
-      callLabel: 'Ligar para +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
-      
+      nav: 'Navegação principal', menu: 'Abrir menu', menuClose: 'Fechar menu', contacts: 'Contactos rápidos',
+      book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp', call: 'Ligar', callFull: 'Ligar agora',
+      callLabel: 'Ligar para +351 928 158 158', waLabel: 'Abrir conversa no WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
+      langSwitch: 'EN', langSwitchLabel: 'Read this page in English',
       breadcrumb: 'Caminho', services: 'Serviços', destinations: 'Destinos', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
       legal: 'Informação Legal e Privacidade', complaints: 'Livro de Reclamações', allDest: 'Ver todos os destinos',
       seeMore: 'Saber mais', faq: 'Perguntas frequentes', others: 'Outros serviços', otherDest: 'Outros destinos',
@@ -87,7 +87,7 @@ export const T = {
       eyebrow: 'Porquê o 691.pt', title: 'Um serviço direto, claro e de confiança.',
       items: [
         { t: 'Direto com o motorista', p: 'Fala com quem conduz. Sem call centers, sem intermediários.', i: 'chat' },
-        { t: 'Falamos inglês', p: 'English spoken. Pode escrever-nos em inglês no WhatsApp.', i: 'globe' },
+        { t: 'Falamos inglês', p: 'Pode escrever-nos em inglês no WhatsApp.', i: 'globe' },
         { t: 'Preço legal e transparente', p: 'O valor é o do taxímetro, segundo o tarifário de táxi em vigor.', i: 'shield' },
         { t: 'Em todo o país', p: 'Lisboa, aeroporto e viagens marcadas para qualquer ponto de Portugal.', i: 'pin' }
       ]
@@ -103,6 +103,7 @@ export const T = {
         eyebrow: 'Táxi em Lisboa · Aeroporto · Portugal',
         h1: 'O seu táxi em Lisboa, a uma mensagem de distância.',
         sub: 'Aeroporto, cidade e todo o país. Fale diretamente com o motorista, sem aplicações nem intermediários.',
+        chips: ['Reserva direta', 'Falamos inglês', 'Em todo o país'],
         servicesEyebrow: 'Serviços', servicesTitle: 'Para onde vamos hoje?',
         servicesSub: 'Escolha o tipo de viagem e envie-nos o pedido pelo WhatsApp.',
         cards: {
@@ -123,7 +124,7 @@ export const T = {
           { q: 'Como é calculado o preço?', a: 'Pelo taxímetro, de acordo com o tarifário legal de táxi em vigor. O valor final é o indicado no fim da viagem, salvo as situações previstas na lei.' },
           { q: 'Fazem viagens fora de Lisboa?', a: 'Sim: Sintra, Fátima, Nazaré, Porto, Évora e outros destinos. Para viagens mais longas, contacte-nos com antecedência para confirmar a disponibilidade.' },
           { q: 'Posso reservar a recolha no aeroporto?', a: 'Sim. Indique o voo e a hora de chegada, o destino e o número de passageiros e malas, para planearmos a recolha.' },
-          { q: 'Falam inglês?', a: 'Sim. English spoken: pode escrever-nos em inglês no WhatsApp.' }
+          { q: 'Falam inglês?', a: 'Sim. Pode escrever-nos em inglês no WhatsApp.' }
         ]
       },
       airport: {
@@ -166,7 +167,7 @@ export const T = {
         faq: [
           { q: 'Posso reservar para daqui a pouco?', a: 'Pode pedir, mas a reserva fica sujeita a confirmação e disponibilidade. Para horas marcadas, quanto mais cedo, melhor.' },
           { q: 'Como é calculado o preço?', a: 'Pelo taxímetro, de acordo com o tarifário legal de táxi em vigor. O valor final é o indicado no fim da viagem, salvo as situações previstas na lei.' },
-          { q: 'Falam inglês?', a: 'Sim. English spoken: pode escrever-nos em inglês no WhatsApp.' }
+          { q: 'Falam inglês?', a: 'Sim. Pode escrever-nos em inglês no WhatsApp.' }
         ]
       },
       portugal: {
@@ -302,10 +303,10 @@ export const T = {
     ui: {
       skip: 'Skip to content',
       home: 'Home', airport: 'Airport', lisbon: 'Lisbon', portugal: 'Trips across Portugal',
-      nav: 'Main navigation', contacts: 'Quick contacts',
-      book: 'Book on WhatsApp', bookShort: 'WhatsApp',
+      nav: 'Main navigation', menu: 'Open menu', menuClose: 'Close menu', contacts: 'Quick contacts',
+      book: 'Book on WhatsApp', bookShort: 'WhatsApp', call: 'Call', callFull: 'Call now',
       callLabel: 'Call +351 928 158 158', waLabel: 'Open WhatsApp chat', igLabel: 'Instagram @691.pt', reviewLabel: 'Review us on Google',
-      
+      langSwitch: 'PT', langSwitchLabel: 'Ler esta página em português',
       breadcrumb: 'Breadcrumb', services: 'Services', destinations: 'Destinations', contactsTitle: 'Contacts', legalTitle: 'Legal',
       legal: 'Legal Information and Privacy', complaints: 'Complaints Book', allDest: 'See all destinations',
       seeMore: 'Learn more', faq: 'Frequently asked questions', others: 'Other services', otherDest: 'Other destinations',
@@ -339,7 +340,7 @@ export const T = {
       eyebrow: 'Why 691.pt', title: 'A direct, clear and trustworthy service.',
       items: [
         { t: 'Direct with the driver', p: 'You talk to the person who drives. No call centres, no middlemen.', i: 'chat' },
-        { t: 'English spoken', p: 'Message us in English on WhatsApp. Falamos inglês.', i: 'globe' },
+        { t: 'We speak English', p: 'You can write to us in English on WhatsApp.', i: 'globe' },
         { t: 'Legal, transparent fares', p: 'The fare is the taximeter amount, under the official taxi tariff.', i: 'shield' },
         { t: 'Across the country', p: 'Lisbon, the airport and pre-booked trips anywhere in Portugal.', i: 'pin' }
       ]
@@ -355,11 +356,12 @@ export const T = {
         eyebrow: 'Taxi in Lisbon · Airport · Portugal',
         h1: 'Your Lisbon taxi, one message away.',
         sub: 'Airport, city and the whole country. Talk directly to your driver, with no apps and no middlemen.',
+        chips: ['Direct booking', 'We speak English', 'Across the country'],
         servicesEyebrow: 'Services', servicesTitle: 'Where are we going today?',
         servicesSub: 'Choose your kind of trip and send us your request on WhatsApp.',
         cards: {
           lisbon: { t: 'Taxi in Lisbon', p: 'Work, appointments, restaurants, hotels and everything your day needs.', alt: 'The 25 de Abril Bridge at sunset' },
-          airport: { t: 'Lisbon Airport', p: 'On-time departures and arrivals pickups, pre-booked.', alt: 'Entrance of Humberto Delgado Airport in Lisbon' },
+          airport: { t: 'Lisbon Airport', p: 'On-time departures and arrivals pickups, pre-booked.', alt: 'Entrance of Humberto Delgado Airport, Lisbon' },
           portugal: { t: 'Trips across Portugal', p: 'Sintra, Fátima, Nazaré, Porto, Évora and more, from Lisbon.', alt: 'Pena Palace in Sintra' }
         },
         destEyebrow: 'Destinations', destTitle: 'From Lisbon to Portugal.',
@@ -381,7 +383,7 @@ export const T = {
       airport: {
         title: 'Lisbon Airport Taxi | Book Direct on WhatsApp — 691.pt',
         desc: 'Taxi to and from Lisbon Airport (Humberto Delgado): on-time departures and arrivals pickups. Book on WhatsApp and talk to the driver directly.',
-        imgAlt: 'Entrance of Humberto Delgado Airport in Lisbon',
+        imgAlt: 'Entrance of Humberto Delgado Airport, Lisbon',
         eyebrow: 'Lisbon Airport',
         h1: 'From the airport to your destination, no queues and no surprises.',
         sub: 'Pre-book your taxi to Humberto Delgado Airport or arrange a pickup on arrival. You talk directly to the driver.',

@@ -19,7 +19,7 @@ add('home',t.pages.home.h1,t.pages.home.eyebrow,'lisboa');
 for(const k of ['airport','lisbon','portugal'])add(k,t.pages[k].h1,t.pages[k].eyebrow,IMAGES[k].img);
 for(const k of DEST_KEYS)add(k,t.dest[k].h1,(lang==='pt'?'Lisboa → ':'Lisbon → ')+t.dest[k].name,IMAGES[k].img);}
 console.log(JSON.stringify(out))})"""],cwd=ROOT,text=True))
-pos={'home':'50% 60%','airport':'50% 58%','lisbon':'50% 60%','portugal':'50% 45%','sintra':'50% 45%','fatima':'50% 50%','nazare':'40% 55%','porto':'50% 55%','evora':'50% 45%'}
+pos={'home':'50% 60%','airport':'50% 72%','lisbon':'50% 60%','portugal':'50% 45%','sintra':'50% 45%','fatima':'50% 50%','nazare':'40% 55%','porto':'50% 55%','evora':'50% 45%'}
 def og_html(d):
     n=d['img']; vs=sorted(int(f.split('-')[-1].split('.')[0]) for f in os.listdir(IMG) if f.startswith(n+'-'))
     w=[v for v in vs if v>=1200][0]
