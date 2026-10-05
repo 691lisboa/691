@@ -1,6 +1,6 @@
 /* Service worker 691.pt — gerado por scripts/build.mjs (não editar a versão à mão) */
-const VERSION = 'b4f2eb71'
-const CORE = ["/","/en/","/offline.html","/en/offline.html","/site.css?v=cee2147c","/site.js?v=963025cd","/fonts/inter-latin-wght-normal.woff2","/favicon.svg","/icon-192.png"]
+const VERSION = 'c0a1136b'
+const CORE = ["/","/en/","/offline.html","/en/offline.html","/site.css?v=e6ecfec8","/site.js?v=963025cd","/fonts/inter-latin-wght-normal.woff2","/favicon.svg","/icon-192.png"]
 const PAGES = `pages-${VERSION}`
 const ASSETS = `assets-${VERSION}`
 

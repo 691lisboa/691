@@ -132,7 +132,7 @@ for (const f of htmlFiles) {
   } else if (!f.endsWith('404.html') && !f.endsWith('offline.html')) {
     const tools = html.match(/<div class="header-tools">([\s\S]*?)<\/div><\/div><\/header>/)?.[1] || ''
     const count = (tools.match(/class="tool /g) || []).length
-    if (count !== 2) fail(f, `página secundária com ${count} ícones de topo; esperado 2`)
+    if (count !== 0) fail(f, `página secundária com ${count} ícones de topo; esperado 0`)
   }
   if (f === 'index.html' || f === 'en/index.html') {
     if (!html.includes('Informação Legal e Privacidade') && f === 'index.html') fail(f, 'homepage sem ligação legal')
