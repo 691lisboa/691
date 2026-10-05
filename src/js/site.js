@@ -10,26 +10,19 @@
   // Botão "Tentar novamente" (página offline)
   doc.querySelectorAll('[data-reload]').forEach(el => el.addEventListener('click', () => location.reload()))
 
-  // Fechar o menu móvel ao escolher uma ligação ou com Esc
-  const menu = doc.querySelector('.menu')
-  if (menu) {
-    menu.addEventListener('click', e => { if (e.target.closest('a')) menu.removeAttribute('open') })
-    doc.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.hasAttribute('open')) { menu.removeAttribute('open'); menu.querySelector('summary')?.focus() } })
-    doc.addEventListener('click', e => { if (menu.hasAttribute('open') && !menu.contains(e.target)) menu.removeAttribute('open') })
+  // Idioma automático: PT em dispositivos configurados em português; EN nos restantes.
+  // Não interfere com crawlers para preservar as duas versões indexáveis.
+  const lang = doc.body?.dataset.siteLang
+  const altUrl = doc.body?.dataset.altLangUrl
+  const ua = navigator.userAgent || ''
+  const isBot = /bot|crawler|spider|slurp|facebookexternalhit|bingpreview|lighthouse/i.test(ua)
+  if (lang && altUrl && !isBot) {
+    const browserLang = (navigator.languages?.[0] || navigator.language || 'en').split('-')[0].toLowerCase()
+    const target = browserLang === 'pt' ? 'pt' : 'en'
+    if (target !== lang) location.replace(altUrl)
   }
 
   if (!('IntersectionObserver' in window)) return
-
-  // Barra fixa móvel: escondida enquanto já há um botão de reserva visível
-  const bar = doc.querySelector('[data-bar]')
-  if (bar) {
-    const seen = new Set()
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => { en.isIntersecting ? seen.add(en.target) : seen.delete(en.target) })
-      bar.classList.toggle('is-hidden', seen.size > 0)
-    })
-    doc.querySelectorAll('[data-hero-cta],.cta-band').forEach(el => io.observe(el))
-  }
 
   // Entrada suave (apenas se o utilizador não pedir menos movimento)
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {

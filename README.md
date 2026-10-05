@@ -13,13 +13,15 @@ npm test         # build + auditoria (links, SEO, imagens, a11y estática)
 - **Estilos:** `src/css/site.css` · **JS:** `src/js/site.js` · **Service worker:** `src/js/sw.js`.
 - **Texto legal:** `content/legal.json`.
 
-## Trocar a foto do aeroporto por uma foto real
-1. Guarde a foto (3:2 ou 16:9, mínimo 1920 px de largura) como `src/assets/orig/aeroporto.jpg` (ou .webp) e apague `aeroporto.png`.
-2. `python3 tools/images.py` (gera as variantes responsivas — requer Pillow)
-3. `python3 tools/assets.py` (regenera as imagens de partilha OG — requer Playwright/Chromium)
-4. `npm run build`
+## Idioma automático e cabeçalho
+- O site mantém versões PT e EN separadas para SEO, mas a escolha inicial é automática pela língua principal do navegador/telemóvel.
+- `pt-*` abre a versão PT; restantes línguas abrem EN. Crawlers não são redirecionados, preservando as duas versões indexáveis.
+- Não existe botão EN/PT nem menu móvel. No topo ficam apenas os ícones de contacto definidos para cada tipo de página.
 
-A imagem atual é uma ilustração original (`tools/airport.svg`), criada porque não foi possível obter uma fotografia real.
+## Foto real do aeroporto
+- A homepage e a página do aeroporto usam uma fotografia real do Aeroporto Humberto Delgado, em Lisboa.
+- A origem está em `src/assets/orig/aeroporto.jpg`; as variantes responsivas são geradas em WebP em `public/assets/img/`.
+- Para substituir a fotografia, coloque uma nova imagem com pelo menos 1920 px de largura e execute `python3 tools/images.py`, depois `python3 tools/assets.py` e `npm run build`.
 
 ## Estrutura de URLs
 PT: `/`, `/taxi-aeroporto-lisboa/`, `/taxi-lisboa/`, `/viagens-portugal/` (+ sintra, fatima, nazare, porto, evora), `/legal.html`

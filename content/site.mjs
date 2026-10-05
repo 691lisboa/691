@@ -50,19 +50,17 @@ export const T = {
     ui: {
       skip: 'Saltar para o conteúdo',
       home: 'Início', airport: 'Aeroporto', lisbon: 'Lisboa', portugal: 'Viagens por Portugal',
-      nav: 'Navegação principal', menu: 'Abrir menu', menuClose: 'Fechar menu', contacts: 'Contactos rápidos',
-      book: 'Reservar pelo WhatsApp', bookShort: 'WhatsApp', call: 'Ligar', callFull: 'Ligar agora',
-      callLabel: 'Ligar para +351 928 158 158', waLabel: 'Abrir conversa no WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
-      langSwitch: 'EN', langSwitchLabel: 'Read this page in English',
+      nav: 'Navegação principal', contacts: 'Contactos rápidos',
+      book: 'Reservar pelo WhatsApp', call: 'Ligar',
+      callLabel: 'Ligar para +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
       breadcrumb: 'Caminho', services: 'Serviços', destinations: 'Destinos', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
       legal: 'Informação Legal e Privacidade', complaints: 'Livro de Reclamações', allDest: 'Ver todos os destinos',
       seeMore: 'Saber mais', faq: 'Perguntas frequentes', others: 'Outros serviços', otherDest: 'Outros destinos',
       facts: { distance: 'Distância', time: 'Duração', approx: 'aprox.', from: 'Saída' },
-      footerTag: 'Táxi em Lisboa com reserva direta pelo WhatsApp: cidade, aeroporto e viagens por todo o país.',
+      footerTag: 'Táxi em Lisboa com reserva pelo WhatsApp: cidade, aeroporto e viagens por Portugal.',
       rights: '© 2026 691.pt Lisboa', backHome: 'Voltar ao início', review: 'Avalie-nos no Google', followUs: 'Siga-nos no Instagram',
       sendTitle: 'O que enviar na mensagem', sendIntro: 'Quanto mais claro o pedido, mais rápida a confirmação.',
       send: ['Local de recolha', 'Destino', 'Data e hora', 'Passageiros e bagagem'],
-      language: 'Idioma'
     },
     wa: {
       home: 'Olá, gostaria de reservar um táxi.',
@@ -87,9 +85,9 @@ export const T = {
       eyebrow: 'Porquê o 691.pt', title: 'Um serviço direto, claro e de confiança.',
       items: [
         { t: 'Direto com o motorista', p: 'Fala com quem conduz. Sem call centers, sem intermediários.', i: 'chat' },
-        { t: 'Falamos inglês', p: 'Pode escrever-nos em inglês no WhatsApp.', i: 'globe' },
+        { t: 'Atendimento em inglês', p: 'Pode escrever-nos em inglês no WhatsApp.', i: 'globe' },
         { t: 'Preço legal e transparente', p: 'O valor é o do taxímetro, segundo o tarifário de táxi em vigor.', i: 'shield' },
-        { t: 'Em todo o país', p: 'Lisboa, aeroporto e viagens marcadas para qualquer ponto de Portugal.', i: 'pin' }
+        { t: 'Lisboa e Portugal', p: 'Lisboa, aeroporto e viagens marcadas para vários pontos de Portugal.', i: 'pin' }
       ]
     },
     review: { title: 'Já viajou connosco?', p: 'A sua avaliação no Google ajuda outros viajantes a escolher com confiança.', cta: 'Deixar avaliação' },
@@ -103,7 +101,6 @@ export const T = {
         eyebrow: 'Táxi em Lisboa · Aeroporto · Portugal',
         h1: 'O seu táxi em Lisboa, a uma mensagem de distância.',
         sub: 'Aeroporto, cidade e todo o país. Fale diretamente com o motorista, sem aplicações nem intermediários.',
-        chips: ['Reserva direta', 'Falamos inglês', 'Em todo o país'],
         servicesEyebrow: 'Serviços', servicesTitle: 'Para onde vamos hoje?',
         servicesSub: 'Escolha o tipo de viagem e envie-nos o pedido pelo WhatsApp.',
         cards: {
@@ -303,19 +300,17 @@ export const T = {
     ui: {
       skip: 'Skip to content',
       home: 'Home', airport: 'Airport', lisbon: 'Lisbon', portugal: 'Trips across Portugal',
-      nav: 'Main navigation', menu: 'Open menu', menuClose: 'Close menu', contacts: 'Quick contacts',
-      book: 'Book on WhatsApp', bookShort: 'WhatsApp', call: 'Call', callFull: 'Call now',
-      callLabel: 'Call +351 928 158 158', waLabel: 'Open WhatsApp chat', igLabel: 'Instagram @691.pt', reviewLabel: 'Review us on Google',
-      langSwitch: 'PT', langSwitchLabel: 'Ler esta página em português',
+      nav: 'Main navigation', contacts: 'Quick contacts',
+      book: 'Book on WhatsApp', call: 'Call',
+      callLabel: 'Call +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Review us on Google',
       breadcrumb: 'Breadcrumb', services: 'Services', destinations: 'Destinations', contactsTitle: 'Contacts', legalTitle: 'Legal',
       legal: 'Legal Information and Privacy', complaints: 'Complaints Book', allDest: 'See all destinations',
       seeMore: 'Learn more', faq: 'Frequently asked questions', others: 'Other services', otherDest: 'Other destinations',
       facts: { distance: 'Distance', time: 'Duration', approx: 'approx.', from: 'From' },
-      footerTag: 'Taxi in Lisbon with direct booking on WhatsApp: city, airport and trips across Portugal.',
+      footerTag: 'Taxi in Lisbon with booking on WhatsApp: city, airport and trips across Portugal.',
       rights: '© 2026 691.pt Lisboa', backHome: 'Back to home', review: 'Review us on Google', followUs: 'Follow us on Instagram',
       sendTitle: 'What to include in your message', sendIntro: 'The clearer the request, the faster the confirmation.',
       send: ['Pickup location', 'Destination', 'Date and time', 'Passengers and luggage'],
-      language: 'Language'
     },
     wa: {
       home: 'Hello, I would like to book a taxi.',
@@ -340,9 +335,9 @@ export const T = {
       eyebrow: 'Why 691.pt', title: 'A direct, clear and trustworthy service.',
       items: [
         { t: 'Direct with the driver', p: 'You talk to the person who drives. No call centres, no middlemen.', i: 'chat' },
-        { t: 'We speak English', p: 'You can write to us in English on WhatsApp.', i: 'globe' },
+        { t: 'Support in English', p: 'You can write to us in English on WhatsApp.', i: 'globe' },
         { t: 'Legal, transparent fares', p: 'The fare is the taximeter amount, under the official taxi tariff.', i: 'shield' },
-        { t: 'Across the country', p: 'Lisbon, the airport and pre-booked trips anywhere in Portugal.', i: 'pin' }
+        { t: 'Lisbon and Portugal', p: 'Lisbon, the airport and pre-booked trips to destinations across Portugal.', i: 'pin' }
       ]
     },
     review: { title: 'Travelled with us?', p: 'Your Google review helps other travellers choose with confidence.', cta: 'Leave a review' },
@@ -356,7 +351,6 @@ export const T = {
         eyebrow: 'Taxi in Lisbon · Airport · Portugal',
         h1: 'Your Lisbon taxi, one message away.',
         sub: 'Airport, city and the whole country. Talk directly to your driver, with no apps and no middlemen.',
-        chips: ['Direct booking', 'We speak English', 'Across the country'],
         servicesEyebrow: 'Services', servicesTitle: 'Where are we going today?',
         servicesSub: 'Choose your kind of trip and send us your request on WhatsApp.',
         cards: {

@@ -5,22 +5,16 @@
     addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}) })
   }
   doc.querySelectorAll('[data-reload]').forEach(el => el.addEventListener('click', () => location.reload()))
-  const menu = doc.querySelector('.menu')
-  if (menu) {
-    menu.addEventListener('click', e => { if (e.target.closest('a')) menu.removeAttribute('open') })
-    doc.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.hasAttribute('open')) { menu.removeAttribute('open'); menu.querySelector('summary')?.focus() } })
-    doc.addEventListener('click', e => { if (menu.hasAttribute('open') && !menu.contains(e.target)) menu.removeAttribute('open') })
+  const lang = doc.body?.dataset.siteLang
+  const altUrl = doc.body?.dataset.altLangUrl
+  const ua = navigator.userAgent || ''
+  const isBot = /bot|crawler|spider|slurp|facebookexternalhit|bingpreview|lighthouse/i.test(ua)
+  if (lang && altUrl && !isBot) {
+    const browserLang = (navigator.languages?.[0] || navigator.language || 'en').split('-')[0].toLowerCase()
+    const target = browserLang === 'pt' ? 'pt' : 'en'
+    if (target !== lang) location.replace(altUrl)
   }
   if (!('IntersectionObserver' in window)) return
-  const bar = doc.querySelector('[data-bar]')
-  if (bar) {
-    const seen = new Set()
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => { en.isIntersecting ? seen.add(en.target) : seen.delete(en.target) })
-      bar.classList.toggle('is-hidden', seen.size > 0)
-    })
-    doc.querySelectorAll('[data-hero-cta],.cta-band').forEach(el => io.observe(el))
-  }
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const targets = [...doc.querySelectorAll('[data-reveal]')].filter(el => el.getBoundingClientRect().top > innerHeight * 0.9)
     const rv = new IntersectionObserver(entries => {

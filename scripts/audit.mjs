@@ -115,6 +115,42 @@ for (const k of ['home', 'airport', 'lisbon', 'portugal', ...DEST_KEYS, 'legal']
   for (const l of ['pt', 'en']) if (!exists(ROUTES[l][k])) fail('rotas', `falta página ${l}/${k}`)
 }
 
+// regressões específicas do 691.pt: navegação, CTA, idioma e cabeçalho
+for (const f of htmlFiles) {
+  const html = read(f)
+  if (html.includes('lang-switch') || html.includes('class="menu"') || html.includes('mobile-bar') || html.includes('data-bar')) fail(f, 'restos de seletor de idioma/menu/barra móvel')
+  if (/Ligar agora|Call now|Abrir conversa no WhatsApp|Open WhatsApp chat/.test(html)) fail(f, 'CTA antigo de chamada/WhatsApp')
+  if (html.includes('class="tool-phone"') && !/^((?:en\/)?)?$/.test('')) { /* marcador sem efeito; validação abaixo por rota */ }
+  if (f !== 'index.html' && f !== 'en/index.html') {
+    if (html.includes('class="tool-phone"')) fail(f, 'telefone visível no cabeçalho de página secundária')
+    if (html.includes('class="tool-instagram"')) fail(f, 'Instagram visível no cabeçalho de página secundária')
+  }
+  if (f === 'index.html' || f === 'en/index.html') {
+    const tools = html.match(/<div class="header-tools">([\s\S]*?)<\/div><\/div><\/header>/)?.[1] || ''
+    const count = (tools.match(/class="tool /g) || []).length
+    if (count !== 4) fail(f, `homepage com ${count} ícones de topo; esperado 4`)
+  } else if (!f.endsWith('404.html') && !f.endsWith('offline.html')) {
+    const tools = html.match(/<div class="header-tools">([\s\S]*?)<\/div><\/div><\/header>/)?.[1] || ''
+    const count = (tools.match(/class="tool /g) || []).length
+    if (count !== 2) fail(f, `página secundária com ${count} ícones de topo; esperado 2`)
+  }
+  if (f === 'index.html' || f === 'en/index.html') {
+    if (!html.includes('Informação Legal e Privacidade') && f === 'index.html') fail(f, 'homepage sem ligação legal')
+    if (!html.includes('Legal Information and Privacy') && f === 'en/index.html') fail(f, 'homepage EN sem ligação legal')
+  } else if (!f.endsWith('legal.html')) {
+    const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)?.[1] || ''
+    if (footer.includes('Informação Legal e Privacidade') || footer.includes('Legal Information and Privacy') || footer.includes('Livro de Reclamações') || footer.includes('Complaints Book')) {
+      fail(f, 'ligações legais/reclamações presentes no rodapé de página secundária')
+    }
+  }
+  if (!html.includes('data-site-lang=') || !html.includes('data-alt-lang-url=')) fail(f, 'metadados para idioma automático em falta')
+}
+const cssSource = fs.readFileSync(path.join(ROOT, 'src/css/site.css'), 'utf8')
+if (/border-radius:50%[^}]*background:var\(--green\)/.test(cssSource)) fail('src/css/site.css', 'logo ainda usa ponto circular CSS em vez de ponto tipográfico')
+const jsSource = read('site.js')
+if (!jsSource.includes('navigator.languages') || !jsSource.includes('location.replace(altUrl)')) fail('site.js', 'seleção automática de idioma incompleta')
+if (!exists('assets/img/aeroporto-1920.webp')) fail('aeroporto', 'fotografia de aeroporto em alta resolução em falta')
+
 // imagens muito pesadas
 for (const f of files.filter(f => f.startsWith('assets/img/'))) { const kb = fs.statSync(path.join(PUB, f)).size / 1024; if (kb > 400) fail(f, `imagem pesada (${Math.round(kb)} KB)`) }
 
