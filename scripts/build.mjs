@@ -89,17 +89,12 @@ function header(lang, key) {
 
 function footer(lang, key) {
   const t = T[lang], u = t.ui, r = ROUTES[lang]
-  return `<footer class="site-footer"><div class="wrap"><div class="footer-grid">
-<div class="footer-brand"><a class="logo" href="${r.home}" aria-label="691.pt"><b>691</b><i aria-hidden="true"></i><span>pt</span></a><p>${esc(u.footerTag)}</p></div>
-<div><h2>${esc(u.services)}</h2><ul><li><a href="${r.home}">${esc(u.home)}</a></li><li><a href="${r.airport}">${esc(u.airport)}</a></li><li><a href="${r.lisbon}">${esc(u.lisbon)}</a></li><li><a href="${r.portugal}">${esc(u.portugal)}</a></li></ul></div>
-<div><h2>${esc(u.destinations)}</h2><ul>${DEST_KEYS.map(k => `<li><a href="${r[k]}">${esc(t.dest[k].name)}</a></li>`).join('')}</ul></div>
-<div><h2>${esc(u.contactsTitle)}</h2><ul>
+  return `<footer class="site-footer"><div class="wrap"><div class="footer-grid"><div><h2>${esc(u.contactsTitle)}</h2><ul>
 <li><a href="tel:${SITE.phone}">${icon('phone')}${SITE.phoneDisplay}</a></li>
 <li><a href="${waLink(lang, 'home')}">${icon('whatsapp')}WhatsApp</a></li>
 <li><a href="${SITE.instagram}" target="_blank" rel="noopener">${icon('instagram')}Instagram<span class="sr-only">${externalHint(lang)}</span></a></li>
-<li><a href="${SITE.review}" target="_blank" rel="noopener">${icon('star')}${esc(u.review)}<span class="sr-only">${externalHint(lang)}</span></a></li></ul></div>
-</div>
-<div class="footer-bottom"><span>${esc(u.rights)}</span>${key === 'home' ? `<span><a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a></span>` : ''}</div>
+<li><a href="${SITE.review}" target="_blank" rel="noopener">${icon('star')}${esc(u.review)}<span class="sr-only">${externalHint(lang)}</span></a></li></ul></div></div>
+<div class="footer-bottom"><span>${esc(u.rights)}</span><span><a href="${r.legal}">${esc(u.legal)}</a> · <a href="${SITE.complaints}" target="_blank" rel="noopener">${esc(u.complaints)}<span class="sr-only">${externalHint(lang)}</span></a></span></div>
 </div></footer>`
 }
 
@@ -110,10 +105,7 @@ function breadcrumb(lang, trail) {
 
 const faqHtml = (lang, items, id = 'faq') => `<section class="section section--soft" aria-labelledby="${id}-h"><div class="wrap"><div class="section-head"><span class="eyebrow">FAQ</span><h2 id="${id}-h">${esc(T[lang].faqTitle)}</h2></div><div class="faq">${items.map(f => `<details><summary>${esc(f.q)}</summary><div class="answer"><p>${esc(f.a)}</p></div></details>`).join('')}</div></div></section>`
 
-function ctaBand(lang, key) {
-  const t = T[lang], u = t.ui
-  return `<section class="cta-band" aria-labelledby="cta-h"><div class="wrap cta-inner"><div><h2 id="cta-h">${esc(t.cta.title)}</h2><p>${esc(t.cta.p)}</p></div><div class="actions"><a class="btn btn-wa btn-lg" href="${waLink(lang, key in t.wa ? key : 'home')}">${icon('whatsapp')}${esc(u.book)}</a></div></div></section>`
-}
+
 
 function stepsHtml(lang, soft = true) {
   const s = T[lang].steps
@@ -212,7 +204,6 @@ function homePage(lang) {
     `<section class="section" aria-labelledby="veh-h"><div class="wrap split"><div class="split-media">${img('taxi', { alt: p.vehicle.alt, sizes: '(min-width:900px) 600px, 100vw' })}</div><div class="split-copy"><span class="eyebrow">${esc(p.vehicle.eyebrow)}</span><h2 id="veh-h">${esc(p.vehicle.title)}</h2><p class="lede">${esc(p.vehicle.p)}</p><div class="actions"><a class="btn btn-wa" href="${waLink(lang, 'home')}">${icon('whatsapp')}${esc(u.book)}</a></div></div></div></section>`,
     faqHtml(lang, p.faq),
     `<section class="section" aria-labelledby="rev-h"><div class="wrap"><div class="review"><div><div class="stars" aria-hidden="true">${icon('star')}${icon('star')}${icon('star')}${icon('star')}${icon('star')}</div><h2 id="rev-h">${esc(t.review.title)}</h2><p>${esc(t.review.p)}</p></div><a class="btn btn-wa" href="${SITE.review}" target="_blank" rel="noopener">${icon('star')}${esc(t.review.cta)}<span class="sr-only">${externalHint(lang)}</span></a></div></div></section>`,
-    ctaBand(lang, key)
   ].join('\n')
   return layout(lang, key, { title: p.title, desc: p.desc, body, imgPreload: heroPreload(IMAGES.home.img), ld: graph(lang, key, { title: p.title, desc: p.desc, faq: p.faq }), ogAlt: p.imgAlt })
 }
@@ -227,7 +218,6 @@ function servicePage(lang, key) { // airport | lisbon
     stepsHtml(lang, true),
     faqHtml(lang, p.faq).replace('section--soft', ''),
     `<section class="section section--soft" aria-labelledby="oth-h"><div class="wrap"><div class="section-head"><h2 id="oth-h">${esc(u.others)}</h2></div><div class="grid grid-2">${otherKeys.map(k => serviceCard(lang, k)).join('')}</div></div></section>`,
-    ctaBand(lang, key)
   ].join('\n')
   return layout(lang, key, { title: p.title, desc: p.desc, body, imgPreload: heroPreload(IMAGES[key].img), ld: graph(lang, key, { title: p.title, desc: p.desc, trail, faq: p.faq, service: { name: p.eyebrow, area: { '@type': 'City', name: 'Lisboa' } } }), ogAlt: p.imgAlt })
 }
@@ -240,7 +230,6 @@ function portugalPage(lang) {
     `<section class="section" aria-labelledby="sec-h"><div class="wrap"><div class="section-head"><span class="eyebrow">${esc(p.sectionEyebrow)}</span><h2 id="sec-h">${esc(p.sectionTitle)}</h2><p class="lede">${esc(p.sectionSub)}</p></div><div class="grid grid-3">${DEST_KEYS.map(k => destCard(lang, k)).join('')}<div class="more-box" data-reveal><h3>${esc(p.more.t)}</h3><p>${esc(p.more.p)}</p><a class="card-link card-link--plain" href="${waLink(lang, 'portugal')}">${esc(u.book)}${icon('arrow')}</a></div></div><div class="tip">${icon('info')}<div><h3>${esc(p.tip.t)}</h3><p>${esc(p.tip.p)}</p></div></div></div></section>`,
     stepsHtml(lang, true),
     faqHtml(lang, p.faq).replace('section--soft', ''),
-    ctaBand(lang, key)
   ].join('\n')
   const dl = DEST_KEYS.map(k => ({ '@type': 'City', name: t.dest[k].name }))
   return layout(lang, key, { title: p.title, desc: p.desc, body, imgPreload: heroPreload(IMAGES[key].img), ld: graph(lang, key, { title: p.title, desc: p.desc, trail, faq: p.faq, service: { name: u.portugal, area: [{ '@type': 'Country', name: 'Portugal' }, ...dl] } }), ogAlt: p.imgAlt })
@@ -256,7 +245,6 @@ function destPage(lang, key) {
     stepsHtml(lang, true),
     faqHtml(lang, d.faq).replace('section--soft', ''),
     `<section class="section section--soft" aria-labelledby="oth-h"><div class="wrap"><div class="section-head"><h2 id="oth-h">${esc(u.otherDest)}</h2></div><div class="grid grid-4">${others.map(k => destCard(lang, k)).join('')}</div></div></section>`,
-    ctaBand(lang, key)
   ].join('\n')
   return layout(lang, key, { title: d.title, desc: d.desc, body, imgPreload: heroPreload(IMAGES[key].img), ld: graph(lang, key, { title: d.title, desc: d.desc, trail, faq: d.faq, service: { name: (lang === 'pt' ? 'Táxi de Lisboa para ' : 'Taxi from Lisbon to ') + d.name, area: { '@type': 'City', name: d.name } } }), ogAlt: d.imgAlt })
 }

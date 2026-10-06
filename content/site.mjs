@@ -53,11 +53,10 @@ export const T = {
       nav: 'Navegação principal', contacts: 'Contactos rápidos',
       book: 'Reservar pelo WhatsApp', call: 'Ligar',
       callLabel: 'Ligar para +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Avaliar no Google',
-      breadcrumb: 'Caminho', services: 'Serviços', destinations: 'Destinos', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
+      breadcrumb: 'Caminho', contactsTitle: 'Contactos', legalTitle: 'Informação legal',
       legal: 'Informação Legal e Privacidade', complaints: 'Livro de Reclamações', allDest: 'Ver todos os destinos',
       seeMore: 'Saber mais', faq: 'Perguntas frequentes', others: 'Outros serviços', otherDest: 'Outros destinos',
       facts: { distance: 'Distância', time: 'Duração', approx: 'aprox.', from: 'Saída' },
-      footerTag: 'Táxi em Lisboa com reserva pelo WhatsApp: cidade, aeroporto e viagens por Portugal.',
       rights: '© 2026 691.pt Lisboa', backHome: 'Voltar ao início', review: 'Avalie-nos no Google', followUs: 'Siga-nos no Instagram',
       sendTitle: 'O que enviar na mensagem', sendIntro: 'Quanto mais claro o pedido, mais rápida a confirmação.',
       send: ['Local de recolha', 'Destino', 'Data e hora', 'Passageiros e bagagem'],
@@ -91,7 +90,6 @@ export const T = {
       ]
     },
     review: { title: 'Já viajou connosco?', p: 'A sua avaliação no Google ajuda outros viajantes a escolher com confiança.', cta: 'Deixar avaliação' },
-    cta: { title: 'Diga-nos onde e quando.', p: 'Envie uma mensagem pelo WhatsApp e respondemos diretamente.' },
     faqTitle: 'Perguntas frequentes',
     pages: {
       home: {
@@ -303,11 +301,10 @@ export const T = {
       nav: 'Main navigation', contacts: 'Quick contacts',
       book: 'Book on WhatsApp', call: 'Call',
       callLabel: 'Call +351 928 158 158', waLabel: 'WhatsApp', igLabel: 'Instagram @691.pt', reviewLabel: 'Review us on Google',
-      breadcrumb: 'Breadcrumb', services: 'Services', destinations: 'Destinations', contactsTitle: 'Contacts', legalTitle: 'Legal',
+      breadcrumb: 'Breadcrumb', contactsTitle: 'Contacts', legalTitle: 'Legal',
       legal: 'Legal Information and Privacy', complaints: 'Complaints Book', allDest: 'See all destinations',
       seeMore: 'Learn more', faq: 'Frequently asked questions', others: 'Other services', otherDest: 'Other destinations',
       facts: { distance: 'Distance', time: 'Duration', approx: 'approx.', from: 'From' },
-      footerTag: 'Taxi in Lisbon with booking on WhatsApp: city, airport and trips across Portugal.',
       rights: '© 2026 691.pt Lisboa', backHome: 'Back to home', review: 'Review us on Google', followUs: 'Follow us on Instagram',
       sendTitle: 'What to include in your message', sendIntro: 'The clearer the request, the faster the confirmation.',
       send: ['Pickup location', 'Destination', 'Date and time', 'Passengers and luggage'],
@@ -341,7 +338,6 @@ export const T = {
       ]
     },
     review: { title: 'Travelled with us?', p: 'Your Google review helps other travellers choose with confidence.', cta: 'Leave a review' },
-    cta: { title: 'Tell us where and when.', p: 'Send a WhatsApp message and we will reply directly.' },
     faqTitle: 'Frequently asked questions',
     pages: {
       home: {

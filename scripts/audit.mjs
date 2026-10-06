@@ -134,15 +134,12 @@ for (const f of htmlFiles) {
     const count = (tools.match(/class="tool /g) || []).length
     if (count !== 0) fail(f, `página secundária com ${count} ícones de topo; esperado 0`)
   }
-  if (f === 'index.html' || f === 'en/index.html') {
-    if (!html.includes('Informação Legal e Privacidade') && f === 'index.html') fail(f, 'homepage sem ligação legal')
-    if (!html.includes('Legal Information and Privacy') && f === 'en/index.html') fail(f, 'homepage EN sem ligação legal')
-  } else if (!f.endsWith('legal.html')) {
-    const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)?.[1] || ''
-    if (footer.includes('Informação Legal e Privacidade') || footer.includes('Legal Information and Privacy') || footer.includes('Livro de Reclamações') || footer.includes('Complaints Book')) {
-      fail(f, 'ligações legais/reclamações presentes no rodapé de página secundária')
-    }
-  }
+  const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)?.[1] || ''
+  const indexableFooter = !/noindex/.test(html)
+  if (indexableFooter && !footer.includes(f.startsWith('en/') ? 'Legal Information and Privacy' : 'Informação Legal e Privacidade')) fail(f, 'rodapé sem ligação legal')
+  if (indexableFooter && !footer.includes(f.startsWith('en/') ? 'Complaints Book' : 'Livro de Reclamações')) fail(f, 'rodapé sem ligação para reclamações')
+  if (footer.includes('footer-brand') || footer.includes('<h2>Serviços</h2>') || footer.includes('<h2>Services</h2>') || footer.includes('<h2>Destinos</h2>') || footer.includes('<h2>Destinations</h2>')) fail(f, 'rodapé ainda contém marca/serviços/destinos')
+  if (html.includes('cta-band') || html.includes('Diga-nos onde e quando.') || html.includes('Tell us where and when.')) fail(f, 'CTA inferior antigo ainda presente')
   if (!html.includes('data-site-lang=') || !html.includes('data-alt-lang-url=')) fail(f, 'metadados para idioma automático em falta')
 }
 const cssSource = fs.readFileSync(path.join(ROOT, 'src/css/site.css'), 'utf8')
